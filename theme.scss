@@ -14,12 +14,13 @@ $darker-gray: #333;
 $sky-blue: #93A4CC;
 $grass: #8EB859;
 $light-grass: #AFCD6F;
+$orange: #CE6E3F;
+$light-pink: #E8C8DB;
 
-
-$pink: #FFBCCB;
-$blue: #93A4CC;
+$pink: #cc78aa;
+$blue: #7A8DB8;
 $green: #AFCD6F;
-$yellow: #FFF0BC;
+$light-orange: #e1b588;
 
 
 // Base document colors
@@ -29,7 +30,7 @@ $navbar-hl: $grass; // highlight color when hovering over navbar links
 $body-bg: $off-white; // page background 
 $body-color: $darker-gray; // page text 
 $footer-bg: $grass; // footer 
-$link-color: $grass; // hyperlinks 
+$link-color: $blue; // hyperlinks 
 
 // Code blocks
 $code-block-bg: $white;
@@ -42,16 +43,27 @@ $font-family-h2: 'Lora', serif;
 
 //toc 
 $toc-font-size: 13px;
-$toc-active-border: $sky-blue;
+$toc-active-border: none;
 
 // callouts
 $callout-color-note: $green;
 $callout-color-tip: $blue;
 $callout-color-caution: $pink;
-$callout-color-important: $yellow;
+$callout-color-important: $orange;
+
 
 /*-- scss:rules --*/
+body {
+  width: 90%; /* Change from 85% to 100% */
+  margin: 30;
+  padding: 20;
+}
 
+main {
+  width: 100%; 
+  padding-right: 50px;
+  border-right: 0px solid $brownie;
+}
 .navbar {
   border-bottom: 1px solid $brownie;
   
@@ -148,17 +160,73 @@ h3 {
 
 /* Heading 4 */
 h4 {
-  font-size: 18px;
+  font-size: 17px;
   font-family: $font-family-h2;
   font-variant: normal; 
   color: $brownie;
-  font-weight: 500; 
+  font-weight: 600; 
 }
 
 
-.callout.callout-style-default .callout-body {
-  font-size: 0.75rem;
+div.callout-note .callout-body,
+div.callout-tip .callout-body,
+div.callout-warning .callout-body,
+div.callout-important .callout-body {
+  font-size: 12.5px !important;
+  font-family: $font-family;
+  line-height: 1.4;
 }
+
+div.callout-note {
+  background-color: rgba(166, 205, 111, 0.1);
+  border-color: $green !important;
+  border-width: 1px !important;
+  border-style: dashed !important;
+  padding: 10px !important;
+  
+  .callout-header {
+    background-color: rgba(166, 205, 111, 0) !important;
+  }
+
+}
+    
+
+div.callout-tip {
+  background-color: rgba(147, 164, 204, 0.2);
+  border-color: $sky-blue !important;
+  border-width: 1px !important;
+  border-style: dashed !important;
+  padding: 10px !important;
+  
+  .callout-header {
+    background-color: rgba(166, 205, 111, 0) !important;
+  }
+}
+
+div.callout-warning {
+  background-color: rgba(217, 160, 102, 0.18);
+  border-color: $orange !important;
+  border-width: 1px !important;
+  border-style: dashed !important;
+  padding: 10px !important;
+  
+  .callout-header {
+    background-color: rgba(166, 205, 111, 0) !important;
+  }
+}
+
+div.callout-important {
+  background-color: rgba(232, 200, 219, 0.3);
+  border-color: $light-pink !important;
+  border-width: 1px !important;
+  border-style: dashed !important;
+  padding: 10px !important;
+  
+  .callout-header {
+    background-color: rgba(166, 205, 111, 0) !important;
+  }
+}
+
 
 // tabs
 .tab-content {
@@ -168,6 +236,7 @@ h4 {
 }
 .nav-tabs {
   border-bottom: 0px solid $black; // Outline under the tab headers
+  margin-right: 5px; 
 }
 
 // Active tab
@@ -175,6 +244,7 @@ h4 {
   border-color: $black;
   background-color: $sky-blue;
   border-radius: 0px; 
+  margin-right: 5px; 
   color: $black;      // Optional: text color for active tab
 }
 
@@ -183,11 +253,23 @@ h4 {
   border-color: $black;   // lighter border for inactive
   background-color: $light-grass;  // or transparent
   border-radius: 0px; 
+  margin-right: 5px; 
   color: $black;          // muted text color
 }
 
 .nav-tabs .nav-link:not(.active):hover {
   background-color: $sky-blue; // light hover effect
   border-color: $black;
+  margin-right: 5px; 
   color: $black;
+}
+
+// code block
+p code,
+span code,
+li code,
+ul code,
+ol code {
+  color: $orange !important;
+  background-color: rgba(255, 140, 0, 0.05) !important; // Light orange background
 }
