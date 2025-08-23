@@ -1,0 +1,13 @@
+---
+title: "Hands-on 1.b: Thematic Mapping and GeoVisualisation with R"
+author: Johsuan Huang
+date: 2025-08-24
+date-modified: "last-modified"
+description: ""
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---

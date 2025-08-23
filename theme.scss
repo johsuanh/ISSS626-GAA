@@ -1,0 +1,193 @@
+/*-- scss:functions --*/
+
+/*-- scss:defaults --*/
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Oswald:wght@200..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+// Colors
+
+$off-white: #f6f6f6;
+$brownie:#594839;
+$black: #111;
+$white: #fff;
+$darker-gray: #333;
+$sky-blue: #93A4CC;
+$grass: #8EB859;
+$light-grass: #AFCD6F;
+
+
+$pink: #FFBCCB;
+$blue: #93A4CC;
+$green: #AFCD6F;
+$yellow: #FFF0BC;
+
+
+// Base document colors
+$navbar-bg: $off-white; // navbar
+$navbar-fg: $brownie; // navbar foreground elements
+$navbar-hl: $grass; // highlight color when hovering over navbar links
+$body-bg: $off-white; // page background 
+$body-color: $darker-gray; // page text 
+$footer-bg: $grass; // footer 
+$link-color: $grass; // hyperlinks 
+
+// Code blocks
+$code-block-bg: $white;
+
+// fonts
+
+$font-family: 'Roboto', sans-serif;
+$font-family-h: 'Merriweather Sans', sans-serif;
+$font-family-h2: 'Lora', serif;
+
+//toc 
+$toc-font-size: 13px;
+$toc-active-border: $sky-blue;
+
+// callouts
+$callout-color-note: $green;
+$callout-color-tip: $blue;
+$callout-color-caution: $pink;
+$callout-color-important: $yellow;
+
+/*-- scss:rules --*/
+
+.navbar {
+  border-bottom: 1px solid $brownie;
+  
+  .navbar-logo {
+    max-width: 100px;
+    max-height: 50px;
+    width: auto;
+    height: auto;
+  }
+
+  .dropdown-toggle {
+    font-size: 13px;
+    outline: none !important;       // remove browser focus outline
+    box-shadow: none !important;    // remove Bootstrap's focus shadow
+    border-color: transparent;      // ensure no border color shows on focus
+
+    &:focus,
+    &:active {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: transparent;
+    }
+  }
+
+  .dropdown-menu,
+  .dropdown-item {
+    font-size: 13px;
+  }
+
+  .dropdown-item:hover {
+    background-color: $light-grass; 
+    color: $black;             
+  }
+}
+
+.title {
+  margin-top: 1em !important;
+  margin-bottom: 1.5em;
+  font-size: 32px;
+  font-family: $font-family-h2;
+  font-weight: 700;
+  color: $brownie;
+}
+
+.subtitle {
+  font-size: 28px;
+  font-family: $font-family-h;
+  font-weight: 500;
+  color: $brownie;
+}
+
+body {
+  font-size: 13px;
+  font-family: $font-family;
+}
+
+.left {
+  text-align: left;
+  padding-left: 1em;
+}
+.right {
+  text-align: right;
+  padding-right: 1em;
+}
+
+
+
+/* Heading 1 */
+h1 {
+  font-size: 26px;
+  font-family: $font-family-h;
+  font-variant: normal; 
+  font-weight: 700; 
+}
+
+/* Heading 2 */
+h2 {
+  font-size: 22px;
+  font-family: $font-family-h;
+  font-variant: normal; 
+  font-weight: 700; 
+  color: $brownie;
+  border-bottom: 1px dotted $blue;
+}
+
+/* Heading 3 */
+h3 {
+  font-size: 18px;
+  font-family: $font-family-h;
+  font-variant: normal; 
+  color: $brownie;
+  font-weight: 600; 
+}
+
+/* Heading 4 */
+h4 {
+  font-size: 18px;
+  font-family: $font-family-h2;
+  font-variant: normal; 
+  color: $brownie;
+  font-weight: 500; 
+}
+
+
+.callout.callout-style-default .callout-body {
+  font-size: 0.75rem;
+}
+
+// tabs
+.tab-content {
+  border: 1px solid $black;  // Outline around the tab content area
+  border-radius: 0px;         // Optional rounded corners
+  padding: 1rem;              // Optional spacing inside
+}
+.nav-tabs {
+  border-bottom: 0px solid $black; // Outline under the tab headers
+}
+
+// Active tab
+.nav-tabs .nav-link.active {
+  border-color: $black;
+  background-color: $sky-blue;
+  border-radius: 0px; 
+  color: $black;      // Optional: text color for active tab
+}
+
+// Inactive tabs
+.nav-tabs .nav-link:not(.active) {
+  border-color: $black;   // lighter border for inactive
+  background-color: $light-grass;  // or transparent
+  border-radius: 0px; 
+  color: $black;          // muted text color
+}
+
+.nav-tabs .nav-link:not(.active):hover {
+  background-color: $sky-blue; // light hover effect
+  border-color: $black;
+  color: $black;
+}

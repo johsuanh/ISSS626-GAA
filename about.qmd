@@ -1,0 +1,49 @@
+---
+title: ""
+format:
+  html:
+    css: about-style.css
+listing:
+  contents:
+    - Hands-on/Hands-on-Ex01/Hands-on-Ex01_a.qmd
+    - Hands-on/Hands-on-Ex01/Hands-on-Ex01_b.qmd
+  type: grid
+  sort: "date desc"
+  fields: [image,title, date, description]
+  page-size: 9
+  date-format: "MMM DD, YYYY"
+---
+
+::::: about-container
+# 
+
+::: left-content
+![](images/Portrait.png){fig-align="left" width="210"}
+
+-   **Linkedin:** [johsuan-h](https://www.linkedin.com/in/johsuan-h/)
+-   **Email:** johsuan.h\@gmail.com
+:::
+
+::: right-content
+# About
+
+Hi! I'm **Johsuan (Doreen) Huang,** a finance and accounting professional with expertise in data analysis and visualization. I enjoy diving deep into datasets and extracting valuable insights through Power BI dashboards, R statistical analysis and Python programming.
+
+If you have any questions, please feel free to contact me :)
+
+#### **- Experience -**
+
+-   Regional Key Account Intern \| Shiseido APAC, Singapore \| 2025
+-   Financial Accountant \| 10/10 Group, Taipei \| 2022-2024
+-   Senior Audit Associate \| PwC, Taipei \| 2020-2022
+
+#### **- Education -**
+
+-   Master of IT in Business (Data & Analytics) \| Singapore Management University
+-   Bachelor of Finance \| National Chengchi University
+:::
+:::::
+
+------------------------------------------------------------------------
+
+**Here are my latest posts :**
