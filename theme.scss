@@ -18,7 +18,7 @@ $orange: #CE6E3F;
 $light-pink: #E8C8DB;
 
 $pink: #cc78aa;
-$blue: #7A8DB8;
+$blue: #5A70C0;
 $green: #AFCD6F;
 $light-orange: #e1b588;
 
@@ -29,8 +29,9 @@ $navbar-fg: $brownie; // navbar foreground elements
 $navbar-hl: $grass; // highlight color when hovering over navbar links
 $body-bg: $off-white; // page background 
 $body-color: $darker-gray; // page text 
-$footer-bg: $grass; // footer 
-$link-color: $blue; // hyperlinks 
+$footer-bg: $off-white; // footer 
+$footer-font-color: $brownie; // footer 
+$link-color: $grass; // hyperlinks 
 
 // Code blocks
 $code-block-bg: $white;
@@ -43,7 +44,7 @@ $font-family-h2: 'Lora', serif;
 
 //toc 
 $toc-font-size: 13px;
-$toc-active-border: none;
+$toc-active-border: $grass;
 
 // callouts
 $callout-color-note: $green;
@@ -133,9 +134,10 @@ body {
 
 /* Heading 1 */
 h1 {
-  font-size: 26px;
+  font-size: 24px;
   font-family: $font-family-h;
   font-variant: normal; 
+  color: $brownie;
   font-weight: 700; 
 }
 

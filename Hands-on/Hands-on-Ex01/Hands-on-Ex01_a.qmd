@@ -14,10 +14,11 @@ execute:
 
 ## 1 Learning Objective
 
--   installing and loading [sf](https://r-spatial.github.io/sf/) and [tidyverse](https://www.tidyverse.org/) packages into R environment,
+The learning objectives of this hands-on exercise are as followed:
+
 -   importing geospatial data by using appropriate functions of **sf** package,
 -   importing aspatial data by using appropriate function of **readr** package,
--   exploring the content of simple feature data frame by using appropriate **Base R** and **sf**functions,
+-   exploring the content of simple feature data frame by using appropriate **Base R** and **sf** functions,
 -   assigning or transforming coordinate systems by using using appropriate *sf* functions,
 -   converting an aspatial data into a sf data frame by using appropriate function of **sf**package,
 -   performing geoprocessing tasks by using appropriate functions of **sf** package,
@@ -269,10 +270,46 @@ Table above shows the content of `listing_sf`. Notice that a new column called�
 
 ## 6. Plotting Aspatial data
 
+Firstly, filter for the top five regions with the highest number of listings in Singapore using `lengths()` and `st_intersects()`
+
 ```{r}
+# Add listing counts to mpsz
+mpsz$listings_count <- lengths(st_intersects(mpsz, listings_sf)) #calculate how many airbnb falls in each polygon
+
+# Find top 5 regions
+Top_5_regions <- mpsz %>% top_n(5, listings_count)
+kable(Top_5_regions%>%
+        arrange(desc(listings_count)))
+
+```
+
+Let's plot the airbnb listings in Chinatown, which has the highest number of listings in Singapore:
+
+```{r}
+# filter mpsz
+mpsz_chinatown <- mpsz %>%
+  filter(SUBZONE_N == "CHINATOWN")
+
+# filter listings in chinatown
+listings_chinatown <- st_filter(listings_sf, mpsz_chinatown, .predicate = st_within)
+
+# scale the price
+listings_chinatown <- listings_chinatown %>%
+  mutate(
+    price_numeric = as.numeric(gsub("[^0-9\\.]", "",price)),
+    max_price = max(price_numeric,na.rm=TRUE),
+    scaled_price = replace_na(price_numeric/max_price*3,0)
+  )
+
 par(bg="#f6f6f6")
-plot(st_geometry(mpsz))
-plot(st_geometry(listings_sf), add = TRUE)
+plot(st_geometry(mpsz_chinatown), main = "Airbnb Price in Chinatown")
+plot(st_geometry(listings_chinatown), 
+     add = TRUE,
+     lwd =0.5,
+     col = adjustcolor("black", alpha.f = 1),
+     bg = adjustcolor("orange", alpha.f = 0.5),
+     pch = 21,
+     cex = listings_chinatown$scaled_price) 
 ```
 
 ## 7 Geoprocessing with sf package
@@ -281,11 +318,11 @@ Besides providing functions to handling (i.e. importing, exporting, assigning p
 
 ### 7.1 Use case 1: Land acquisition analysis
 
-#### 7.1.3 The scenario
+#### 7.1.1 The scenario
 
 The authority is planning to **upgrade the exiting cycling path**. To do so, they need to **acquire 5 metres of reserved land** on the both sides of the existing cycling path. You are tasked to determine the extend of the land need to be acquired and their total area.
 
-#### 7.1.3 The solution
+#### 7.1.2 The solution
 
 Firstly, [`st_buffer()`](https://r-spatial.github.io/sf/reference/geos_unary.html) of **sf** package is used to compute the 5-meter buffers around cycling paths:
 
@@ -334,11 +371,11 @@ plot(st_geometry(mpsz_selected), add = TRUE)
 
 ### 7.2 Use case 2: Determine the number of pre-schools by planning subzone
 
-#### 7.2.3 The scenario
+#### 7.2.1 The scenario
 
 The authority requires a count of pre-schools for each planning subzone to support forward planning. Using R and the sf package, perform the necessary geoprocessing to compute these counts and present the results clearly.
 
-#### 7.1.3 The solution
+#### 7.2.2 The solution
 
 The code chunk below performs two operations at one go. Firstly, identify pre-schools located inside each Planning Subzone by using [`st_intersects()`](https://r-spatial.github.io/sf/reference/geos_binary_pred.html). Next, `lengths()` of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.
 
@@ -349,6 +386,38 @@ mpsz <- mpsz %>%
 ```
 
 Note!! st_intersects() and st_intersections() are different. Additionally, lengths() and length() are also different!
+
+::: callout-note
+## st_intersects() vs. st_intersections()
+
+**`st_intersects()`**
+
+-   **Purpose:** Returns which geometries **intersect** with which.
+-   **Output:** A **list of integer vectors**, where each element represents the indices of intersecting geometries.
+-   **Use Case:** Logical testing / filtering
+
+**`st_intersections()`**
+
+-   **Purpose:** Returns the actual **geometries** of the intersections (i.e., the **intersection shapes** themselves).
+-   **Output:** a new `sf` object (like points, lines, or polygons) representing the overlapping areas
+-   **Use Case:** Creating new geometries / overlays
+:::
+
+::: callout-note
+## length() vs. lengths()
+
+**`length()`**
+
+-   Returns the **length of the object itself**.
+-   For a list, it tells how many elements are in the list.
+-   ex. length(list(1, 2:3, 4:6)) \# returns 3
+
+**`lengths(x)`**
+
+-   Returns the **length of each element inside a list**.
+-   Useful when each element is a vector of different length.
+-   ex. lengths(list(1, 2:3, 4:6)) \# returns c(1, 2, 3)
+:::
 
 Below we check the summary statistics of the newly derived "preschool_count", the max of preschool_count is 72 while the min is 0.
 

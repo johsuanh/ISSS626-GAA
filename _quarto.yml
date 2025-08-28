@@ -3,6 +3,9 @@ project:
   
 website:
   title: "ISSS626 GAAxJH"
+  page-footer:
+    center:
+       © 2025 Johsuan Huang ʕ•ᴥ•ʔ | Site built with [Quarto](https://quarto.org) | Hosted on [Netlify](https://www.netlify.com/)
   favicon: images/favicon/favicon-96x96.png
   page-navigation: true
   navbar: 

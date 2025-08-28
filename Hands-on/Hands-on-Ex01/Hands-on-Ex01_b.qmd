@@ -1,7 +1,7 @@
 ---
 title: "Hands-on 1.b: Thematic Mapping and GeoVisualisation with R"
 author: Johsuan Huang
-date: 2025-08-24
+date: 2025-08-26
 date-modified: "last-modified"
 description: ""
 format: html
@@ -11,3 +11,1030 @@ execute:
   warning: false
   freeze: true
 ---
+
+# 1 Learning Objective
+
+In this hands-on exercise, we will learn how to plot functional and truthful choropleth maps by using an R package called **tmap** package
+
+# 2 Importing Libraries
+
+| Library   | Desc                                                            |
+|-------------------------|-----------------------------------------------|
+| sf        | handling geospatial data                                        |
+| tmap      | visualization for geospatial data                               |
+| tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
+| rvest     | scraping (or harvesting) data from web pages                    |
+
+```{r}
+pacman::p_load(sf,tmap,tidyverse,rvest,knitr,cols4all)
+```
+
+# 3 Importing Geospatial Data
+
+```{r}
+mpsz <- st_read("Data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+```
+
+Let's examine the data first. Unlike the mpsz data from Hands-on 1.a, this dataset is in kml format and contained subzone boundaries with embedded HTML descriptions containing planning area codes, names and other info.
+
+```{r}
+# the mpsz 
+head(mpsz,1)
+```
+
+## 3.1 Handling Geospatial Data
+
+To retrieve the SZ, PA, region information, we first need to define a function to extract values from the HTML description:
+
+```{r}
+extract_kml_field <- function(html_text, field_name) {
+  if (is.na(html_text) || html_text == "") return(NA_character_) # check if text is na
+  
+  page <- read_html(html_text)
+  rows <- page %>% html_elements("tr") # find table row element 
+  
+  value <- rows %>%
+    # looks through each row to find table header == field_name and
+    keep(~ html_text2(html_element(.x, "th")) == field_name) %>% 
+    html_element("td") %>% # extract table data
+    html_text2() # and then extract clean text context
+  
+  if (length(value) == 0) NA_character_ else value # return value if is not NA
+}
+```
+
+And then we use the function just created to extract structured information from mpsz descriptions and creates new, clean columns:
+
+```{r}
+mpsz <- mpsz %>%
+  mutate(REGION_N = map_chr(Description,extract_kml_field,"REGION_N"),
+         PLN_AREA_N = map_chr(Description,extract_kml_field,"PLN_AREA_N"),
+         SUBZONE_N = map_chr(Description, extract_kml_field, "SUBZONE_N"),
+         SUBZONE_C = map_chr(Description, extract_kml_field, "SUBZONE_C"))%>%
+  select(-Name, -Description) %>% # unselect columns "Name" and "Description"
+  relocate(geometry, .after = last_col()) # move the "geometry" to the end
+```
+
+Let's examine the data again:
+
+```{r}
+kable(head(mpsz))
+```
+
+# 4 Importing Attribute Data
+
+Next, we import the Singapore population data from [DOS](https://www.singstat.gov.sg/publications/population/population-trends), which has been preprocessed in Excel by combing gender-specific population data and removing aggregated entries labelled with the keyword "Total"
+
+The data provides granular Singapore population details as of 2024, including subzone, planning area, gender, age group, Type of dwelling and corresponding population counts:
+
+```{r}
+popdata <- read_csv("Data/aspatial/respopagesextod2024.csv")
+```
+
+::: panel-tabset
+## Data Overview
+
+```{r}
+kable(head(popdata))
+```
+
+## Statistics Summary
+
+```{r}
+summary(popdata)
+```
+:::
+
+## 4.1 Data Preperation
+
+The current age groups in the data are too sparse for meaningful analysis. Hence, regrouping is needed for further analysis.
+
+Here are the definition of three age groups we are going to regroup:
+
+-   YOUNG: age group 0 to 4 until age groyup 20 to 24,
+
+-   ECONOMY ACTIVE: age group 25-29 until age group 60-64,
+
+-   AGED: age group 65 and above,
+
+```{r}
+popdata2024 <- popdata %>%
+  group_by(PA,SZ,AG) %>%
+  summarise(POP = sum(as.numeric(Pop),na.rm = TRUE),.groups = "drop") %>%
+  ungroup() %>%
+  pivot_wider(names_from = AG,
+              values_from = POP) 
+    
+```
+
+```{r}
+# Define Young/EA/Aged First
+Young <- c("0_to_4","5_to_9", "10_to_14", "15_to_19", "20_to_24")
+EA <- c("25_to_29", "30_to_34","35_to_39", "40_to_44", "45_to_49", "50_to_54", "55_to_59","60_to_64")
+Aged <- c("65_to_69", "70_to_74", "75_to_79", "80_to_84", "85_to_89", "90 & Over")
+
+# Becareful to only count non-na!
+popdata2024 <- popdata2024 %>%
+  mutate(YOUNG = rowSums(across(all_of(Young)),na.rm = TRUE),
+        `ECONOMY ACTIVE` = rowSums(across(all_of(EA)),na.rm = TRUE),
+        AGED=rowSums(across(all_of(Aged)),na.rm = TRUE),
+        TOTAL = rowSums(.[3:21],na.rm = TRUE))
+```
+
+Additionally, since we also want to evaluate the dependent ratio in different SZ / PA, we also need to create dependency ratio metric:
+
+-   DEPENDENCY: the ratio between young and aged against economy active group
+
+```{r}
+popdata2024 <- popdata2024 %>%
+  mutate(DEPENDENCY = (YOUNG + AGED)/`ECONOMY ACTIVE`) %>%
+  select(PA,SZ,YOUNG,`ECONOMY ACTIVE`,AGED, TOTAL, DEPENDENCY)%>%
+  filter(`ECONOMY ACTIVE` > 0)
+```
+
+```{r}
+# check if there are any NAs?
+colSums(is.na(popdata2024))
+```
+
+## 4.2 Join the attribute data and geospatial data
+
+Before we can perform the georelational join, one extra step is required to convert the values in PA and SZ fields to **uppercase**. This is because the current values of PA and SZ fields are made up of upper- and lowercase. On the other, hand the SUBZONE_N and PLN_AREA_N are in uppercase in MPSZ
+
+```{r}
+popdata2024 <- popdata2024 %>%
+  mutate(across(c(PA, SZ), toupper))
+
+mpsz_pop2024 <- left_join(mpsz, popdata2024,
+                          by = c("SUBZONE_N" = "SZ"))
+```
+
+And then, we export rds file for future use:
+
+```{r}
+write_rds(mpsz_pop2024, "Data/mpsz_pop2024.rds")
+```
+
+# 5 Choropleth Mapping Geospatial Data Using tmap
+
+Choropleth mapping involves the symbolisation of enumeration units, such as countries, provinces, states, counties or census units, using area patterns or graduated colors.
+
+Two approaches can be used to prepare thematic map using *tmap*, they are:
+
+-   Plotting a thematic map quickly by using *qtm()*.
+-   Plotting highly customisable thematic map by using tmap elements.
+
+## 5.1 Plotting choropleth map quickly using qtm()
+
+```{r}
+tmap_mode("view") # interactive mode
+qtm(shp = mpsz_pop2024,
+    fill = "DEPENDENCY")+
+    tm_layout(bg.color = "#f6f6f6") 
+```
+
+## 5.2 Customizing choropleth map using tmap's elements
+
+```{r}
+tmap_mode("plot")
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill="DEPENDENCY",
+              col = "gray40",
+              lwd = 0.5,
+              fill.scale = tm_scale_intervals(style="quantile",
+                                              n=5,
+                                              values = "brewer.blues"),
+              fill.legend = tm_legend(title = "Dependency ratio",
+                                      orientation = "landscape",
+                                      frame = FALSE)) +
+  tm_title("Distribution of Dependency Ratio by planning subzone")+
+  tm_layout(frame = TRUE,
+            outer.bg.color = "#f6f6f6",
+            inner.margins = c(0.25, 0.05, 0.05, 0.05))+ #c(bottom, left, top, right)
+  tm_borders(fill_alpha =0.5)+
+  tm_credits("Source: \n 1. Planning Sub-zone boundary from URA\n 2. Population data from DOS",
+             position = tm_pos_in("left", "bottom"),
+             #bg.color = rgb(1, 1, 1, 0.7),
+             size = 0.6)+
+  tm_compass(type = "4star", size = 1.3, text.size=0.6)+
+  tm_scalebar(position = tm_pos_in("right", "bottom")) +
+  tm_grid(alpha=0.1) #grid for longtitude and latitude
+
+```
+
+## 5.3 Introducing tmap() elements one by one
+
+### 5.3.1 Base Map with Shape
+
+The basic building block of **tmap** is `tm_shape()` followed by one or more layer elemments such as `tm_polygons()`, `tm_symbols()`, `tm_lines()`, `tm_raster()` and `tm_text()`
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons()+
+  
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")
+```
+
+::: callout-tip
+By default, it plots areas of polygons in light gray (gray85) and polygons borders in slightly dark gray (gray25).
+:::
+
+### 5.3.2 Choropleth Map Using `tm_polygons()`
+
+To draw a choropleth map showing the geographical distribution of a selected variable by planning subzone, we just need to assign the target variable such as *Dependency* to *tm_polygons()*.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons(fill = "DEPENDENCY")+
+  
+  # Layout setting
+  tm_layout(bg.color = "#f6f6f6",frame = FALSE)+
+  tm_legend(frame = FALSE)
+
+```
+
+::: callout-note
+## Things to learn from tm_polygons():
+
+-   The default interval binning used to draw the choropleth map is called “pretty”.
+-   The default colour scheme used is `blues3` of ColorBrewer.
+-   By default, Missing value will be shaded in grey.
+:::
+
+### 5.3.2 Choropleth Map Using `tm_fill()` and `tm_border()`
+
+Actually, `tm_polygons()` is a wraper of `tm_fill()` and `tm_border()`. `tm_fill()` shades the polygons by using the default colour scheme and `tm_borders()` adds the borders of the polygon features onto the choropleth map.
+
+The code chunk below draws a choropleth map by using `tm_fill()` alone.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_fill("DEPENDENCY")+
+  
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE, orientation = "landscape")
+```
+
+To add the boundary of the planning subzones, `tm_borders()` will be used as shown in the code chunk below:
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_fill("DEPENDENCY")+
+  tm_borders()+
+  
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+  
+```
+
+Now, the border shows up!
+
+The `fill_alpha` argument is used to define transparency number between 0 (totally transparent) and 1 (not transparent). By default, the alpha value of the col is used (normally 1).
+
+Beside `fill_alpha` argument, there are three other arguments for `tm_borders()`, they are:
+
+-   `col` = border colour,
+
+-   `lwd` = border line width. The default is 1, and
+
+-   `lty` = border line type. The default is “solid”. Other types include "dashed", "dotted",
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_fill("DEPENDENCY")+
+  tm_borders(col = "grey30",
+             lty="dotted",
+             lwd = 0.6)+
+  
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## 5.4 Data classification methods of tmap
+
+Most choropleth maps employ some methods of data classification. The point of classification is to take a large number of observations and **group them into data ranges or classes**.
+
+**tmap** provides a total ten [data classification methods](https://r-spatial.github.io/classInt/reference/classIntervals.html), namely: *fixed*, *sd*, *equal*, *pretty* (default), *quantile*, *kmeans*, *hclust*, *bclust*, *fisher*, and *jenks*.
+
+To define a data classification method, the *style* argument of *`tm_fill()`* or *`tm_polygons()`* will be used.
+
+### 5.4.1 DIY: Plotting choropleth maps with built-in methods
+
+::: panel-tabset
+## quantile
+
+**Use when:**
+
+-   You want **each class to contain the same number of areas** (good for choropleth balance).
+-   Your data is **skewed** but you want visual balance.
+-   You’re exploring data and don’t have predefined thresholds.
+
+**Cons:**
+
+-   Class ranges might be uneven and misleading if values cluster.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "quantile",
+                                              n=5),
+              fill_alpha = 1)+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## equal
+
+The "equal" style divides the range of the variable into n parts.
+
+**Use when:**
+
+-   Your data is **roughly uniform**.
+-   You want **easy-to-interpret intervals** (e.g. 0–20, 20–40, etc.).
+
+**Cons:**
+
+-   Can be misleading if most data points are in a small value range.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "equal",
+                                              n=5))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## jenks (natural break)
+
+**Use when:**
+
+-   You want to **minimize within-class variance** and **maximize between-class variance**.
+-   Data has **natural groupings**.
+-   You're visualizing **clustered values**.
+
+**Cons:**
+
+-   Breaks may change across datasets, so hard to compare maps.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "jenks",
+                                              n=5))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## *fisher*
+
+The "fisher" style uses the algorithm proposed by W. D. Fisher (1958) and discussed by Slocum et al. (2005) as the Fisher-Jenks algorithm.
+
+This style will **subsample by default for more than 3000 observations**. This style should always be preferred to "jenks" as it uses the original Fortran code and runs nested for-loops much faster.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=5))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## Kmeans
+
+Breaks based on k-means clustering.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "kmeans",
+                                              n=5))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## hclust
+
+The "hclust" style uses `hclust` to generate the breaks using hierarchical clustering
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "hclust",n=5))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+:::
+
+Notice that the distribution of **quantile** data classification method are **more evenly distributed** then equal data classification method.
+
+### 5.4.2 DIY: Plotting Maps Using fisher method with different \# of classes
+
+::: panel-tabset
+## n = 3
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=3))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## n = 5
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=5))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## n = 8
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=8))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## n = 10
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=10))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## n = 15
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=15))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## n = 20
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons("DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n=20))+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+:::
+
+In my opinion, using `n = 8` provides a well-balanced distinction between low and high subzones, making the differences more visually apparent.
+
+### 5.4.3 Plotting choropleth map with custome break
+
+For all the built-in styles, the category breaks are computed internally. In order to override these defaults, the breakpoints can be set explicitly by means of the `breaks` argument to the `tm_scale_intervals()`. 
+
+It is important to note that, in **tmap** the breaks include a minimum and maximum. As a result, in order to end up with n categories, **n+1** elements must be specified in the `breaks` option (the values must be in increasing order).
+
+Before we get started, it is always a good practice to get some descriptive statistics on the variable before setting the break points.
+
+```{r}
+summary(mpsz_pop2024$DEPENDENCY)
+```
+
+With reference to the results above, we set break point at 0.60, 0.70, 0.80, and 0.90. In addition, we also need to include a minimum and maximum, which we set at 0 and 10. Our `breaks` vector is thus c(0, 0.60, 0.70, 0.80, 0.90, 100)
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                breaks = c(0, 0.60, 0.70, 0.80, 0.90, 10))
+              )+
+  
+    # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+  
+              
+```
+
+## 5.5 Color Scheme
+
+**tmap** supports colour ramps either defined by the user or a set of predefined colour ramps from the [cols4all](https://github.com/cols4all/cols4all-R/tree/main) package.
+
+cols4all provide a shiny dashboard for users to choose the palette
+
+``` r
+library(cols4all)
+c4a_gui()
+```
+
+### 5.5.1 Cols4all Palette
+
+::: panel-tabset
+## brewer.greens
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "brewer.greens")) +
+  tm_borders(fill_alpha = 0.5)+
+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+To reverse the colour shading, add a “-” prefix.
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "-brewer.greens")) +
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## carto.purp
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "carto.purp")) +
+  tm_borders(fill_alpha = 0.5)+
+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## carto.magenta
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "carto.magenta")) +
+  tm_borders(fill_alpha = 0.5)+
+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+## carto.teal
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "carto.teal")) +
+  tm_borders(fill_alpha = 0.5)+
+
+  # Layout setting
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+:::
+
+## 5.6 Cartographic Furniture
+
+Beside map style, **tmap** also also provides arguments to draw other map furniture such as compass, scale bar and grid lines.
+
+In the code chunk below, `tm_compass()`, `tm_scale_bar()`, `tm_grid()` and `tm_credit()`are used to add compass, scale bar, grid lines and data sources onto the choropleth map.
+
+```{r}
+tm_shape(mpsz_pop2024)+
+  tm_polygons(fill="DEPENDENCY",
+              fill.scale = tm_scale_intervals(style = "fisher",
+                                              n = 8,
+                                              values = "carto.purp"),
+              fill.legend = tm_legend(title = "Dependency Ratio"))+
+  tm_compass(type = '4star',size=2, text.size = 0.6)+
+  tm_scalebar()+
+  tm_grid(lwd=0.1, alpha = 0.8)+
+  tm_credits("Source: data.gov.sg & singstat",
+             position = c("left", "bottom"))+
+  tm_layout(outer.bg.color ="#f6f6f6",
+            inner.margins = c(0.15, 0.05, 0.05, 0.05))+ #c(bottom, left, top, right)
+  tm_legend(frame = FALSE,
+            orientation = "landscape")
+```
+
+## 5.7 Map Layout
+
+**tmap** allows a wide variety of layout settings to be changed. They can be called by using *tmap_style()*.
+
+The styles include: "white" (tmap default), "gray", "cobalt", "albatross", "beaver", "bw", "classic", "watercolor","natural"
+
+::: panel-tabset
+## classic
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "-brewer.greens")) + 
+  tm_borders(fill_alpha = 0.5) + 
+  tm_compass(type = '8star',size=2, text.size = 0.6)+
+  tmap_style("classic")+
+  tm_layout(outer.bg.color ="#f6f6f6")+
+  tm_legend(frame = FALSE,
+            orientation = "landscape")
+```
+
+## natural
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "-brewer.greens")) + 
+  tm_borders(fill_alpha = 0.5) + 
+  tm_compass(type = '8star',size=2, text.size = 0.6)+
+  tmap_style("natural")+
+  tm_legend(frame = FALSE,
+            orientation = "landscape",
+            bg.color = NA)
+```
+
+## beaver
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5)) + 
+  tm_borders(fill_alpha = 0.5) + 
+  tm_compass(type = '8star',size=2, text.size = 0.6)+
+  tmap_style("beaver")+
+  tm_legend(frame = FALSE,
+            orientation = "landscape",
+            bg.color = NA)
+```
+
+## gray
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5)) + 
+  tm_borders(fill_alpha = 0.5) + 
+  tm_compass(type = '8star',size=2, text.size = 0.6)+
+  tmap_style("gray")+
+  tm_legend(frame = FALSE,
+            orientation = "landscape",
+            bg.color = NA)
+```
+
+## colbalt
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5)) + 
+  tm_borders(fill_alpha = 0.5) + 
+  tm_compass(type = '8star',size=2, text.size = 0.6)+
+  tmap_style("cobalt")+
+  tm_legend(frame = FALSE,
+            orientation = "landscape",
+            bg.color = NA)
+```
+:::
+
+To reset the default style, refer to the code chunk below:
+
+```{r}
+tmap_style("white")
+```
+
+# 6 Drawing Facet Choropleth Maps
+
+**Facet maps** are composed of many maps arrange side-by-side, and sometimes stacked vertically. Facet maps enable the visualisation of how spatial relationships change with respect to another variable, such as time.
+
+In **tmap**, facet maps can be plotted in three ways:
+
+-   by assigning multiple values to at least one of the asthetic arguments,
+-   by creating multiple stand-alone maps with *`tmap_arrange()`* , and
+-   by defining a group-by variable in *`tm_facets()`*.
+
+## 6.1 By Assigning multiple arguments
+
+```{r}
+tm_shape(mpsz_pop2024) + 
+  tm_polygons(
+    fill = c("YOUNG", "AGED"),
+    fill.legend = 
+      tm_legend(position = tm_pos_in(
+        "right", "bottom")),
+    fill.scale = tm_scale_intervals(
+      style = "equal", 
+      n = 5,
+      values = "brewer.blues")) +
+  tm_layout(outer.bg.color ="#f6f6f6",
+            bg.color = "white",
+            inner.margins = c(0.25, 0.05, 0.05, 0.05) #c(bottom, left, top, right)
+            )+
+  tm_legend(frame = FALSE,
+            orientation = "landscape")+
+  tm_title("Demographic Overview: Young vs. Aged Residents in Singapore",
+           size = 1, 
+           just = "center")
+```
+
+## 6.2 By tmap_arrange() for a grid layout
+
+```{r}
+youngmap <- tm_shape(mpsz_pop2024)+ 
+  tm_polygons(fill = "YOUNG",
+              fill.legend = tm_legend(
+                position = tm_pos_in(
+                  "right", "bottom"),
+                  item.height = 0.8),
+              fill.scale = tm_scale_intervals(
+                style = "quantile", 
+                values = "brewer.blues")) +
+  tm_title("Distribution of young population",size=1, just="center")+
+  tm_layout(outer.bg.color ="#f6f6f6",
+            bg.color = "white",
+            inner.margins = c(0.25, 0.05, 0.05, 0.05) #c(bottom, left, top, right)
+            )
+                
+agedmap <- tm_shape(mpsz_pop2024)+ 
+  tm_polygons(fill = "AGED",
+              fill.legend = tm_legend(
+                position = tm_pos_in(
+                  "right", "bottom"),
+                item.height = 0.8),
+              fill.scale = tm_scale_intervals(
+              style = "quantile", 
+              values = "brewer.blues")) +
+  tm_title("Distribution of aged population",size=1, just="center")+
+  tm_layout(outer.bg.color ="#f6f6f6",
+            bg.color = "white",
+            inner.margins = c(0.25, 0.05, 0.05, 0.05) #c(bottom, left, top, right)
+            )
+
+tmap_arrange(youngmap, agedmap, 
+             asp=1, #aspect ratio
+             ncol=2,
+             outer.margins = 0.05)
+  
+```
+
+## 6.3 By ***tm_facets()***
+
+In this example, multiple small choropleth maps are created by using **tm_facets()**:
+
+```{r}
+tm_shape(mpsz_pop2024) +
+  tm_polygons(fill = "DEPENDENCY",
+            fill.scale = tm_scale_intervals(
+            style = "quantile",
+            n = 5,
+            values = "brewer.blues")) + 
+  tm_facets(by = "REGION_N",
+            nrow = 2, ncol = 3,
+            free.coords = TRUE,
+            drop.units = TRUE) + 
+  tm_layout(legend.show = TRUE,
+            title.position = c("center", "center"), 
+            title.size = 20,
+            outer.bg.color = "#f6f6f6")
+```
+
+# 7 Filter Specific Geographical Area
+
+Instead of creating small multiple choropleth map, we can also use `filter()` of **dplyr** package to select geographical area of interest and plot a choropleth map focus only on the selected region.
+
+```{r}
+mpsz_pop2024 %>%
+  filter(REGION_N == "CENTRAL REGION") %>%
+  tm_shape() +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile", 
+                values = "brewer.greens"),
+              fill.legend = tm_legend()) +
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")+
+  tm_legend(frame = FALSE)
+```
+
+# 8 Thematic Map with Statistical Chart
+
+Maps and statistical charts complement each other by visually representing different aspects of the same data, offering a more comprehensive understanding. **Maps excel at showing spatial relationships and geographical patterns**, while **charts effectively display numerical data, trends, and comparisons**. Combining both allows for a more insightful and engaging data narrative, especially when dealing with spatial data that also has quantifiablcharacteristics.
+
+With tmap, statistical chart and be incorporate into the map visualisation by using `fill.chat`argument of map layers and [**legend chart**](https://r-tmap.github.io/tmap/reference/tm_chart.html) feature as shown in the code chunk below.
+
+::: panel-tabset
+## box plot
+
+```{r}
+mpsz_pop2024 %>%
+  filter(REGION_N == "NORTH-EAST REGION") %>%
+  tm_shape() +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile", 
+                values = "brewer.greens"),
+                fill.chart = tm_chart_box()) + #box plot
+  tm_borders() +
+  tm_layout(asp = 0.8,
+            outer.bg.color = "#f6f6f6")
+```
+
+## violin plot
+
+```{r}
+mpsz_pop2024 %>%
+  filter(REGION_N == "EAST REGION") %>%
+  tm_shape() +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile", 
+                values = "brewer.greens"),
+                fill.chart = tm_chart_violin()) +
+  tm_borders() +
+  tm_layout(asp = 0.8,
+            outer.bg.color = "#f6f6f6")
+```
+
+## histogram
+
+```{r}
+mpsz_pop2024 %>%
+  filter(REGION_N == "CENTRAL REGION") %>%
+  tm_shape() +
+  tm_polygons(fill = "DEPENDENCY",
+              fill.scale = tm_scale_intervals(
+                style = "quantile", 
+                values = "brewer.greens"),
+                fill.chart = tm_chart_histogram()) + 
+  tm_borders() +
+  tm_layout(asp = 0.8,
+            outer.bg.color = "#f6f6f6")
+```
+:::
+
+## 8.1 Highlight Outliers
+
+In the code chunk below, We improve the visual representation further by highlighting and lebaling the outliers on the choropleth map.
+
+```{r}
+tmap_mode("plot")
+mpsz_selected <- mpsz_pop2024 %>%
+  filter(REGION_N == "CENTRAL REGION")
+
+stats <- boxplot.stats(mpsz_selected$DEPENDENCY)
+
+outlier_vals <- stats$out
+
+outlier_sf <- mpsz_selected[mpsz_selected$DEPENDENCY %in% outlier_vals, ]
+
+tm_shape(mpsz_selected) +
+  tm_polygons(fill = "DEPENDENCY",
+          fill.scale = tm_scale_intervals(
+            style = "quantile", 
+            values = "carto.teal"),
+          fill.legend = tm_legend(),
+          fill.chart = tm_chart_box()) +
+  tm_borders(fill_alpha = 0.5) +
+tm_shape(outlier_sf) +
+  tm_borders(col = "red", lwd =2.5, lty = "solid") +
+  tm_labels("SUBZONE_N",
+            col = "white",
+            bgcol = rgb(0,0,0,0.6),
+            size = 0.4,remove_overlap=TRUE) +
+  tm_layout(asp = 0.8,
+            outer.bg.color = "#f6f6f6")
+```
+
+# 9 Interactive Map
+
+Interactive maps let users actively explore and interact with the data they display. Unlike static maps, you can zoom in and out, pan across areas, click on locations for more information, and even work with data overlays or visualizations—making the experience more dynamic and informative.
+
+One of the great things about tmap is that it lets you switch easily between static and interactive maps using `tmap_mode()`, so you can choose the view that best suits your analysis.
+
+```{r}
+tmap_mode("view")
+mpsz_selected <- mpsz_pop2024 %>%
+  filter(REGION_N == "CENTRAL REGION")
+
+stats <- boxplot.stats(mpsz_selected$DEPENDENCY)
+
+outlier_vals <- stats$out
+
+outlier_sf <- mpsz_selected[mpsz_selected$DEPENDENCY %in% outlier_vals, ]
+
+tm_shape(mpsz_selected) +
+  tm_polygons(fill = "DEPENDENCY",
+          fill.scale = tm_scale_intervals(
+            style = "quantile", 
+            values = "carto.teal")) +
+  tm_borders(fill_alpha = 0.5) +
+tm_shape(outlier_sf) +
+  tm_borders(col = "red", lwd =2.5, lty = "solid")
+
+```
+
+The interactive map above is far from satisfactory. While we want to encourage users to engage and explore the interactive by zooming in and out of the study area freely. But, users might lost in the cyberspace with too much freedom to zoom-in and zoom-out.
+
+```{r}
+tmap_mode("view")
+mpsz_selected <- mpsz_pop2024 %>%
+  filter(REGION_N == "CENTRAL REGION")
+
+stats <- boxplot.stats(mpsz_selected$DEPENDENCY)
+
+outlier_vals <- stats$out
+
+outlier_sf <- mpsz_selected[mpsz_selected$DEPENDENCY %in% outlier_vals, ]
+
+tm_shape(mpsz_selected) +
+  tm_polygons(fill = "DEPENDENCY",
+          fill.scale = tm_scale_intervals(
+            style = "quantile", 
+            values = "carto.teal")) +
+  tm_borders(fill_alpha = 0.5) +
+  tm_shape(outlier_sf) +
+  tm_borders(col = "red", lwd =2.5, lty = "solid")+
+  tm_view(set_zoom_limits = c(12,14)) # <<< set the limits
+  
+```
+
+# 10 Reference
+
+-   Kam, T.S. (2025). [Thematic Mapping and GeoVisualisation with R](https://r4gdsa.netlify.app/chap02#complementing-thematic-map-with-statistical-chart)
+-   Martijn Tennekes. <https://r-tmap.github.io/tmap/index.html>

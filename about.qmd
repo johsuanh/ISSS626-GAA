@@ -27,9 +27,9 @@ listing:
 ::: right-content
 # About
 
-Hi! I'm **Johsuan (Doreen) Huang,** a finance and accounting professional with expertise in data analysis and visualization. I enjoy diving deep into datasets and extracting valuable insights through Power BI dashboards, R statistical analysis and Python programming.
+Hi, I'm **Johsuan (Doreen) Huang**, a finance and accounting professional with a passion for turning data into actionable insights.
 
-If you have any questions, please feel free to contact me :)
+This website was created as part of the **SMU MITB course ISSS626: Geospatial Analytics & Application**. Thanks for visiting. I hope you enjoy exploring this learning journey with me!
 
 #### **- Experience -**
 
