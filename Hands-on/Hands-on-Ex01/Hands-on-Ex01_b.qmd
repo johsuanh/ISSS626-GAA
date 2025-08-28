@@ -211,7 +211,6 @@ tm_shape(mpsz_pop2024) +
   tm_layout(frame = TRUE,
             outer.bg.color = "#f6f6f6",
             inner.margins = c(0.25, 0.05, 0.05, 0.05))+ #c(bottom, left, top, right)
-  tm_borders(fill_alpha =0.5)+
   tm_credits("Source: \n 1. Planning Sub-zone boundary from URA\n 2. Population data from DOS",
              position = tm_pos_in("left", "bottom"),
              #bg.color = rgb(1, 1, 1, 0.7),
