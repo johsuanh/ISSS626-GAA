@@ -83,9 +83,7 @@ kable(head(mpsz))
 
 # 4 Importing Attribute Data
 
-Next, we import the Singapore population data from [DOS](https://www.singstat.gov.sg/publications/population/population-trends), which has been preprocessed in Excel by combing gender-specific population data and removing aggregated entries labelled with the keyword "Total"
-
-The data provides granular Singapore population details as of 2024, including subzone, planning area, gender, age group, Type of dwelling and corresponding population counts:
+Next, we import the Singapore population data from [DOS](https://www.singstat.gov.sg/find-data/search-by-theme/population/geographic-distribution/latest-data). The data provides granular Singapore population details as of 2024, including subzone, planning area, gender, age group, Type of dwelling and corresponding population counts:
 
 ```{r}
 popdata <- read_csv("Data/aspatial/respopagesextod2024.csv")
@@ -131,7 +129,7 @@ popdata2024 <- popdata %>%
 # Define Young/EA/Aged First
 Young <- c("0_to_4","5_to_9", "10_to_14", "15_to_19", "20_to_24")
 EA <- c("25_to_29", "30_to_34","35_to_39", "40_to_44", "45_to_49", "50_to_54", "55_to_59","60_to_64")
-Aged <- c("65_to_69", "70_to_74", "75_to_79", "80_to_84", "85_to_89", "90 & Over")
+Aged <- c("65_to_69", "70_to_74", "75_to_79", "80_to_84", "85_to_89", "90_and_over")
 
 # Becareful to only count non-na!
 popdata2024 <- popdata2024 %>%
