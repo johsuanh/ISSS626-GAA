@@ -362,10 +362,11 @@ Lastly, `plot()` of R Graphic will be used to create the plot as shown below:
 
 ```{r}
 par(bg="#f6f6f6")
+plot(st_geometry(mpsz_selected),main = "Cycling Buffer in Tampines West")
 plot(st_geometry(buffer_cycling_selected), 
      col=NA, border ="#8EB859", lwd = 0.5,
-     main = "Cycling Buffer in Tampines West")
-plot(st_geometry(mpsz_selected), add = TRUE)
+     add = TRUE)
+
 
 ```
 
