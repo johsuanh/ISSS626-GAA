@@ -60,7 +60,7 @@ When the input data is in shapefile format, two arguments will be used:
 
 ```{r}
 mpsz = st_read(dsn = "Data/geospatial/MasterPlan2014SubzoneBoundaryWebSHP",
-               layer = "MP14_SUBZONE_WEB_PL")
+               layer = "MP14_SUBZONE_WEB_PL") # all files are binary 
 ```
 
 The message above reveals that the geospatial objects are multipolygon features. There are a total of 323 multipolygon features and 15 fields in `mpsz` simple feature data frame. `mpsz` is in **svy21** projected coordinates systems. The bounding box provides the x extend and y extend of the data
@@ -211,6 +211,24 @@ Let us perform the projection transformation wgs84 to svy21 by using the code ch
 preschool <- st_transform(preschool, crs = 3414)
 ```
 
+::: callout-note
+## st_set_crs() vs st_transfrom()
+
+`st_set_crs()`
+
+**Purpose: Assign a CRS to spatial data without transforming it**
+
+-   It sets or changes the CRS label of an `sf` or `sfc` object without modifying the coordinates.
+-   Use this when your spatial data already has a known CRS, but it's missing or incorrectly labeled.
+
+`st_transform()`
+
+**Purpose: Reproject spatial data to a new CRS**
+
+-   It **actually transforms the coordinates** from the current CRS to a new one.
+-   Use this when you want to change the coordinate system for analysis, visualization, or alignment with other data.
+:::
+
 Next, let us display the content of preschool sf data frame as shown below.
 
 ```{r}
@@ -249,7 +267,7 @@ The code chunk below converts `listing` data frame into a simple feature data 
 
 ```{r}
 listings_sf <- st_as_sf(listings,
-                        coords = c("longitude","latitude"),
+                        coords = c("longitude","latitude"), #coords = c(x,y)
                         crs=4326 ) %>% #wgs84
 st_transform(crs=3414) #svy21
 ```

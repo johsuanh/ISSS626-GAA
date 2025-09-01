@@ -1,0 +1,381 @@
+---
+title: "Hands-on 2.a: 1st Order Spatial Point Patterns Analysis Methods"
+author: Johsuan Huang
+date: 2025-09-01
+date-modified: "last-modified"
+description: ""
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+## 1 Overview
+
+**Spatial Point Pattern Analysis (SPPA)** is the evaluation of the pattern or distribution of a set of points on a surface. The points may represent:
+
+-   events such as crimes, traffic accidents, or disease onsets, or
+-   business services (e.g., coffee shops and fast-food outlets) or facilities such as childcare centres and eldercare centres.
+
+**First-order Spatial Point Pattern Analysis (1st-SPPA)** focuses on understanding the intensity or density of points across a study area. It examines how the distribution of points varies over space, essentially identifying trends or patterns in point density. This type of analysis deals with the individual locations of points and their distribution, without considering interactions between them.
+
+In essence, 1st-SPPA helps answer questions such as:
+
+-   Where are points most densely located within the study area?
+-   Is point density uniform, or does it vary across space?
+-   How spread out is the point pattern?
+
+In this chapter, we will gain hands-on experience with [**spatstat**](https://cran.r-project.org/web/packages/spatstat/) to perform two commonly used 1st-SPPA methods:
+
+The specific questions we would like to answer are as follows:
+
+-   Are the childcare centres in Singapore randomly distributed throughout the country?
+-   If the answer is not, then the next logical question is where are the locations with higher concentration of childcare centres?
+
+## 2 The Data
+
+To provide answers to the questions above, two data sets will be used. They are:
+
+-   [*Child Care Services*](https://data.gov.sg/datasets?query=Child+Care+Services&resultId=d_2bbcc5e944a9f2d7d40c78097ab652fc&page=1) data from data.gov.sg, a point feature data providing both location and attribute information of childcare centres.
+
+-   [*Master Plan 2019 Subzone Boundary (No Sea)*](https://data.gov.sg/datasets?query=Master+Plan+2019+Subzone+Boundary+(No+Sea)&page=1&resultId=d_0900fdcfdb4666fe2a630f37a532fc06), a polygon feature data providing information of URA 2019 Master Plan Planning Subzone boundary data.
+
+## 3 Importing Libraries
+
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Library                                                             | Desc                                                                                                                                                                                                                                                    |
++=====================================================================+=========================================================================================================================================================================================================================================================+
+| [**sf**](https://r-spatial.github.io/sf/)                           | handling geospatial data                                                                                                                                                                                                                                |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data                                                                                                                                                                                                                       |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| tidyverse                                                           | handling data including packages **readr**, **tidyr and dplyr**                                                                                                                                                                                         |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**rvest**](https://rvest.tidyverse.org/)                           | scraping (or harvesting) data from html and web pages                                                                                                                                                                                                   |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**spatstat**](https://spatstat.org/)                               | for point pattern analysis                                                                                                                                                                                                                              |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**terra**](https://rspatial.github.io/terra/index.html)            | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+```{r}
+pacman::p_load(sf, terra, spatstat,tmap, rvest, tidyverse)
+```
+
+## 4 Importing and Wrangling Geospatial Data
+
+### 4.1 MPSZ 2019 KML Data
+
+```{r}
+mpsz_sf <- st_read("Data/Geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+
+```
+
+To extract the information, we will reuse the function from Hands-on Ex01.b to extract data from html:
+
+```{r}
+extract_kml_field <- function(html_text, field_name) {
+  if (is.na(html_text) || html_text == "") return(NA_character_) # check if text is na
+  
+  page <- read_html(html_text)
+  rows <- page %>% html_elements("tr") # find table row element 
+  
+  value <- rows %>%
+    # looks through each row to find table header == field_name and
+    keep(~ html_text2(html_element(.x, "th")) == field_name) %>% 
+    html_element("td") %>% # extract table data
+    html_text2() # and then extract clean text context
+  
+  if (length(value) == 0) NA_character_ else value # return value if is not NA
+}
+```
+
+```{r}
+mpsz_sf <- mpsz_sf %>%
+  mutate(
+    REGION_N = map_chr(Description, extract_kml_field, "REGION_N"),
+    PLN_AREA_N = map_chr(Description, extract_kml_field, "PLN_AREA_N"),
+    SUBZONE_N = map_chr(Description, extract_kml_field, "SUBZONE_N"),
+    SUBZONE_C = map_chr(Description, extract_kml_field, "SUBZONE_C")
+  ) %>%
+  select(-Name, -Description) %>%
+  relocate(geometry, .after = last_col())
+```
+
+Next we filter out the SZ and PA as follows:
+
+```{r}
+mpsz_cl <- mpsz_sf %>%
+  filter (SUBZONE_N != "SOUTHERN GROUP",
+         PLN_AREA_N != "WESTERN ISLANDS",
+         PLN_AREA_N != "NORTH-EASTERN ISLANDS")
+```
+
+However, as shown in the Dimension column below, some observations contain only XY dimensions, while others include XYZ (where Z represents elevation). Although the Z values are all zero, we need to remove the Z dimension to ensure consistency before combining this dataset with others:
+
+```{r}
+st_geometry(mpsz_cl)
+```
+
+After removing the elevation and measure dimensions using `st_zm()` and transforming the coordinate reference system with `st_transform()`, the geometry is now in XY format, and the data is projected in the SVY21 CRS:
+
+```{r}
+mpsz_cl <- mpsz_cl %>%
+    #Removes Z (elevation) and M (measure) dimensions from the geometry if they exist
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_transform(crs = 3414)
+st_geometry(mpsz_cl)
+```
+
+Then, we export the file as an rds file for convenient reloading in the future:
+
+```{r}
+write_rds(mpsz_cl,"Data/geospatial/mpsz_cl.rds")
+```
+
+### 4.2 Childcare Service KML Data
+
+The code chunk below will be used to import the childcare Service data:
+
+```{r}
+childcare_sf <- st_read("Data/geospatial/ChildCareServices.kml") 
+```
+
+Next, we transform the data as we did for the mpsz 2019 dataset: removing any existing Z (elevation) & M (measure), and converting the CRS:
+
+```{r}
+childcare_sf <- childcare_sf %>%
+  st_zm(drop = TRUE, what='ZM') %>% 
+  st_transform(crs = 3414)
+
+st_geometry(childcare_sf)
+```
+
+### 4.3 Mapping the geospatial datasets
+
+After checking the referencing system of each geospatial data data frame, it is also useful for us to plot a map to show their spatial patterns.
+
+::: panel-tabset
+## plot mode
+
+```{r}
+tmap_mode("plot")
+
+tm_shape(mpsz_cl) +
+  tm_polygons(fill_alpha = 0.5,
+              lwd = 0.5)+
+tm_shape(childcare_sf) +
+  tm_dots(size = 0.2, shape = 16)+ 
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6")
+```
+
+## view mode
+
+```{r}
+tmap_mode("view")
+tm_shape(mpsz_cl) +
+  tm_polygons(fill_alpha = 0.5,
+              lwd = 0.5)+
+tm_shape(childcare_sf) +
+  tm_dots(size = 0.2, shape = 16)+
+  tm_view(set_zoom_limits = c(11,14))
+```
+:::
+
+```{r}
+tmap_mode("plot")
+```
+
+::: callout-important
+Always remember to switch back to plot mode after the interactive map. This is because, each interactive mode will consume a connection. You should also avoid displaying ecessive numbers of interactive maps (i.e. **not more than 10**) in one RMarkdown document when publish on Netlify.
+:::
+
+## 5 Geospatial Data wrangling
+
+spatstat relies on its own specific data structures like **ppp** (planar point pattern) for point data and **owin** for observation windows. In this section, you will learn how to convert sf (Simple Features) objects into spatstat ppp and owin object.
+
+### 5.1 Converting sf data frames to ppp class
+
+**spatstat** requires the point event data in ***ppp*** object form. The code chunk below uses `as.ppp()` of **spatstat** package to convert *childcare_sf* to ppp format:
+
+```{r}
+childcare_ppp <- as.ppp(childcare_sf)
+# examine the the object class 
+class(childcare_ppp)
+```
+
+Next, examine the summary statistics of the dataset:
+
+There are total 1925 childcare centers in this data.
+
+```{r}
+summary(childcare_ppp)
+```
+
+### 5.2 Creating owin object
+
+When analysing spatial point patterns, it is a good practice to confine the analysis with a geographical area like Singapore boundary. In **spatstat**, an object called ***owin*** is specially designed to represent this **polygonal region**.
+
+The code chunk below, `as.owin()` of spatstat is used to covert *mpsz_sf* into owin object of **spatstat**:
+
+```{r}
+sg_owin <- as.owin(mpsz_cl)
+class(sg_owin)
+```
+
+*sg_owin* object can be displayed by using `plot()` function:
+
+```{r}
+par(bg = "#f6f6f6")
+plot(sg_owin)
+```
+
+### 5.3 Combining point events object and owin object
+
+In this last step of geospatial data wrangling, we will extract childcare events that are located within Singapore by using the code chunk below.
+
+```{r}
+# Filters the points to only those within sg_owin
+childcareSG_ppp <- childcare_ppp[sg_owin]
+class(childcareSG_ppp)
+```
+
+The output object combined both the point and polygon feature in one ppp object class as shown below:
+
+```{r}
+childcareSG_ppp
+```
+
+All points are inside the mpsz_cl region we create, so no points are removed:
+
+```{r}
+npoints(childcare_ppp)       # Total points before
+npoints(childcareSG_ppp)     # Points inside sg_owin
+```
+
+## 6 Clark-Evan Test for Nearest Neighbour Analysis
+
+**Nearest Neighbor Analysis (NNA)** is a broad term for methods that examine the spatial distribution of points. It calculates the **average distance between each point** and its closest neighbor to determine if a pattern of points is clustered, dispersed, or randomly distributed.
+
+**Clark-Evans test** is a specific statistical method used within NNA to **quantify** whether a point pattern is clustered, random, or uniformly spaced, using the Clark-Evans **aggregation index (R)** to describe this pattern.
+
+NNA provides a numerical value that describes the degree of clustering or regularity, and the Clark-Evans test calculates a specific index (R) for this purpose
+
+In this section, we will perform the Clark-Evans test of aggregation for a spatial point pattern by using [*clarkevans.test()*](https://rdrr.io/cran/spatstat.explore/man/clarkevans.test.html) of **spatstat.explore** package.
+
+### 6.1 Clark-Evan Test
+
+**The test hypotheses are:**
+
+-   Ho = The distribution of childcare services are randomly distributed (R=1)
+-   H1= It depend on the argument `alternative` user chose. The alternative hypothesis can be **two-sided (R!=1)** or **one sided (R\>1 sparsed or R\<1 clustered)**
+
+**The 95% confident interval will be used.**
+
+| R value | Interpretation                                            |
+|---------|-----------------------------------------------------------|
+| R = 1   | **Null Hypothesis** - Random spatial distribution (CSR)   |
+| R \< 1  | **Clustered** - points are closer together than expected  |
+| R \> 1  | **Regular** - points are more evenly spaced than expected |
+
+There are three important arguments:
+
++---------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Arguments     | Interpretation                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++===============+========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================+
+| `alternative` | It means the "the alternative hypothesis" for clark-evan test:                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|               | -   `alternative="less"` or `alternative="clustered"`: the alternative hypothesis is that `R < 1` corresponding to a clustered point pattern                                                                                                                                                                                                                                                                                                                                           |
+|               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|               | -   `alternative="greater"` or `alternative="regular"`: the alternative hypothesis is that `R > 1` corresponding to a regular or ordered point pattern;                                                                                                                                                                                                                                                                                                                                |
+|               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|               | -   `alternative="two.sided"`: the alternative hypothesis is that `R \neq 1` corresponding to a clustered or regular pattern.                                                                                                                                                                                                                                                                                                                                                          |
++---------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `method`      | The Clark-Evans index `R` is first computed for the point pattern dataset `X` using the edge correction determined by the arguments `correction` and `clipregion`                                                                                                                                                                                                                                                                                                                      |
+|               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| &             | -   If `method="asymptotic"` (the default), the `p`-value for the test is computed by standardising `R` as proposed by Clark and Evans (1954) and referring the standardised statistic to the standard Normal distribution. For this asymptotic test, the default edge correction is `correction="Donnelly"` if the window of `X`is a rectangle, and `correction="cdf"` otherwise.                                                                                                     |
+|               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `correction`  |     *It is strongly recommended to avoid using `correction="none"` which would lead to a severely biased test.*                                                                                                                                                                                                                                                                                                                                                                        |
+|               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|               | -   If `method="MonteCarlo"`, the `p`-value for the test is computed by comparing the observed value of `R` to the results obtained from `nsim` simulated realisations of Complete Spatial Randomness conditional on the observed number of points. This test is theoretically exact for any choice of edge correction, but may have lower power than the asymptotic test. For this Monte Carlo test, the default edge correction is `correction="none"` for computational efficiency. |
++---------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+### 6.2 Perform the Clark-Evans Test with Asymptotic Method
+
+Asymptotic method is a default method for Clark-Evans Test and uses a Z-test based on the normal distribution, which is valid when the number of points is sufficiently large.
+
+**The Hypothesis**
+
+-   Ho = The distribution of childcare services are randomly distributed (R=1)
+-   H1= The distribution of childcare services are clustered (R\<1)
+
+**The Alpha Value**
+
+The 95% confident interval will be used.
+
+```{r}
+clarkevans.test(childcareSG_ppp,
+                alternative = "clustered",
+                correction="none",
+                clipregion = "sg_owin")
+```
+
+```{r}
+clarkevans.test(childcareSG_ppp,
+                alternative = "clustered",
+                correction="cdf",
+                clipregion = "sg_owin")
+```
+
+::: callout-tip
+## Statistical Analysis
+
+A Clark–Evans test was conducted to evaluate whether the spatial distribution of childcare centers in Singapore differs from complete spatial randomness (CSR). The observed R value was 0.526, and the p-value was \< 2.2e-16, based on a 95% confidence level.\
+Since the p-value is well below 0.05, we reject the null hypothesis of CSR and conclude that the childcare centers are **significantly clustered** in space.
+:::
+
+::: callout-tip
+## Business Communication
+
+At a 95% confidence level, the spatial analysis shows that childcare centers in Singapore are **highly clustered in certain areas.** The result suggests potential **gaps in service coverage**, where some regions may be overserved while others lack adequate childcare access, which shows an important insight for urban planning and policy decisions.
+:::
+
+### 6.3 Perform the Clark-Evans Test with MonteCarlo Method
+
+In the code chunk below, the argument method = “MonteCarlo” is used. In this case, the p-value for the test is computed by comparing the observed value of R to the results obtained from nsim (i.e. 39, 99, 999) simulated realisations of Complete Spatial Randomness conditional on the observed number of points.
+
+```{r}
+clarkevans.test(childcareSG_ppp,
+                correction = "none",
+                clipregion = "sg_owin",
+                alternative = "clustered",
+                method = "MonteCarlo",
+                nsim=99)
+```
+
+::: callout-tip
+## Statistical Analysis
+
+This result is consistent with Section 6.2. The observed **R value is 0.535**, and the **p-value is 0.01**, which is well below the 0.05 threshold. Therefore, we **reject the null hypothesis** of Complete Spatial Randomness (CSR) and conclude that the childcare centers are **significantly clustered** in space.
+:::
+
+::: callout-tip
+## Business Communication
+
+At a 95% confidence level, the spatial analysis shows that childcare centers in Singapore are **highly clustered in certain areas.** The result suggests potential **gaps in service coverage**, where some regions may be overserved while others lack adequate childcare access, which shows an important insight for urban planning and policy decisions.
+:::
+
+## 7 Kernel Density Estimation Method
+
+**Kernel Density Estimation (KDE)** is a valuable tool for visualising and analyzing first-order spatial point patterns. It is widely considered a method within **Exploratory Spatial Data Analysis (ESDA)** because it’s used to visualize and understand spatial data patterns by **transforms discrete point data** (like locations of childcare service, crime incidents or disease cases) **into *continuous* density surfaces** that reveal clusters and variations in event occurrences, without making prior assumptions about data distribution.
+
+It helps to begin understanding data distribution, identify hotspots, and explore relationships between spatial variables before performing more rigorous analysis.
+
+### 7.1 Working with automatic bandwidth selection method
+
+## 8 Reference
+
+-   Kam, T.S. (2025). [Geospatial Data Science with R](https://r4gdsa.netlify.app/chap01#the-scenario-1)

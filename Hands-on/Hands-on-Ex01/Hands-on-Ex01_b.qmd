@@ -19,7 +19,7 @@ In this hands-on exercise, we will learn how to plot functional and truthful cho
 # 2 Importing Libraries
 
 | Library   | Desc                                                            |
-|-------------------------|-----------------------------------------------|
+|---------------|---------------------------------------------------------|
 | sf        | handling geospatial data                                        |
 | tmap      | visualization for geospatial data                               |
 | tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
@@ -131,7 +131,7 @@ Young <- c("0_to_4","5_to_9", "10_to_14", "15_to_19", "20_to_24")
 EA <- c("25_to_29", "30_to_34","35_to_39", "40_to_44", "45_to_49", "50_to_54", "55_to_59","60_to_64")
 Aged <- c("65_to_69", "70_to_74", "75_to_79", "80_to_84", "85_to_89", "90_and_over")
 
-# Becareful to only count non-na!
+# Be careful to only count non-na!
 popdata2024 <- popdata2024 %>%
   mutate(YOUNG = rowSums(across(all_of(Young)),na.rm = TRUE),
         `ECONOMY ACTIVE` = rowSums(across(all_of(EA)),na.rm = TRUE),
@@ -967,7 +967,6 @@ tm_shape(mpsz_selected) +
             values = "carto.teal"),
           fill.legend = tm_legend(),
           fill.chart = tm_chart_box()) +
-  tm_borders(fill_alpha = 0.5) +
 tm_shape(outlier_sf) +
   tm_borders(col = "red", lwd =2.5, lty = "solid") +
   tm_labels("SUBZONE_N",
@@ -1024,11 +1023,15 @@ tm_shape(mpsz_selected) +
           fill.scale = tm_scale_intervals(
             style = "quantile", 
             values = "carto.teal")) +
-  tm_borders(fill_alpha = 0.5) +
   tm_shape(outlier_sf) +
   tm_borders(col = "red", lwd =2.5, lty = "solid")+
   tm_view(set_zoom_limits = c(12,14)) # <<< set the limits
   
+```
+
+```{r}
+tmap_mode("plot")
+
 ```
 
 # 10 Reference

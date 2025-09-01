@@ -19,7 +19,11 @@ website:
           - text: "Hands-on 1.a: Geospatial Data Science with R"
             href: Hands-on/Hands-on-Ex01/Hands-on-Ex01_a.html
           - text: "Hands-on 1.b: Thematic Mapping and GeoVisualisation with R"
-            href: Hands-on/Hands-on-Ex01/Hands-on-Ex01_b.html           
+            href: Hands-on/Hands-on-Ex01/Hands-on-Ex01_b.html
+          - text: "Hands-on 2.a: 1st Order Spatial Point Patterns Analysis Methods"
+            href: Hands-on/Hands-on-Ex02/Hands-on-Ex02_a.html
+          - text: "Hands-on 2.b: 2nd Order Spatial Point Patterns Analysis Methods"
+            href: Hands-on/Hands-on-Ex02/Hands-on-Ex02_b.html  
       - text: "In-class Exercises"
         menu:
           - text: "In-class 1"

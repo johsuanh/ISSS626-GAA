@@ -7,6 +7,8 @@ listing:
   contents:
     - Hands-on/Hands-on-Ex01/Hands-on-Ex01_a.qmd
     - Hands-on/Hands-on-Ex01/Hands-on-Ex01_b.qmd
+    - Hands-on/Hands-on-Ex02/Hands-on-Ex02_a.qmd
+    - Hands-on/Hands-on-Ex02/Hands-on-Ex02_b.qmd
   type: grid
   sort: "date desc"
   fields: [image,title, date, description]
