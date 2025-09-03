@@ -298,7 +298,7 @@ There are three important arguments:
 |               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | &             | -   If `method="asymptotic"` (the default), the `p`-value for the test is computed by standardising `R` as proposed by Clark and Evans (1954) and referring the standardised statistic to the standard Normal distribution. For this asymptotic test, the default edge correction is `correction="Donnelly"` if the window of `X`is a rectangle, and `correction="cdf"` otherwise.                                                                                                     |
 |               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `correction`  |     *It is strongly recommended to avoid using `correction="none"` which would lead to a severely biased test.*                                                                                                                                                                                                                                                                                                                                                                        |
+| `correction`  |     *It is recommended to avoid using `correction="none"` which would lead to a severely biased test.*                                                                                                                                                                                                                                                                                                                                                                                 |
 |               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 |               | -   If `method="MonteCarlo"`, the `p`-value for the test is computed by comparing the observed value of `R` to the results obtained from `nsim` simulated realisations of Complete Spatial Randomness conditional on the observed number of points. This test is theoretically exact for any choice of edge correction, but may have lower power than the asymptotic test. For this Monte Carlo test, the default edge correction is `correction="none"` for computational efficiency. |
 +---------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -333,8 +333,9 @@ clarkevans.test(childcareSG_ppp,
 ::: callout-tip
 ## Statistical Analysis
 
-A Clark–Evans test was conducted to evaluate whether the spatial distribution of childcare centers in Singapore differs from complete spatial randomness (CSR). The observed R value was 0.526, and the p-value was \< 2.2e-16, based on a 95% confidence level.\
-Since the p-value is well below 0.05, we reject the null hypothesis of CSR and conclude that the childcare centers are **significantly clustered** in space.
+Based on the Clark and Evans Test result, the R value is 0.53, with statistically siginificanet p-value (p\< 0.05). This provides sufficient evidence to reject the null hypothesis of Complete Spatial Randomness (CSR).
+
+Therefore, we conclude that the childcare centres in Sinagpore exhibit a clustered spatial pattern.
 :::
 
 ::: callout-tip
@@ -376,6 +377,418 @@ It helps to begin understanding data distribution, identify hotspots, and explor
 
 ### 7.1 Working with automatic bandwidth selection method
 
-## 8 Reference
+The code chunk below computes a kernel density by using the following configurations of [*density()*](https://rdrr.io/cran/spatstat/man/density.ppp.html) of **spatstat**:
 
--   Kam, T.S. (2025). [Geospatial Data Science with R](https://r4gdsa.netlify.app/chap01#the-scenario-1)
+-   In KDE, **bandwidth (`sigma`)** controls how much smoothing is applied when estimating the density of points. small bw means less smoothing and more detail. [*bw.diggle()*](https://rdrr.io/cran/spatstat/man/bw.diggle.html) automatic bandwidth selection method. Other recommended methods are [*bw.CvL()*](https://rdrr.io/cran/spatstat/man/bw.CvL.html), [*bw.scott()*](https://rdrr.io/cran/spatstat/man/bw.scott.html) or [*bw.ppl()*](https://rdrr.io/cran/spatstat/man/bw.ppl.html).
+
+-   The **kernel** is the shape of the **smoothing function** placed over each point in the dataset. The smoothing kernel used is *gaussian*, which is the default. Other smoothing methods are: “epanechnikov”, “quartic” or “disc”.
+
+-   As for edge, when a point is **close to the boundary** of Singapore's coastline or national border, part of its kernel (influence) **falls outside the study window**, but the `density()` function **doesn’t “see” those outside areas**. W/O the correction (edge = FALSE), densities near the edges are underestimated. With correction (`edge = TRUE`), the function compensates for the **missing part of the kernel**, giving a more accurate result near borders. The default setting for edge is FALSE.
+
+    ```{r}
+    kde_sg_diggle <- density(childcareSG_ppp,
+                             sigma = bw.diggle, # bw stands for bandwith
+                             edge = TRUE,
+                             kernel = "gaussian")
+    ```
+
+    ::: callout-note
+    The output of `density()` of spatstat is an **im** class, represents a two-dimensional pixel image. It’s a class used to store and manipulate raster data, where the spatial domain is divided into a grid of rectangular pixels. Each pixel has an associated value, which can be numerical or a factor.
+    :::
+
+```{r}
+par(bg = "#f6f6f6")
+plot(kde_sg_diggle)
+```
+
+Next, we check the summary statistics:
+
+```{r}
+summary(kde_sg_diggle)
+```
+
+The density values of the output range from near to 0 to 0.0000306398 which is way too small to comprehend. This is because the default unit of measurement of svy21 is in meter. As a result, the density values computed is in “number of points per square meter”.
+
+Before we move on to next section, it is good to know that you can retrieve the bandwidth used to compute the kde layer by using the code chunk below:
+
+```{r}
+bw <- bw.diggle(childcareSG_ppp)
+bw
+```
+
+### 7.2 Rescalling KDE values
+
+Since the meter is too small for the function, we need to use km to rescale the map
+
+```{r}
+childcareSG_ppp_km <- rescale.ppp(
+  childcareSG_ppp, 1000, "km"
+)
+```
+
+Next, we can rerun `density()` using re-scaled data and plot the kde map
+
+```{r}
+kde_childcareSG_km <- density(childcareSG_ppp_km,
+                         sigma = bw.diggle,
+                         edge = TRUE,
+                         kernel = "gaussian")
+```
+
+```{r}
+par(bg = "#f6f6f6")
+plot(kde_childcareSG_km)
+```
+
+Notice that output image looks identical to the earlier version, the only changes in the data values (refer to the legend).
+
+### 7.3 Working with different automatic badwidth methods
+
+Beside *bw.diggle()*, there are three other **spatstat** functions can be used to determine the bandwidth, they are: *bw.CvL()*, *bw.scott()*, and *bw.ppl()*.
+
+Let us take a look at the bandwidth return by these automatic bandwidth calculation methods by using the code chunk below.
+
+```{r}
+bw.CvL(childcareSG_ppp_km)
+```
+
+```{r}
+bw.scott(childcareSG_ppp_km)
+```
+
+```{r}
+bw.ppl(childcareSG_ppp_km)
+```
+
+```{r}
+bw.diggle(childcareSG_ppp_km)
+```
+
+Baddeley et. (2016) suggested the use of the *bw.ppl()* algorithm because past experience shown that it tends to produce the more appropriate values when the pattern consists predominantly of tight clusters. But they also insist that if the purpose of once study is to detect a single tight cluster in the midst of random noise then the *bw.diggle()* method seems to work best.
+
+The code chunk beow will be used to compare the output of using *bw.diggle* and *bw.ppl*methods.
+
+```{r}
+kde_childcareSG_ppl <- density(childcareSG_ppp_km,
+                               sigma = bw.ppl,
+                               edge = TRUE,
+                               kernel = "gaussian")
+par(bg="#f6f6f6",mfrow = c(1,2) )
+plot(kde_childcareSG_km, main = "bw.diggle")
+plot(kde_childcareSG_ppl, main = "bw.ppl")
+```
+
+### 7.4 Working with different kernel methods
+
+By default, the kernel method used in *density.ppp()* is *gaussian*. But there are three other options, namely: Epanechnikov, Quartic and Dics.
+
+The code chunk below will be used to compute three more kernel density estimations:
+
+```{r}
+par(bg = "#f6f6f6", mfrow = c(2,2))
+plot(density(childcareSG_ppp_km, 
+             sigma=0.2959712, 
+             edge=TRUE, 
+             kernel="gaussian"), 
+     main="Gaussian")
+plot(density(childcareSG_ppp_km, 
+             sigma=0.2959712, 
+             edge=TRUE, 
+             kernel="epanechnikov"), 
+     main="Epanechnikov")
+plot(density(childcareSG_ppp_km, 
+             sigma=0.2959712, 
+             edge=TRUE, 
+             kernel="quartic"), 
+     main="Quartic")
+plot(density(childcareSG_ppp_km, 
+             sigma=0.2959712, 
+             edge=TRUE, 
+             kernel="disc"), 
+     main="Disc")
+```
+
+## 8 Fixed and Adaptive KDE
+
+### 8.1 Computing KDE by using fixed bandwidth
+
+Next, we will compute a KDE layer by defining a bandwidth of 600 meter (0.6 km):
+
+```{r}
+kde_childcareSG_fb <- density(childcareSG_ppp_km,
+                              sigma = 0.6,
+                              edge = TRUE,
+                              kernel = "gaussian")
+par(bg = "#f6f6f6")
+plot(kde_childcareSG_fb)
+```
+
+### 8.2 Computing KDE by using adaptive bandwidth
+
+**Fixed** bandwidth method is very **sensitive to highly skew distribution** of spatial point patterns over geographical units for example urban versus rural. One way to overcome this problem is by using adaptive bandwidth instead.
+
+In this section, we will learn how to derive adaptive kernel density estimation by using `density.adaptive()` of **spatstat**.
+
+```{r}
+kde_childcareSG_ab <- adaptive.density(
+  childcareSG_ppp_km, 
+  method="kernel")
+par(bg = "#f6f6f6")
+plot(kde_childcareSG_ab)
+```
+
+We can compare the fixed and adaptive kernel density estimation outputs by using the code chunk below:
+
+```{r}
+par(bg="#f6f6f6",mfrow=c(1,2))
+plot(kde_childcareSG_ab,main ="Adaptive bandwidth")
+plot(kde_childcareSG_fb,main ="Fixed bandwidth")
+```
+
+::: callout-note
+## Difference Between Automatic, Adaptive and Fixed BW
+
+-   **Fixed Bandwidth:**
+
+    A constant **bandwidth (`sigma`)** manually set by the user.\
+    It applies the **same amount of smoothing across the entire study area**, regardless of local point density. Useful when you have prior knowledge about the appropriate scale.
+
+    -   Example: `sigma = 200` meters, applied uniformly.
+
+-   **Automatic Bandwidth**:
+
+    A **single fixed bandwidth** value that is **automatically estimated** using statistical methods (e.g., `bw.diggle`, `bw.scott`).\
+    It avoids manual trial-and-error and provides a data-driven way to select an appropriate smoothing level.
+
+    -   Still applies uniform smoothing, but the value is chosen based on the data and method
+
+-   **Adaptive Bandwidth:**
+
+    A **variable bandwidth** that changes based on the **local density of points**:
+
+    -   Smaller bandwidths in **dense** areas (for more detail)
+
+    -   Larger bandwidths in **sparse** areas (for better smoothing)
+
+    This allows the KDE to better adapt to spatial heterogeneity and is especially effective for **hotspot detection**.
+:::
+
+## 9 Plotting cartographic quality KDE map
+
+### 9.1 Converting gridded output into raster
+
+Next, we will convert the im kernal density objects into **SpatRaster** object by using `rast()` of **terra** package.
+
+```{r}
+kde_childcareSG_bw_terra <- rast(kde_childcareSG_km)
+class(kde_childcareSG_bw_terra)
+```
+
+Let us take a look at the properties of *kde_childcareSG_bw_terra*:
+
+```{r}
+kde_childcareSG_bw_terra
+```
+
+Notice that the crs property is empty.
+
+### 9.2 Assigning projection systems
+
+`crs()` of terra is used to assign the CRS information on *kde_childcareSG_bw_terra* layer
+
+```{r}
+crs(kde_childcareSG_bw_terra) <- "EPSG:3414"
+```
+
+Let's take a look at the properties of *kde_childcareSG_bw_raster* RasterLayer:
+
+```{r}
+kde_childcareSG_bw_terra
+```
+
+Notice that the coordicates reference (i.e. coord. ref.) is in **SVY21** now.
+
+### 9.3 Plotting KDE map with tmap
+
+Finally, we will display the raster in cartographic quality map using **tmap** package:
+
+```{r}
+tm_shape(kde_childcareSG_bw_terra)+
+  tm_raster(col.scale = tm_scale_continuous(values = "carto.army_rose"),
+            col.legend = tm_legend(title = "Density values",  #rename legend title
+                                   title.size = 0.7,
+                                   text.size = 0.7,
+                                   bg.color = "white",
+                                   bg.alpha = 0.7,
+                                   position = tm_pos_in("right", "bottom"),
+                                   frame = TRUE))+
+  tm_graticules(labels.size = 0.5, alpha = 0.5) + # add lat/lon gridlines 
+  tm_compass() +
+  tm_layout(scale = 1.0,
+            bg.outer.color = "#f6f6f6",
+            bg.color = "#f6f6f6",
+            outer.margins = c(0.1, 0.1, 0.1, 0.1)
+            )
+```
+
+Notice that the raster values are encoded explicitly onto the raster pixel using the values in “layer.1” field.
+
+## 10 First Order SPPA at the Planning Subzone Level
+
+In this section, we would like to further our analysis at the planning area level. For simplicity reason, we will focus on Punggol, Tampines, Chua Chu Kang and Jurong West planning areas
+
+### 10.1 Geospatial Data Wrangling
+
+#### 10.1.1 Extracting study area
+
+The code chunk below will be used to extract the target planning areas:
+
+```{r}
+pg <- mpsz_cl %>%
+  filter(PLN_AREA_N == "PUNGGOL")
+tm <- mpsz_cl %>%
+  filter(PLN_AREA_N == "TAMPINES")
+ck <- mpsz_cl %>%
+  filter(PLN_AREA_N == "CHOA CHU KANG")
+jw <- mpsz_cl %>%
+  filter(PLN_AREA_N == "JURONG WEST")
+```
+
+Let's check the extracted areas:
+
+```{r}
+par(bg="#f6f6f6",mfrow=c(2,2))
+plot(st_geometry(pg), main = "Ponggol")
+plot(st_geometry(tm), main = "Tampines")
+plot(st_geometry(ck), main = "Choa Chu Kang")
+plot(st_geometry(jw), main = "Jurong West")
+```
+
+#### 10.1.2 Creating Owin Object
+
+Now, we will convert these sf objects into owin objects that is required by **spatstat**:
+
+```{r}
+pg_owin = as.owin(pg)
+tm_owin = as.owin(tm)
+ck_owin = as.owin(ck)
+jw_owin = as.owin(jw)
+```
+
+#### 10.1.2 Combining Point Events Object and Owin Object
+
+```{r}
+childcare_pg_ppp = childcare_ppp[pg_owin]
+childcare_tm_ppp = childcare_ppp[tm_owin]
+childcare_ck_ppp = childcare_ppp[ck_owin]
+childcare_jw_ppp = childcare_ppp[jw_owin]
+```
+
+#### 10.1.3 Rescale the PPP object
+
+```{r}
+childcare_pg_ppp_km = rescale.ppp(childcare_pg_ppp,1000,"km")
+childcare_tm_ppp_km = rescale.ppp(childcare_tm_ppp,1000,"km")
+childcare_ck_ppp_km = rescale.ppp(childcare_ck_ppp,1000,"km")
+childcare_jw_ppp_km = rescale.ppp(childcare_jw_ppp,1000,"km")
+```
+
+The code chunk below is used to plot these four study areas and the locations of the childcare centres:
+
+Here, `unmark()` **removes all marks(attributes)** from the point pattern and returns a pure location (x,y) spatial coordinates.
+
+```{r}
+par(bg="#f6f6f6",mfrow=c(2,2))
+plot(unmark(childcare_pg_ppp_km), 
+  main="Punggol")
+plot(unmark(childcare_tm_ppp_km), 
+  main="Tampines")
+plot(unmark(childcare_ck_ppp_km), 
+  main="Choa Chu Kang")
+plot(unmark(childcare_jw_ppp_km), 
+  main="Jurong West")
+```
+
+### 10.2 Clark and Evans Test
+
+In the code chunk below, [*clarkevans.test()*](https://rdrr.io/cran/spatstat/man/clarkevans.test.html) of **spatstat** is used to performs Clark-Evans test of aggregation for childcare centre in the planning areas.
+
+The Assumptions and Confidence Level of the tests:
+
+-   Ho = The distribution of childcare services are randomly distributed (R=1)
+-   H1= The distribution of childcare services are clustered (R\<1)
+-   The 95% confident interval will be used
+
+::: panel-tabset
+## Punggol
+
+```{r}
+clarkevans.test(childcare_pg_ppp,
+                correction = "none",
+                alternative = "clustered")
+```
+
+## Tampines
+
+```{r}
+clarkevans.test(childcare_tm_ppp,
+                correction = "none",
+                alternative = "clustered")
+```
+
+## Choa Chu Kang
+
+```{r}
+clarkevans.test(childcare_ck_ppp,
+                correction = "none",
+                alternative = "clustered")
+```
+
+## Jurong West
+
+```{r}
+clarkevans.test(childcare_jw_ppp,
+                correction = "none",
+                alternative = "clustered")
+```
+:::
+
+::: callout-tip
+## Statistical Analysis
+
+Based on the Clark and Evans Test result, the R values for all four towns are less than 1, with statistically siginificanet p-value (p\< 0.05). This provides sufficient evidence to reject the null hypothesis of CSR. Therefore, we conclude that the childcare centres in Tampines, Punggol, Choa Chu Kang, and Jurong West exhibit a clustered spatial pattern.
+
+However, among them, **Tampines and Jurong West exhibit stronger clustering**, as indicated by their **lower R values** (0.668 and 0.690, respectively), compared to Punggol (0.817) and Chao Chu Kang (0.841).
+:::
+
+### 10.3 Computing KDE surfaces by planning area
+
+The code chunk below will be used to compute the KDE of these four planning area. ***bw.diggle*** method is used to derive the bandwidth of each:
+
+```{r}
+par(bg="#f6f6f6",mfrow=c(2,2))
+plot(density(childcare_pg_ppp_km, 
+             sigma=bw.diggle, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Punggol")
+plot(density(childcare_tm_ppp_km, 
+             sigma=bw.diggle, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Tempines")
+plot(density(childcare_ck_ppp_km, 
+             sigma=bw.diggle, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Choa Chu Kang")
+plot(density(childcare_jw_ppp_km, 
+             sigma=bw.diggle, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Jurong West")
+```
+
+## 11 Reference
+
+-   Kam, T.S. (2025). [First-order Spatial Point Patterns Analysis Methods](https://r4gdsa.netlify.app/chap04#plotting-cartographic-quality-kde-map)
