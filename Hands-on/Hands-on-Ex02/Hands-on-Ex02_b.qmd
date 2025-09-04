@@ -107,7 +107,7 @@ plot(unmark(childcare_jw_ppp_km),
   main="Jurong West")
 ```
 
-# 5 **Second-order Spatial Point Patterns Analysis**
+# 5 Second-order Spatial Point Patterns Analysis
 
 ## 5.1 Analysing Spatial Point Process Using G-Function
 
