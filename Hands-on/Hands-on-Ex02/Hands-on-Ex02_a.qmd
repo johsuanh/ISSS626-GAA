@@ -44,21 +44,14 @@ To provide answers to the questions above, two data sets will be used. They are:
 
 ## 3 Importing Libraries
 
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Library                                                             | Desc                                                                                                                                                                                                                                                    |
-+=====================================================================+=========================================================================================================================================================================================================================================================+
-| [**sf**](https://r-spatial.github.io/sf/)                           | handling geospatial data                                                                                                                                                                                                                                |
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data                                                                                                                                                                                                                       |
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| tidyverse                                                           | handling data including packages **readr**, **tidyr and dplyr**                                                                                                                                                                                         |
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| [**rvest**](https://rvest.tidyverse.org/)                           | scraping (or harvesting) data from html and web pages                                                                                                                                                                                                   |
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| [**spatstat**](https://spatstat.org/)                               | for point pattern analysis                                                                                                                                                                                                                              |
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| [**terra**](https://rspatial.github.io/terra/index.html)            | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
-+---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Library | Desc |
+|----|----|
+| [**sf**](https://r-spatial.github.io/sf/) | handling geospatial data |
+| [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
+| tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
+| [**rvest**](https://rvest.tidyverse.org/) | scraping (or harvesting) data from html and web pages |
+| [**spatstat**](https://spatstat.org/) | for point pattern analysis |
+| [**terra**](https://rspatial.github.io/terra/index.html) | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
 
 ```{r}
 pacman::p_load(sf, terra, spatstat,tmap, rvest, tidyverse)
