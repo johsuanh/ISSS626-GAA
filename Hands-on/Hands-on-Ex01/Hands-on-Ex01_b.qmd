@@ -19,7 +19,7 @@ In this hands-on exercise, we will learn how to plot functional and truthful cho
 # 2 Importing Libraries
 
 | Library   | Desc                                                            |
-|---------------|---------------------------------------------------------|
+|-----------------|-------------------------------------------------------|
 | sf        | handling geospatial data                                        |
 | tmap      | visualization for geospatial data                               |
 | tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
@@ -789,6 +789,7 @@ In **tmap**, facet maps can be plotted in three ways:
 ## 6.1 By Assigning multiple arguments
 
 ```{r}
+#| fig-width: 12
 tm_shape(mpsz_pop2024) + 
   tm_polygons(
     fill = c("YOUNG", "AGED"),

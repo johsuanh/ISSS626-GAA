@@ -14,7 +14,7 @@ execute:
 
 # 1 Overview
 
-Second-order spatial point pattern analysis examines the spatial relationships between points in a pattern, specifically focusing on how the presence of one point influences the location of others. It goes beyond simply describing the overall density of points (first-order effects) by investigating clustering, dispersion, or randomness at various spatial scales.
+Second-order spatial point pattern analysis examines the spatial relationships between points in a pattern, specifically focusing on how the presence of one point influences the location of others (eg. 7-11 and Family Marts always open near to each other for the traffics). It goes beyond simply describing the overall density of points (first-order effects) by investigating clustering, dispersion, or randomness at various spatial scales.
 
 Using appropriate functions of [spatstat](https://cran.r-project.org/web/packages/spatstat/), this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.
 
@@ -34,7 +34,7 @@ The data we used is the same as Hands-on Ex2-1:
 # 3 Import Libraries
 
 | Library | Desc |
-|------------------|------------------------------------------------------|
+|----|----|
 | [**sf**](https://r-spatial.github.io/sf/) | handling geospatial data |
 | [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
 | tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
@@ -108,6 +108,28 @@ plot(unmark(childcare_jw_ppp_km),
 ```
 
 # 5 Second-order Spatial Point Patterns Analysis
+
+In this exercise, we will use four functions to analyze the spatial point patterns:
+
++---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
+| Function                  | Focus Type | What It Measures                                                | Analogy / Example                                                                 | Remark                                                                                     |
++===========================+============+=================================================================+===================================================================================+============================================================================================+
+| `Gest()`                  | **Local**  | Distance from a point to its **nearest neighbor**               | For each childcare centre, how far is the nearest other centre?                   | -   If most centres are **very close** to another → **clustering**                         |
+|                           |            |                                                                 |                                                                                   | -   If most centres are **far apart** → **dispersion**                                     |
+| Nearest Neighbor Distance |            |                                                                 |                                                                                   |                                                                                            |
++---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
+| `Fest()`                  | **Local**  | Distance from **random spot** to nearest point                  | From random locations in the city, how far is it to the nearest childcare centre? | -   If the city is well-covered, **most locations are close** to a centre → **clustering** |
+|                           |            |                                                                 |                                                                                   |                                                                                            |
+| Empty Space Function      |            |                                                                 |                                                                                   | -   If large areas are far from a centre → **dispersion**                                  |
++---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
+| `Kest()`                  | **Global** | Counts how many other points are within distance `r` of a point | For every centre, how many others fall within a circle of radius `r`?             | Compares that number to what you'd expect under **random** placement                       |
+|                           |            |                                                                 |                                                                                   |                                                                                            |
+| Ripley's K Function       |            |                                                                 |                                                                                   |                                                                                            |
++---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
+| `Lest()`                  | **Global** | Same as K, but easier to interpret                              | Like K, but transformed so a straight line means "no pattern"                     | -   If line **stays above** diagonal → clustering                                          |
+|                           |            |                                                                 |                                                                                   |                                                                                            |
+| L Function                |            |                                                                 |                                                                                   | -   If line **stays below** → regular spacing                                              |
++---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
 
 ## 5.1 Analysing Spatial Point Process Using G-Function
 

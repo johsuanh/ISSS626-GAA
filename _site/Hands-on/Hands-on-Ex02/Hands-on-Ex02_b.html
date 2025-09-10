@@ -145,6 +145,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex02/Hands-on-Ex02_b.html">
  <span class="dropdown-text">Hands-on 2.b: 2nd Order Spatial Point Patterns Analysis Methods</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex03/Hands-on-Ex03.html">
+ <span class="dropdown-text">Hands-on 3: Spatio-Temporal Point Patterns Analysis</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -245,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 5, 2025</p>
+      <p class="date-modified">September 9, 2025</p>
     </div>
   </div>
     
@@ -258,7 +262,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="overview" class="level1">
 <h1>1 Overview</h1>
-<p>Second-order spatial point pattern analysis examines the spatial relationships between points in a pattern, specifically focusing on how the presence of one point influences the location of others. It goes beyond simply describing the overall density of points (first-order effects) by investigating clustering, dispersion, or randomness at various spatial scales.</p>
+<p>Second-order spatial point pattern analysis examines the spatial relationships between points in a pattern, specifically focusing on how the presence of one point influences the location of others (eg. 7-11 and Family Marts always open near to each other for the traffics). It goes beyond simply describing the overall density of points (first-order effects) by investigating clustering, dispersion, or randomness at various spatial scales.</p>
 <p>Using appropriate functions of&nbsp;<a href="https://cran.r-project.org/web/packages/spatstat/">spatstat</a>, this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.</p>
 <p>The specific questions we would like to answer are as follows:</p>
 <ul>
@@ -395,6 +399,68 @@ First 5 geometries:</code></pre>
 </section>
 <section id="second-order-spatial-point-patterns-analysis" class="level1">
 <h1>5 Second-order Spatial Point Patterns Analysis</h1>
+<p>In this exercise, we will use four functions to analyze the spatial point patterns:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 4%">
+<col style="width: 22%">
+<col style="width: 29%">
+<col style="width: 32%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Focus Type</th>
+<th>What It Measures</th>
+<th>Analogy / Example</th>
+<th>Remark</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p><code>Gest()</code></p>
+<p>Nearest Neighbor Distance</p></td>
+<td><strong>Local</strong></td>
+<td>Distance from a point to its&nbsp;<strong>nearest neighbor</strong></td>
+<td>For each childcare centre, how far is the nearest other centre?</td>
+<td><ul>
+<li>If most centres are&nbsp;<strong>very close</strong>&nbsp;to another →&nbsp;<strong>clustering</strong></li>
+<li>If most centres are&nbsp;<strong>far apart</strong>&nbsp;→&nbsp;<strong>dispersion</strong></li>
+</ul></td>
+</tr>
+<tr class="even">
+<td><p><code>Fest()</code></p>
+<p>Empty Space Function</p></td>
+<td><strong>Local</strong></td>
+<td>Distance from&nbsp;<strong>random spot</strong>&nbsp;to nearest point</td>
+<td>From random locations in the city, how far is it to the nearest childcare centre?</td>
+<td><ul>
+<li><p>If the city is well-covered,&nbsp;<strong>most locations are close</strong>&nbsp;to a centre →&nbsp;<strong>clustering</strong></p></li>
+<li><p>If large areas are far from a centre →&nbsp;<strong>dispersion</strong></p></li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td><p><code>Kest()</code></p>
+<p>Ripley’s K Function</p></td>
+<td><strong>Global</strong></td>
+<td>Counts how many other points are within distance&nbsp;<code>r</code>&nbsp;of a point</td>
+<td>For every centre, how many others fall within a circle of radius&nbsp;<code>r</code>?</td>
+<td>Compares that number to what you’d expect under&nbsp;<strong>random</strong>&nbsp;placement</td>
+</tr>
+<tr class="even">
+<td><p><code>Lest()</code></p>
+<p>L Function</p></td>
+<td><strong>Global</strong></td>
+<td>Same as K, but easier to interpret</td>
+<td>Like K, but transformed so a straight line means “no pattern”</td>
+<td><ul>
+<li><p>If line&nbsp;<strong>stays above</strong>&nbsp;diagonal → clustering</p></li>
+<li><p>If line&nbsp;<strong>stays below</strong>&nbsp;→ regular spacing</p></li>
+</ul></td>
+</tr>
+</tbody>
+</table>
 <section id="analysing-spatial-point-process-using-g-function" class="level2">
 <h2 class="anchored" data-anchor-id="analysing-spatial-point-process-using-g-function">5.1 Analysing Spatial Point Process Using G-Function</h2>
 <p>The G function measures the distribution of the distances from an arbitrary event to its nearest event. In this section, you will learn how to compute G-function estimation by using&nbsp;<a href="https://rdrr.io/cran/spatstat/man/Gest.html"><em>Gest()</em></a>&nbsp;of&nbsp;<strong>spatstat</strong>&nbsp;package. You will also learn how to perform monta carlo simulation test using&nbsp;<a href="https://rdrr.io/cran/spatstat/man/envelope.html"><em>envelope()</em></a>&nbsp;of&nbsp;<strong>spatstat</strong>&nbsp;package</p>

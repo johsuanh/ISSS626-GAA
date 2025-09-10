@@ -1,6 +1,12 @@
 .Rproj.user
 .Rhistory
 .RData
+.httr-oauth
 .Ruserdata
+.DS_store
 
+
+Data/
+data/
+images/
 /.quarto/

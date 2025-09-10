@@ -85,7 +85,21 @@ The message below reveals that there are a total of 4651 features and 19 fields 
 
 ```{r}
 cyclingpath = st_read(dsn = "Data/geospatial/CyclingPath_Apr2025",
+               layer = "CyclingPathGazette") %>%
+               st_set_crs(3414)
+```
+
+```{r}
+cyclingpath = st_read(dsn = "Data/geospatial/CyclingPath_Apr2025",
                layer = "CyclingPathGazette")
+
+# st_crs(cyclingpath)  currently in code 9001 (need transform)
+```
+
+```         
+cyclingpath = st_read(dsn = "Data/geospatial/CyclingPath_Apr2025",
+               layer = "CyclingPathGazette") %>%
+               st_set_crs(3414)
 ```
 
 ## Geometry: Cycling Path
@@ -107,7 +121,13 @@ kable(head(cyclingpath))
 The message below reveals that preschool is a point feature data frame. There are a total of 2290 features and 2 fields. Different from the previous two simple feature data frame, preschool is in wgs84 coordinates system.
 
 ```{r}
-preschool = st_read(dsn = "Data/geospatial/PreSchoolsLocation.kml")
+preschool = st_read(dsn = "Data/geospatial/PreSchoolsLocation.kml") 
+```
+
+``` r
+# Transform the data when we import it
+preschool = st_read(dsn = "Data/geospatial/PreSchoolsLocation.kml") %>%
+              st_transform(crs=3414)
 ```
 
 ## Geometry: PreSchool Location

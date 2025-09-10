@@ -1,0 +1,10 @@
+body {
+  background-image: url('images/Landing2.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+h1.title {
+  display: none;
+}
