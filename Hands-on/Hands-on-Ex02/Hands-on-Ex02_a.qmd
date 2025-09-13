@@ -407,6 +407,10 @@ The code chunk below computes a kernel density by using the following configurat
     The output of `density()` of spatstat is an **im** class, represents a two-dimensional pixel image. It’s a class used to store and manipulate raster data, where the spatial domain is divided into a grid of rectangular pixels. Each pixel has an associated value, which can be numerical or a factor.
     :::
 
+::: callout-note
+We can't conclude there are clusters in the KDE graph above. Instead, we only can state the yellow areas have high intensity. To determine clusters, we need to implement 2-point analysis.
+:::
+
 ```{r}
 par(bg = "#f6f6f6")
 plot(kde_sg_diggle)

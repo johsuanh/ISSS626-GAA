@@ -156,7 +156,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">In-class Exercises</span>
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercises">    
-        <li class="dropdown-header">In-class 1</li>
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex03/In-class_Ex03a.html">
+ <span class="dropdown-text">In-class 3</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -249,7 +252,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 9, 2025</p>
+      <p class="date-modified">September 13, 2025</p>
     </div>
   </div>
     
@@ -348,7 +351,10 @@ First 5 geometries:</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>childcare_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(childcare_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>childcare_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(childcare_sf) <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">rjitter</span>(<span class="at">retry =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">nsim =</span> <span class="dv">1</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">drop =</span> <span class="cn">TRUE</span>) <span class="co">#disperse overlapping points</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pg <span class="ot">&lt;-</span> mpsz_cl <span class="sc">%&gt;%</span></span>
@@ -453,7 +459,7 @@ First 5 geometries:</code></pre>
 <p>L Function</p></td>
 <td><strong>Global</strong></td>
 <td>Same as K, but easier to interpret</td>
-<td>Like K, but transformed so a straight line means “no pattern”</td>
+<td>Like K, but transformed so a straight line (accumulation) means “no pattern”</td>
 <td><ul>
 <li><p>If line&nbsp;<strong>stays above</strong>&nbsp;diagonal → clustering</p></li>
 <li><p>If line&nbsp;<strong>stays below</strong>&nbsp;→ regular spacing</p></li>
@@ -484,6 +490,7 @@ First 5 geometries:</code></pre>
 </div>
 </div>
 </div>
+<p>Since the observed G-function rises&nbsp;<strong>faster</strong>&nbsp;than expected under CSR, it means that points are&nbsp;<strong>closer together than expected</strong>, suggesting a&nbsp;<strong>clustered</strong>&nbsp;spatial pattern. However, we still need further test to conclude if it’s clustered.</p>
 </section>
 <section id="performing-complete-spatial-randomness-test" class="level4">
 <h4 class="anchored" data-anchor-id="performing-complete-spatial-randomness-test">5.1.1.2 Performing Complete Spatial Randomness Test</h4>
@@ -953,6 +960,7 @@ Done.</code></pre>
 </div>
 </div>
 </div>
+<p>Tampines form clusters around 50m. However, CK forms cluster</p>
 </section>
 </section>
 </section>

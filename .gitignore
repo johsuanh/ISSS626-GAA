@@ -4,8 +4,10 @@
 .httr-oauth
 .Ruserdata
 .DS_store
+.quarto
 
+/.quarto/
 
 Data/
 data/
-/.quarto/
+

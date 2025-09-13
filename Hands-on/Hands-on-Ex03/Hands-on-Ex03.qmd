@@ -34,7 +34,7 @@ To provide answers to the questions above, two data sets will be used. They are:
 # 3 Import Libraries
 
 | Library | Desc |
-|----------------|----------------------------------------------|
+|----|----|
 | [**sf**](https://r-spatial.github.io/sf/) | handling geospatial data |
 | [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
 | **tidyverse** | handling data including packages **readr**, **tidyr and dplyr** |
@@ -198,7 +198,7 @@ In this section, we will learn how to compute STKDE by using [`spattemp.density
 The important arguments of the function includes:
 
 | Argument | Description |
-|------------------|------------------------------------------------------|
+|----|----|
 | **h (spatial)** | Fixed bandwidth to smooth the spatial margin. A numeric value \> 0. If unsupplied, the oversmoothing bandwidth is used as per [`OS`](https://tilmandavies.github.io/sparr/reference/OS.html). |
 | **lambda (temporal)** | Fixed bandwidth to smooth the temporal margin; a numeric value \> 0. If unsupplied, the function internally computes the Sheather-Jones bandwith using [`bw.SJ`](https://rdrr.io/r/stats/bandwidth.html) (Sheather & Jones, 1991). |
 | **tt (attribute)** | A numeric vector of equal length to the number of points in `pp`, giving the time corresponding to each spatial observation. If unsupplied, the function attempts to use the values in the [`marks`](https://rdrr.io/pkg/spatstat.geom/man/marks.html) attribute of the [`ppp.object`](https://rdrr.io/pkg/spatstat.geom/man/ppp.html) in `pp`. |

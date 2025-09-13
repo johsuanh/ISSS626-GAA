@@ -33,14 +33,21 @@ The data we used is the same as Hands-on Ex2-1:
 
 # 3 Import Libraries
 
-| Library | Desc |
-|----|----|
-| [**sf**](https://r-spatial.github.io/sf/) | handling geospatial data |
-| [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
-| tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
-| [**rvest**](https://rvest.tidyverse.org/) | scraping (or harvesting) data from html and web pages |
-| [**spatstat**](https://spatstat.org/) | for point pattern analysis |
-| [**terra**](https://rspatial.github.io/terra/index.html) | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Library                                                             | Desc                                                                                                                                                                                                                                                    |
++=====================================================================+=========================================================================================================================================================================================================================================================+
+| [**sf**](https://r-spatial.github.io/sf/)                           | handling geospatial data                                                                                                                                                                                                                                |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data                                                                                                                                                                                                                       |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| tidyverse                                                           | handling data including packages **readr**, **tidyr and dplyr**                                                                                                                                                                                         |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**rvest**](https://rvest.tidyverse.org/)                           | scraping (or harvesting) data from html and web pages                                                                                                                                                                                                   |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**spatstat**](https://spatstat.org/)                               | for point pattern analysis                                                                                                                                                                                                                              |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| [**terra**](https://rspatial.github.io/terra/index.html)            | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
++---------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ```{r}
 pacman::p_load(sf, terra, spatstat,tmap, rvest, tidyverse)
@@ -60,7 +67,10 @@ st_geometry(childcare_sf)
 ```
 
 ```{r}
-childcare_ppp <- as.ppp(childcare_sf)
+childcare_ppp <- as.ppp(childcare_sf) %>%
+          rjitter(retry = TRUE,
+          nsim = 1,
+          drop = TRUE) #disperse overlapping points
 ```
 
 ```{r}
@@ -126,7 +136,7 @@ In this exercise, we will use four functions to analyze the spatial point patter
 |                           |            |                                                                 |                                                                                   |                                                                                            |
 | Ripley's K Function       |            |                                                                 |                                                                                   |                                                                                            |
 +---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
-| `Lest()`                  | **Global** | Same as K, but easier to interpret                              | Like K, but transformed so a straight line means "no pattern"                     | -   If line **stays above** diagonal → clustering                                          |
+| `Lest()`                  | **Global** | Same as K, but easier to interpret                              | Like K, but transformed so a straight line (accumulation) means "no pattern"      | -   If line **stays above** diagonal → clustering                                          |
 |                           |            |                                                                 |                                                                                   |                                                                                            |
 | L Function                |            |                                                                 |                                                                                   | -   If line **stays below** → regular spacing                                              |
 +---------------------------+------------+-----------------------------------------------------------------+-----------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+
@@ -150,6 +160,8 @@ G_CK = Gest(childcare_ck_ppp, correction = "border")
 par(bg = "#f6f6f6")
 plot(G_CK, xlim=c(0,500))
 ```
+
+Since the observed G-function rises **faster** than expected under CSR, it means that points are **closer together than expected**, suggesting a **clustered** spatial pattern. However, we still need further test to conclude if it's clustered.
 
 #### 5.1.1.2 Performing Complete Spatial Randomness Test
 
@@ -398,6 +410,8 @@ par(bg = "#f6f6f6")
 plot(L_tm.csr, . - r ~ r, 
      xlab="d", ylab="L(d)-r", xlim=c(0,500))
 ```
+
+Tampines form clusters around 50m. However, CK forms cluster
 
 # 6 Reference
 
