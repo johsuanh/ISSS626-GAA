@@ -26,10 +26,13 @@ website:
             href: Hands-on/Hands-on-Ex02/Hands-on-Ex02_b.html  
           - text: "Hands-on 3: Spatio-Temporal Point Patterns Analysis"
             href: Hands-on/Hands-on-Ex03/Hands-on-Ex03.html  
+
       - text: "In-class Exercises"
         menu:
-          - text: "In-class 3"
+          - text: "In-class 3.a"
             href: In-class/In-class-Ex03/In-class_Ex03a.html
+          - text: "In-class 3.b"
+            href: In-class/In-class-Ex03/In-class_Ex03b.html
               
       - text: "Take-home Exercises"
         menu:
