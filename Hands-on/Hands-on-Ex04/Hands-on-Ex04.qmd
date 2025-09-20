@@ -799,6 +799,8 @@ w_avg_gdppc <- tm_shape(hunan) +
 tmap_arrange(lag_gdppc, w_avg_gdppc, asp=1, ncol=2)
 ```
 
+The window average method smooth out / generalize the value. The graph indicates that the east side of Hunan is more developed compared to the west side.
+
 ## 10.4 Spatial Window Sum
 
 The spatial window sum is the counter part of the window average, but without using row-standardized weights.
@@ -868,6 +870,8 @@ w_sum_gdppc <- tm_shape(hunan) +
     frame = FALSE)
 tmap_arrange(lag_sum_gdppc, w_sum_gdppc, asp=1, ncol=2)
 ```
+
+One of the scenario of Spatial Window Sum is open new stores. The assumption is the neighborhoods are highly likely to be the potential customers.
 
 ## 11 Reference
 

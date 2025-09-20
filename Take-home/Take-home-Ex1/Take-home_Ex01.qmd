@@ -1,0 +1,138 @@
+---
+title: "Take-home Ex01: Geospatial Analytics for Public Good"
+author: Huang Johsuan
+date: "September 18, 2025"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+---
+
+# 1 Setting the Scene
+
+The locations of businesses and firms are central to urban development, influencing economic growth, job creation, and the availability of resources and services for residents and other businesses. Strategic locations provide competitive advantages, access to talent and infrastructure, and impact brand image and market positioning, while also shaping the city’s overall character and functionality by fostering specialized districts and facilitating efficient supply chains and employee commutes.
+
+Studying the spatio-temporal patterns of businesses and firms is crucial for urban development because it reveals how economic activity and urban forms evolve, enabling better urban planning, promoting sustainability, identifying urban inefficiencies, and enhancing quality of life. By understanding where and when businesses locate and operate, urban planners can design cities more effectively, anticipate growth, ensure resource efficiency, and tailor infrastructure to support economic vitality and community well-being.
+
+# 2 **Objectives**
+
+In this take-home exercise, we are interested to investigate the spatial and spatio-temporal patterns of new businesses and firms established in Singapore for the **first six months of 2025**
+
+The specific objectives of this take-home exercise are as follows:
+
+-   To identify the “where” and “when” of new business entities, revealing clusters, patterns, and trends that are crucial for informed urban planning, resource allocation, and economic development.
+
+-   To identify complex interaction patterns and emergent phenomena in the distribution of new businesses beyond simple proximity or density, such as clustering of related businesses, the influence of past trends on future locations, and the overall structural development of commercial areas, which are crucial for scientific urban planning and policy-making.
+
+By understanding where businesses are located and how their distribution changes over time, urban planners and managers can unlock spatial intelligence, optimize operations, and create effective strategies to attract investment and promote sustainable growth.
+
+# 3 Import Libraries
+
+```{r}
+pacman::p_load(tidyverse,sf,tmap,httr,knitr)
+```
+
+# 4 Import Data
+
+The data from the Accounting and Corporate Regulatory Authority (ACRA) will be used for spatial analysis. Its company data encompasses information on all businesses registered in Singapore, including company profiles, industry classification, and registration details. 
+
+```{r}
+#| eval: false
+acra <- read_rds("data/rds/acra_data.rds") 
+```
+
+```{r}
+#| eval: false
+kable(head(acra,5))
+```
+
+```{r}
+#| eval: false
+
+summary(acra)
+```
+
+# 2 Tyding ACRA Data
+
+```{r}
+#| eval: false
+
+biz_5611 <- acra %>%
+  select(1:24) %>%
+  filter(grepl("^472", primary_ssic_code)) %>% 
+  rename(date = registration_incorporation_date) %>%
+  mutate(date = as.Date(date),
+         Year = year(date),
+         Month_num = month(date,
+                           label =TRUE,
+                           abbr =TRUE)) %>%
+  # make sure the post_code are 6 digits
+  mutate(postal_code = str_pad(postal_code,
+                               width =6,
+                               side = "left",pad ="0"))  %>% 
+  filter(Year == 2025,
+         Month_num %in% c("Jan","Feb","Mar","Apr","May","Jun"))
+```
+
+```{r}
+#| eval: false
+#| echo: false
+
+write_rds(biz_5611,"data/rds/biz_5611.rds")
+```
+
+```{r}
+biz_5611 <- read_rds("data/rds/biz_5611.rds")
+
+```
+
+# 3 Retrieve the Data
+
+```{r}
+postcodes <- unique(biz_5611$postal_code)
+
+url <- "https://onemap.gov.sg/api/common/elastic/search"
+
+found <- data.frame()
+not_found <- data.frame(postcode =character())
+
+for(pc in postcodes) {
+  query <- list(
+    searchVal = pc,
+    returnGeom = "Y",
+    getAddrDetails = "Y",
+    pageNum ="1"
+  )
+  
+  res <- GET(url, query=query)
+  json <- content(res)
+  
+  if(json$found !=0) {
+    df <- as.data.frame(json$results, stringFactors =FALSE)
+    df$input_postcode <- pc
+    found <- bind_rows(found,df)
+  } else{
+    not_found <- bind_rows(not_found, data.frame(postcode=pc))
+  }
+}
+```
+
+```{r}
+biz_5611 <- biz_5611 %>%
+  left_join(found,
+            by = c('postal_code'='POSTAL'))
+
+
+```
+
+```{r}
+biz_56111_sf <- st_as_sf(biz_5611,
+                         coords = c("X","Y"),
+                         crs=3414)
+```
+
+```{r}
+plot(biz_56111_sf)
+```

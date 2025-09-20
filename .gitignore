@@ -3,7 +3,7 @@
 .RData
 .httr-oauth
 .Ruserdata
-.DS_store
+.DS_Store
 .quarto
 
 /.quarto/
