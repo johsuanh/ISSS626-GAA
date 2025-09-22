@@ -39,7 +39,8 @@ website:
             href: In-class/In-class-Ex04/In-class_Ex04.html              
       - text: "Take-home Exercises"
         menu:
-          - text: "Take-home 1"
+          - text: "Take-home Ex01: Geospatial Analytics for Public Good"
+            href: Take-home/Take-home-Ex1/Take-home_Ex01.html
             
     right:
       - href: about.qmd

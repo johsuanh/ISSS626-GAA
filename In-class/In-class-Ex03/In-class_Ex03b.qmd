@@ -21,12 +21,12 @@ pacman::p_load(tidyverse,sf,tmap,httr,knitr)
 `map_dfr()` is used to import and append all the data in the same folder.
 
 ```{r}
-#| echo: false
+#| eval: false
 folder_path <- "data/ACRA"
 file_list <- list.files(path = folder_path,
                         pattern = "^ACRA*.*\\.csv$",
                         full.names = TRUE)
-acra_data <- file_list %>%
+acra <- file_list %>%
   map_dfr(read_csv)
 ```
 
