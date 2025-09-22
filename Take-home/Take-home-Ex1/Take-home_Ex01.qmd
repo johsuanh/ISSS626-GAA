@@ -38,7 +38,7 @@ Kopitiam culture is deeply ingrained in Singapore's social fabric and remains hi
 
 ### 1.2.2 Retail Sale in Non-specialised Stores (SSIC:471)
 
-SSIC 471 encompasses supermarkets, hypermarkets, convenience stores and other non-specialized retail stores. Although e-commerce market share continues to grow, I have noticed that various small retailers still operate in HDB estates and at street level. Hence, I am curious whether these stores are distributed as I expected - clustered in residential areas over time.
+SSIC 471 encompasses supermarkets, hypermarkets, convenience stores and other non-specialized retail stores. Although e-commerce market share continues to grow, I have noticed that various small retailers still operate in HDB estates and at street level. Hence, I am curious whether these stores are distributed as I expected clustered in Singapore over time.
 
 ### 1.2.3 Fund Management Activities (SSIC:663)
 
@@ -63,7 +63,8 @@ This analysis uses the following libraries:
 | httr | package in R provides a set of tools for interacting with web resources via HTTP. It simplifies the process of making HTTP requests (GET, POST, PUT, DELETE, etc.) and handling the responses |
 
 ```{r}
-pacman::p_load(sf,tmap,tidyverse,sparr,terra,spatstat,rvest,httr,knitr)
+pacman::p_load(sf,tmap,tidyverse,sparr,terra,spatstat,
+               rvest,httr,knitr, ggthemes, plotly,DT)
 ```
 
 ## 2.2 Import Master Plan 2019 Data
@@ -172,7 +173,7 @@ tm_shape(mppa_sf) +
    tm_text("PLN_AREA_N", size=0.4,
            auto.placement = TRUE,
            remove.overlap = TRUE)+
-  tm_title("Subzones in Singapore",
+  tm_title("Planning Area in Singapore",
            position = tm_pos_out("center", "top", "center"))+
   tm_legend(frame = FALSE,
             position = c("right", "bottom"))+
@@ -373,8 +374,6 @@ fm_sf <- st_as_sf(FM_663,
 
 ```{r}
 #| eval: false
-#| echo: false
-
 write_rds(cafe_sf,"data/rds/cafe_sf.rds")
 write_rds(retail_sf,"data/rds/retail_sf.rds")
 write_rds(fm_sf,"data/rds/fm_sf.rds")
@@ -382,7 +381,6 @@ write_rds(fm_sf,"data/rds/fm_sf.rds")
 ```
 
 ```{r}
-#| echo: false
 cafe_sf <- read_rds("data/rds/cafe_sf.rds")
 retail_sf <- read_rds("data/rds/retail_sf.rds")
 fm_sf <- read_rds("data/rds/fm_sf.rds")
@@ -537,7 +535,7 @@ par(bg = "#f6f6f6")
 plot(sg_owin)
 ```
 
-## **5.3 Combining point events object and owin object**
+## 3.3 Combining point events object and owin object
 
 ```{r}
 cafeSG_ppp <- cafe_ppp[sg_owin]
@@ -575,13 +573,13 @@ fmSG_ppp
 
 # 4 Cafes Spatial Point Pattern Analysis
 
-Problem Statement: Whether they prefer to open outlets near competitors to attract foot traffic or in areas with fewer rivals to reduce competition?
+To better understand cafe location strategies, we will first perform the Clark-Evans test and KDE to gain an overview of potential clustering patterns. Subsequently, we will conduct second-order SPPA to assess the presence of local and global clustering.
 
-## 4.1 **First-Order Spatial Point Patterns Analysis**
+## 4.1 First-Order SPPA
 
 ### 4.1.1 Clark-Evan Test
 
-We first perform the Clark-Evans test for **first-order spatial point pattern analysis** to determine whether the spatial point pattern of cafes exhibits clustering. Since we only have 167 points, it would be more robust to use Monte Carlo method instead of Z-test.
+Since we only have 167 points, it would be more robust to use Monte Carlo method instead of Z-test.
 
 The hypothesis and alpha value are as follows:
 
@@ -609,7 +607,7 @@ Based on the Clark and Evans Test result, the R value is 0.59, with statisticall
 Therefore, we conclude that newly opened cafes in Singapore exhibit a clustered spatial pattern. This suggests that cafes may tend to locate near one another, possibly due to shared preferences for high-footfall areas.
 :::
 
-### 4.1.2 **Kernel Density Estimation**
+### 4.1.2 Kernel Density Estimation
 
 After confirming the clustered pattern, let us apply the KDE method to visualize hotspots with high intensity.
 
@@ -646,9 +644,9 @@ plot(kde_cafeSG_km_ad, main = "bw.adaptive")
 
 The KDE plots above show high-density points around Bishan, Geylang and the Downtown Core, which are all located within the Central Region. Next, we zoom in on these three planning areas and reapply the Clark and Evans test as well as the KDE analysis
 
-## 4.2 **First-Order SPPA at the Planning Area Level**
+## 4.2 First-Order SPPA at the Planning Area Level
 
-### 4.2.1 **Geospatial Data Wrangling**
+### 4.2.1 Geospatial Data Wrangling
 
 We first extract the study area:
 
@@ -744,9 +742,11 @@ clarkevans.test(cafe_BS_ppp,
     The R value of Downtown Core is 0.85 and Bishan is 0.58, with both statistically significant p-values (p \< 0.05). This provides sufficient evidence to reject the null hypothesis of Complete Spatial Randomness, and conclude that the newly opened cafes in **Bishan and Downtown Core exhibit clustered spatial patterns**.
 :::
 
-### 4.2.3 **Kernel Density Estimation**
+### 4.2.3 Kernel Density Estimation
 
 ```{r}
+#| fig.width: 12
+#| fig.height: 6
 par(bg="#f6f6f6",mfrow=c(1,3))
 plot(density(cafe_GL_ppp_km, 
              sigma=bw.diggle, 
@@ -765,9 +765,9 @@ plot(density(cafe_BS_ppp_km,
      main="Bishan")
 ```
 
-The KDE plot shows that Bishan has a single dominant hotspot at its center, with a peak intensity of 150 density units per km². In contrast, the Downtown Core and Geylang feature multiple hotspots.
+The KDE plot shows that Bishan has a single dominant hotspot at its center. In contrast, the Downtown Core and Geylang feature multiple hotspots.
 
-## 4.3 **Second-Order Spatial Point Patterns Analysis**
+## 4.3 Second-Order SPPA at the Planning Area Level
 
 In this section, Bishan and the Downtown Core are selected for second-order spatial point pattern analysis.
 
@@ -787,7 +787,7 @@ par(bg = "#f6f6f6")
 plot(G_BS, xlim=c(0,500))
 ```
 
-#### **4.3.1.2 Performing CSR Test**
+#### **4.3.1.2 Perform CSR Test**
 
 **Null and Alternative Hypotheses:**
 
@@ -810,7 +810,7 @@ plot(G_BS.csr)
 ::: callout-note
 ## Statistical Conclusion
 
-G(r) increases rapidly below 100m and remains above the upper confidence envelope, indicating that approximately 60% of cafes in Bishan have their nearest neighbor within 100m, which is significantly more than expected under spatial randomness.
+G(r) increases rapidly below 100m and remains above the upper confidence envelope, indicating that approximately 70% of cafes in Bishan have their nearest neighbor within 100m, which is significantly more than expected under spatial randomness.
 :::
 
 #### **4.4.1.3 Compute L-function estimation**
@@ -825,12 +825,12 @@ plot(L_BS, . -r ~ r,
      ylab= "L(d)-r", xlab = "d(m)")
 ```
 
-#### **4.4.1.4 Performing Complete Spatial Randomness Test**
+#### **4.4.1.4 Perform CSR Test**
 
 **Null and Alternative Hypotheses:**
 
 -   H0 = The distribution of cafes at Bishan are randomly distributed.
--   H1= The distribution of childcare services at Bishan are not randomly distributed
+-   H1= The distribution of cafes at Bishan are not randomly distributed
 
 **Significance Level:** A 98% confidence level will be used
 
@@ -863,12 +863,12 @@ par(bg = "#f6f6f6")
 plot(G_DC, xlim=c(0,500))
 ```
 
-#### **4.3.3.2 Performing CSR Test**
+#### **4.3.3.2 Perform CSR Test**
 
 **Null and Alternative Hypotheses:**
 
--   H0 = The nearest neighbor distances of cafes at Geylang are randomly distributed.
--   H1= The nearest neighbor distances of cafes at Geylang are not randomly distributed
+-   H0 = The nearest neighbor distances of cafes at Downtown Core are randomly distributed.
+-   H1= The nearest neighbor distances of cafes at Downtown Core are not randomly distributed
 
 **Significance Level:** A 98% confidence level will be used (α = 0.02)
 
@@ -901,12 +901,12 @@ plot(L_DC, . -r ~ r,
      ylab= "L(d)-r", xlab = "d(m)")
 ```
 
-#### **4.3.2.4 Performing Complete Spatial Randomness Test**
+#### **4.3.2.4 Perform CSR Test**
 
 **Null and Alternative Hypotheses:**
 
 -   H0 = The distribution of cafes at Downtown Core are randomly distributed.
--   H1= The distribution of childcare services at Downtown Core are not randomly distributed
+-   H1= The distribution of cafes at Downtown Core are not randomly distributed
 
 **Significance Level:** A 98% confidence level will be used (α = 0.02)
 
@@ -927,7 +927,7 @@ plot(L_DC.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
 Although the obeserved L(d)-r is above 0, the values are not statistically significant. Hence, we conclude Downtown Core's cafe follows complete spatial randomness and no significant clusters in the area.
 :::
 
-#### 4.3.2.5 Summary
+## 4.4 Findings
 
 Interestingly, while both Bishan and the Downtown Core exhibit R values below 1 in the first-order SPPA, which indicates clustering, and the KDE plots also show high point density within these planning areas, the second-order SPPA reveals a different pattern. Only Bishan demonstrates strong clustering at a radius of 150–200 m.
 
@@ -941,6 +941,654 @@ kable(cafe_bishan)
 
 Notably, nine related companies are registered at the same location, which may have artificially inflated the clustering pattern observed. If these nine companies were considered as a single entity, it is likely that Bishan would no longer exhibit significant clustering.
 
-# 5 Non-Specialised Retail Store SPPA
+# 5 Non-Specialised Retail Entity SPPA
 
-## 5.1 
+Our interest in Non-Specialized Retail Entities (supermarkets, hypermarkets, convenience stores) is to addresses whether these stores maintain clustered distributions in Singapore's urban landscape over time. To achieve this, the STKDE and Clark-Evans test will be implemented for 1st-order SPPA. Subsequently, both the G-function and L-function will be used to support the conclusions from the second-order analysis.
+
+## 5.1 Entity Distribution by Month
+
+The code below plots the distribution of newly registered entities by month
+
+```{r}
+
+mppa_union <- mppa_sf %>%
+  st_union() 
+  
+tm_shape(mppa_union)+
+  tm_polygons()+
+  tm_shape(retail_sf)+
+  tm_dots(size = 0.2, shape = 16)+
+  tm_title("Non-Speacialised Retail Entity Monthly Distribution",
+           position = tm_pos_out(cell.h = "center",
+                                 cell.v = "top",
+                                 pos.h = "center"))+ 
+  tm_facets(nrow = 2, ncol = 3,
+            by = "Month_num",
+            free.coords = FALSE)+ 
+  tm_layout(frame = FALSE,
+            bg.color = "#f6f6f6",
+            panel.label.bg.color = "#AFCD6F",
+            inner.margins = c(0, 0.05, 0.2, 0.05)) #bottom, left, top, right
+```
+
+The distributions seems have clusters in central regions, especially in Apr and May. To further confirm, let us compute STKDE by month.
+
+## 5.2 First-Order SPPA
+
+### 5.2.1 Geospatial Data Wrangling
+
+#### 5.2.1.1 Extract points by month
+
+We first need to extract the "month" value
+
+```{r}
+retail_sf <- retail_sf %>%
+  mutate(Month_no = month(date))
+
+retail_m<- retail_sf %>%
+  select(Month_no) 
+
+kable(head(retail_m))
+
+```
+
+#### 5.2.1.2 Create ppp Object
+
+Next, we need to convert the sf object into ppp format
+
+```{r}
+retail_m_ppp <- as.ppp(retail_m)%>%
+          rjitter(retry = TRUE,
+          nsim = 1,
+          drop = TRUE)
+retail_m_ppp
+```
+
+Next, we check if there are any duplicates:
+
+```{r}
+any(duplicated(retail_m_ppp))
+```
+
+There are no duplicates in our data points.
+
+#### 5.2.1.3 Create owin Object
+
+```{r}
+retail_m_ppp <- retail_m_ppp[sg_owin]
+summary(retail_m_ppp)
+```
+
+All the data remains within the study area.
+
+```{r}
+par(bg = "#f6f6f6")
+
+plot(retail_m_ppp,
+     main = "Business Entities Registered by Month")
+```
+
+### 5.2.2 Compute Spatial-temperal KDE
+
+```{r}
+retail_m_ppp_km <- rescale.ppp(retail_m_ppp,1000,"km")
+
+st_kde <- spattemp.density(retail_m_ppp_km)
+
+```
+
+```{r}
+par(bg = "#f6f6f6",mfcol=c(2,3))
+for(i in 1:6){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at month",i))
+}
+```
+
+### 5.2.3 Clark-Evans Test
+
+The hypothesis and alpha value are as follows:
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The distribution of cafes are randomly distributed (R=1)
+-   H1= The distribution of cafes are clustered (R\<1)
+
+**Significance Level:** A 95% confidence level will be used (α = 0.05)
+
+The code below perform Clark-Evans Test for SPPA from Jan to Jun :
+
+```{r}
+
+for (m in 1:6) {
+  cat("Running Clark-Evans test for month", m, "\n")
+  
+  # Subset by mark directly (no $)
+  month_ppp <- retail_m_ppp[marks(retail_m_ppp) == m]
+  
+  result <- clarkevans.test(month_ppp,
+                            correction = "none",
+                            alternative = "clustered",
+                            method = "MonteCarlo",
+                            nsim = 99)
+  
+  print(result)
+}
+
+
+```
+
+::: callout-note
+## Result Interpretation
+
+The tests consistently show R values less than 1 with p-values below 0.05 for each month, suggesting significant spatial clustering of non-specialized retail stores within Singapore throughout the period.
+:::
+
+## 5.3 Second-Order SPPA 
+
+### 5.3.1 Perform CSR Tests with G-function
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The nearest neighbor distances of non-specialised retail entities in Singapore are randomly distributed.
+-   H1= The nearest neighbor distances of non-specialised retail entities in Singapore are not randomly distributed
+
+**Significance Level:** A 98% confidence level will be used (α = 0.02)
+
+Monte Carlo test with G-fucntion:
+
+```{r}
+par(bg = "#f6f6f6", mfcol=c(2,3))
+for (m in 1:6) {
+  cat("Month:", m, "\n")
+  
+  month_ppp <- retail_m_ppp[marks(retail_m_ppp) == m]
+  
+  # G-function envelope
+  G.csr <- envelope(month_ppp, Gest,rank=1, nsim=99)
+  plot(G.csr,main=paste("G-function - Month", m))
+  
+}
+
+```
+
+::: callout-note
+## Result Interpretation
+
+Although the G(r) functions do not increase sharply across all months, the results indicate significant clustering of non-specialised retail entities. Specifically, 50% of entities have their nearest neighbors within a 500 m radius, and the majority are located within a 2 km radius. This suggests the presence of spatial clusters of newly registered retail entities throughout Singapore.
+:::
+
+### 5.3.2 Perform CSR Tests with L-function
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The distribution of non-specialised retail entities in Singapore are randomly distributed.
+-   H1= The distribution of non-specialised retail entities in Singapore are not randomly distributed
+
+**Significance Level:** A 98% confidence level will be used (α = 0.02)
+
+Monte Carlo test with L-fucntion:
+
+```{r}
+par(bg = "#f6f6f6",mfcol=c(2,3))
+for (m in 1:6) {
+  cat("Month:", m, "\n")
+  
+  month_ppp <- retail_m_ppp[marks(retail_m_ppp) == m]
+  
+  # L-function envelope
+  L.csr <- envelope(month_ppp, Lest, nsim=99,rank=1,glocal=TRUE)
+  plot(L.csr, .- r ~ r, xlab="d", ylab="L(d)-r",main=paste("L-function - Month", m))
+}
+```
+
+::: callout-note
+## Result Interpretation
+
+The retail entities show consistent strong clustering effects for the first 5 months, with peak L(r)-r values around 2000. However, Month 6 shows a notable decrease in clustering intensity, with peak values dropping to approximately 1200, indicating that while clustering remains statistically significant, the magnitude of clustering effect has substantially decreased.
+:::
+
+## 5.4 Findings
+
+The analysis strongly supports the expectation that non-specialized retail stores are indeed clustered in Singapore. All six months show statistically significant clustering at multiple spatial scales (from local neighborhoods up to 6-8km), indicating that retail agglomeration benefits persist despite e-commerce competition.
+
+The large-scale clustering (up to 8km) suggests that retail location decisions operate at multiple geographic levels, from local convenience clustering in HDB estates to broader commercial district formations across Singapore's urban structure.
+
+Despite e-commerce growth, physical non-specialized retail stores continue to benefit from spatial proximity, likely due to the immediate needs (groceries, daily necessities) and Singapore's high-density urban form.
+
+# 6 Fund Management Entity SPPA
+
+As in the previous section, we observed a high-density pattern of Fund Management Entity in the central region, we will implement first-order KDE & Clark-Evans test and second-order Spatial Point Pattern Analysis on this area.
+
+## 6.1 Geospatial Data Wrangling
+
+The code below filters the ppp object to include only points within the Downtown Core area. It then combines the owin and ppp objects, and transforms the spatial units of the ppp object into kilometers for further KDE analysis
+
+```{r}
+fm_DC_ppp = fm_ppp[DC_owin]
+fm_DC_ppp_km = rescale.ppp(fm_DC_ppp,1000,"km")
+
+```
+
+The code below filters out the Downtown Core, combines the owin and ppp objects, and then transforms the ppp object into kilometer units:
+
+```{r}
+non_dc <- mppa_sf %>%
+  filter(PLN_AREA_N != "DOWNTOWN CORE")
+
+non_dc_owin = as.owin(non_dc)
+
+fm_non_DC_ppp = fm_ppp[non_dc_owin]
+
+fm_non_DC_ppp_km = rescale.ppp(fm_non_DC_ppp,1000,"km")
+
+```
+
+## 6.2 First-Order SPPA
+
+### 6.2.1 Clark-Evan Test
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The distribution of Fund Management Entities are randomly distributed (R=1)
+-   H1= The distribution of Fund Management Entities are clustered (R\<1)
+
+**Significance Level:** A 95% confidence level will be used (α = 0.05)
+
+::: panel-tabset
+## Downtown Core
+
+```{r}
+clarkevans.test(fm_DC_ppp,
+                correction = "none",
+                clipregion = "DC_owin",
+                alternative = "clustered",
+                method = "MonteCarlo",
+                nsim=99)
+```
+
+## Exclude Downtown Core
+
+```{r}
+clarkevans.test(fm_non_DC_ppp,
+                correction = "none",
+                clipregion = "non_dc_owin",
+                alternative = "clustered",
+                method = "MonteCarlo",
+                nsim=99)
+```
+:::
+
+::: callout-note
+## Result Intepretation
+
+Interestingly, both the CBD (Downtown Core planning area) and areas outside the CBD show clustered patterns, with R-values less than 1 and p-values below 0.05.
+:::
+
+### 6.2.2 Kernel Density Estimation
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+par(bg="#f6f6f6",mfrow=c(2,2))
+plot(density(fm_DC_ppp_km, 
+             sigma=bw.diggle, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Downtown Core_diggle")
+plot(density(fm_non_DC_ppp_km, 
+             sigma=bw.diggle, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Excl. Downtown Core_diggle")
+plot(density(fm_DC_ppp_km, 
+             sigma=bw.ppl, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Downtown Core_ppl")
+plot(density(fm_non_DC_ppp_km, 
+             sigma=bw.ppl, 
+             edge=TRUE, 
+             kernel="gaussian"),
+     main="Excl. Downtown Core_ppl")
+
+```
+
+As the KDE plots show, there is a high intensity of 200 density units per km² in the CBD area. In the non-CBD areas, a few low-intensity regions are located in the central region, adjacent to the Downtown Core and around Geylang.
+
+## 6.3 Second-Order SPPA
+
+### 6.3.1 Downtown Core Planning Area
+
+#### 6.3.1.1 **Compute G-function estimation**
+
+The code below implement G-function to examine the nearest neighbor distance distribution :
+
+```{r}
+G_DC = Gest(fm_non_DC_ppp, correction = "border")
+par(bg = "#f6f6f6")
+plot(G_DC, xlim=c(0,500))
+```
+
+#### **6.3.1.2 Perform CSR Test**
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The nearest neighbor distances of fund management entities in Downtown Core are randomly distributed.
+-   H1= The nearest neighbor distances of fund management entities in Downtown Core are not randomly distributed
+
+**Significance Level:** A 98% confidence level will be used (α = 0.02)
+
+Monte Carlo test with G-fucntion:
+
+```{r}
+G_DC.csr <- envelope(fm_DC_ppp, Gest,rank=1, nsim = 99)
+```
+
+```{r}
+par(bg = "#f6f6f6")
+plot(G_DC.csr)
+```
+
+::: callout-note
+## Result Interpretation
+
+The observed G(r) lies above the upper confidence envelope up to 100 m, indicating significant clustering within the Downtown Core Planning Area. Specifically, around 70% of Fund Management Entities have a nearest neighbor within 50 m, and an additional 10% are within 50–100 m, suggesting a highly clustered spatial pattern.
+:::
+
+#### **6.3.1.3 Compute L-function estimation**
+
+The code below implement L-function to examine the clustering at all scales:
+
+```{r}
+L_DC = Lest(fm_DC_ppp, correction = "Ripley")
+
+par(bg = "#f6f6f6")
+plot(L_DC, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+```
+
+#### **6.3.1.4 Perform CSR Test**
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The distribution of fund management entities in Downtown Core are randomly distributed.
+-   H1= The distribution of fund management entities in Downtown Core are not randomly distributed
+
+**Significance Level:** A 98% confidence level will be used (α = 0.02)
+
+Monte Carlo test with L-fucntion:
+
+```{r}
+L_DC.csr <- envelope(fm_DC_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+par(bg = "#f6f6f6")
+plot(L_DC.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+```
+
+::: callout-note
+## Result Interpretation
+
+The L-function also indicates significant clustering starting at 0 meters, suggesting that many Fund Management Entities are likely registered at the same address or located within the same building.
+:::
+
+### 6.3.2 Outside Downtown Core Planning Area
+
+#### 6.3.1.1 Compute G-function estimation
+
+The code below implement G-function to examine the nearest neighbor distance distribution :
+
+```{r}
+G_n_DC = Gest(fm_non_DC_ppp, correction = "border")
+par(bg = "#f6f6f6")
+plot(G_n_DC, xlim=c(0,500))
+```
+
+#### 6.3.1.2 Perform CSR Test
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The nearest neighbor distances of fund management entities outside Downtown Core are randomly distributed.
+-   H1= The nearest neighbor distances of fund management entities outside Downtown Core are not randomly distributed
+
+**Significance Level:** A 98% confidence level will be used (α = 0.02)
+
+Monte Carlo test with G-fucntion:
+
+```{r}
+G_n_DC.csr <- envelope(fm_non_DC_ppp, Gest,rank=1, nsim = 99)
+```
+
+```{r}
+par(bg = "#f6f6f6")
+plot(G_n_DC.csr)
+```
+
+::: callout-note
+## Result Interpretation
+
+The G(r) function suggests that Fund Management Entities outside the Downtown Core exhibit a clustered spatial pattern, with approximately 60% of entities having their nearest neighbor within 250 meters, and another 20% located within 250 to 750 meters
+:::
+
+#### 6.3.1.3 Compute L-function estimation
+
+The code below implement L-function to examine the clustering at all scales:
+
+```{r}
+L_n_DC = Lest(fm_non_DC_ppp, correction = "Ripley")
+
+par(bg = "#f6f6f6")
+plot(L_n_DC, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+```
+
+#### 6.3.1.4 Perform CSR Test
+
+**Null and Alternative Hypotheses:**
+
+-   H0 = The distribution of fund management entities outside are randomly distributed
+-   H1= The distribution of fund management entities outside are not randomly distributed
+
+**Significance Level:** A 98% confidence level will be used (α = 0.02)
+
+Monte Carlo test with L-fucntion:
+
+```{r}
+L_n_DC.csr <- envelope(fm_non_DC_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+::: toggle
+<details>
+
+<summary>**Display Code**</summary>
+
+``` r
+title <- "Pairwise Distance: L Function (L(r) - r)"
+Lcsr_df <- as.data.frame(L_n_DC.csr)
+
+# Custom colors
+# clustering, segregation, not significant significant
+colour <- c("#0D657D", "#ee770d", "#D3D3D3")  
+
+csr_plot <- ggplot(Lcsr_df, aes(x = r)) +
+  # Observed L(r) - r
+  geom_line(aes(y = obs - r), colour = "#4D4D4D", size = 0.5) +
+  
+  # Theoretical L(r) - r (CSR)
+  geom_line(aes(y = theo - r), colour = "red", linetype = "dashed", size = 0.8) +
+  
+  # Simulation envelope (confidence band)
+  geom_ribbon(aes(ymin = lo - r, ymax = hi - r), fill = "#91BFDB", alpha = 0.2) +
+
+  # Rugs for significant points
+  geom_rug(data = subset(Lcsr_df, obs > hi), aes(y = NULL), sides = "b", colour = colour[1]) +
+  geom_rug(data = subset(Lcsr_df, obs < lo), aes(y = NULL), sides = "b", colour = colour[2]) +
+  geom_rug(data = subset(Lcsr_df, obs >= lo & obs <= hi), aes(y = NULL), sides = "b", colour = colour[3]) +
+
+  xlab("Distance r (meters)") +
+  ylab("L(r) - r") +
+  ggtitle(title) +
+  theme_tufte(base_family = "Arial") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 10)
+  )
+
+# Interpretation text for tooltips
+text1 <- "Significant clustering"
+text2 <- "Significant segregation"
+text3 <- "Not significant"
+
+# Determine how many types of significance are present
+has_cluster <- nrow(subset(Lcsr_df, obs > hi)) > 0
+has_segreg <- nrow(subset(Lcsr_df, obs < lo)) > 0
+has_neutral <- nrow(subset(Lcsr_df, obs >= lo & obs <= hi)) > 0
+
+# Convert ggplot to plotly and add annotations based on condition
+plotly_plot <- ggplotly(csr_plot, dynamicTicks = TRUE) %>% rangeslider()
+
+if (has_cluster & has_segreg & has_neutral) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text1, traces = 4) %>%
+    style(text = text2, traces = 5) %>%
+    style(text = text3, traces = 6)
+} else if (has_cluster & has_segreg) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text1, traces = 4) %>%
+    style(text = text2, traces = 5)
+} else if (has_cluster & has_neutral) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text1, traces = 4) %>%
+    style(text = text3, traces = 5)
+} else if (has_segreg & has_neutral) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text2, traces = 4) %>%
+    style(text = text3, traces = 5)
+} else if (has_cluster) {
+  plotly_plot <- plotly_plot %>% style(text = text1, traces = 4)
+} else if (has_segreg) {
+  plotly_plot <- plotly_plot %>% style(text = text2, traces = 4)
+} else {
+  plotly_plot <- plotly_plot %>% style(text = text3, traces = 4)
+} 
+
+plotly_plot <- plotly_plot %>%
+  layout(
+    paper_bgcolor = "#f6f6f6",
+    plot_bgcolor = "#f6f6f6"
+  )
+
+plotly_plot
+```
+
+</details>
+:::
+
+```{r}
+#| echo: false
+
+title <- "Pairwise Distance: L Function (L(r) - r)"
+Lcsr_df <- as.data.frame(L_n_DC.csr)
+
+# Custom colors
+# clustering, segregation, not significant significant
+colour <- c("#0D657D", "#ee770d", "#D3D3D3")  
+
+csr_plot <- ggplot(Lcsr_df, aes(x = r)) +
+  # Observed L(r) - r
+  geom_line(aes(y = obs - r), colour = "#4D4D4D", size = 0.5) +
+  
+  # Theoretical L(r) - r (CSR)
+  geom_line(aes(y = theo - r), colour = "red", linetype = "dashed", size = 0.8) +
+  
+  # Simulation envelope (confidence band)
+  geom_ribbon(aes(ymin = lo - r, ymax = hi - r), fill = "#91BFDB", alpha = 0.2) +
+
+  # Rugs for significant points
+  geom_rug(data = subset(Lcsr_df, obs > hi), aes(y = NULL), sides = "b", colour = colour[1]) +
+  geom_rug(data = subset(Lcsr_df, obs < lo), aes(y = NULL), sides = "b", colour = colour[2]) +
+  geom_rug(data = subset(Lcsr_df, obs >= lo & obs <= hi), aes(y = NULL), sides = "b", colour = colour[3]) +
+
+  xlab("Distance r (meters)") +
+  ylab("L(r) - r") +
+  ggtitle(title) +
+  theme_tufte(base_family = "Arial") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 10)
+  )
+
+# Interpretation text for tooltips
+text1 <- "Significant clustering"
+text2 <- "Significant segregation"
+text3 <- "Not significant"
+
+# Determine how many types of significance are present
+has_cluster <- nrow(subset(Lcsr_df, obs > hi)) > 0
+has_segreg <- nrow(subset(Lcsr_df, obs < lo)) > 0
+has_neutral <- nrow(subset(Lcsr_df, obs >= lo & obs <= hi)) > 0
+
+# Convert ggplot to plotly and add annotations based on condition
+plotly_plot <- ggplotly(csr_plot, dynamicTicks = TRUE) %>% rangeslider()
+
+if (has_cluster & has_segreg & has_neutral) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text1, traces = 4) %>%
+    style(text = text2, traces = 5) %>%
+    style(text = text3, traces = 6)
+} else if (has_cluster & has_segreg) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text1, traces = 4) %>%
+    style(text = text2, traces = 5)
+} else if (has_cluster & has_neutral) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text1, traces = 4) %>%
+    style(text = text3, traces = 5)
+} else if (has_segreg & has_neutral) {
+  plotly_plot <- plotly_plot %>%
+    style(text = text2, traces = 4) %>%
+    style(text = text3, traces = 5)
+} else if (has_cluster) {
+  plotly_plot <- plotly_plot %>% style(text = text1, traces = 4)
+} else if (has_segreg) {
+  plotly_plot <- plotly_plot %>% style(text = text2, traces = 4)
+} else {
+  plotly_plot <- plotly_plot %>% style(text = text3, traces = 4)
+} 
+
+plotly_plot <- plotly_plot %>%
+  layout(
+    paper_bgcolor = "#f6f6f6",
+    plot_bgcolor = "#f6f6f6"
+  )
+
+plotly_plot
+
+```
+
+::: callout-note
+## Result Interpretation
+
+Similarly, the L-function indicates a strong clustering effect for entities outside the Downtown Core, starting from 0 meters and extending up to 7 kilometers. The persistent deviation from CSR up to 7 km is an indicator of clustering at both fine and broader spatial scales.
+:::
+
+## 6.4 Findings
+
+Initially, I assumed that Fund Management Entities (such as family offices) would exhibit a clustered pattern only within the Downtown Core (CBD). However, the results surprisingly reveal strong statistical clustering even outside the CBD, both at broader spatial scales and shorter distances, including cases where entities are located within the same building (distance=0).
+
+Below are the lists of FME excluding CBD area:
+
+```{r}
+fm_non_DC_sf <- marks(fm_non_DC_ppp)
+fm_non_DC_sf %>%
+  arrange(postal_code) %>% # sort asc by postal code
+  DT::datatable(class = "display") %>%
+  formatStyle(
+    columns = colnames(fm_non_DC_sf),
+    fontSize = '11px',
+  )
+```
