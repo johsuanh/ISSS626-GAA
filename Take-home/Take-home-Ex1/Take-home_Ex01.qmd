@@ -30,7 +30,7 @@ By understanding where businesses are located and how their distribution changes
 
 ## 1.2 Rationale for Industry Selection
 
-This analysis explores the business distribution patterns of three key sectors: 56112 cafes, 471 non-specialized retail stores and 663 family offices. These industries are selected for the following reasons:
+This analysis explores the business distribution patterns of three key sectors: 56112 cafes, 471 non-specialized retail stores and 663 fund management activity. These industries are selected for the following reasons:
 
 ### 1.2.1 Cafes (SSIC:56112)
 
@@ -52,15 +52,19 @@ This analysis uses the following libraries:
 
 | Library | Desc |
 |------------------------------------|------------------------------------|
-| [**sf**](https://r-spatial.github.io/sf/) | handling geospatial data |
-| [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
+| **sf** | handling geospatial data |
+| **tmap** | visualization for geospatial data |
 | **tidyverse** | handling data including packages **readr**, **tidyr and dplyr** |
-| [**sparr**](https://tilmandavies.github.io/sparr/index.html) | provides functions to estimate fixed and adaptive kernel-smoothed spatial relative risk surfaces via the density-ratio method and perform subsequent inference.  |
-| [**spatstat**](https://spatstat.org/) | for point pattern analysis |
-| [**terra**](https://rspatial.github.io/terra/index.html) | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
-| rvest | scraping (or harvesting) data from web pages |
-| knitr | generate elegant, flexible, and fast dynamic report |
-| httr | package in R provides a set of tools for interacting with web resources via HTTP. It simplifies the process of making HTTP requests (GET, POST, PUT, DELETE, etc.) and handling the responses |
+| **sparr** | provides functions to estimate fixed and adaptive kernel-smoothed spatial relative risk surfaces via the density-ratio method and perform subsequent inference.  |
+| **spatstat** | for point pattern analysis |
+| **terra** | a modern spatial data analysis package to replace the raster package. terra provides functionalities for creating, reading, manipulating, and writing raster and vector data, and it’s built on top of GDAL and PROJ libraries for enhanced performance |
+| **rvest** | scraping (or harvesting) data from web pages |
+| **knitr** | generate elegant, flexible, and fast dynamic report |
+| **httr** | package in R provides a set of tools for interacting with web resources via HTTP. It simplifies the process of making HTTP requests (GET, POST, PUT, DELETE, etc.) and handling the responses |
+| **ggthemes** | an extension of ggplot2, offering a collection of additional themes and scales for ggplot2 charts |
+| **plotly** | provide interactive and publication-quality graphs |
+| **DT** | provides an ***R*** interface to the JavaScript library DataTables.  |
+| **magick** | provide a modern and simple toolkit for image processing in R |
 
 ```{r}
 pacman::p_load(sf,tmap,tidyverse,sparr,terra,spatstat,
@@ -70,7 +74,7 @@ pacman::p_load(sf,tmap,tidyverse,sparr,terra,spatstat,
 
 ## 2.2 Import Master Plan 2019 Data
 
-**Master Plan 2019** is the statutory land use plan that guides Singapore's development in the medium term over the next 10 to 15 years. It is available as a polygon feature layer in **KML** format, maintained and published by the Urban Redevelopment Authority (URA)
+**Master Plan 2019 by Planning Area** is a polygon feature layer in **KML** format that delineates Singapore's land use zones and planning boundaries. This dataset is maintained and published by the Urban Redevelopment Authority (URA) and serves as the official spatial reference for urban planning and development control.
 
 ```{r}
 #| eval: false
@@ -124,7 +128,6 @@ write_rds(mppa,"data/rds/mppa.rds")
 ```
 
 ```{r}
-
 mppa <- read_rds("data/rds/mppa.rds")
 ```
 
@@ -149,7 +152,7 @@ tm_shape(mppa) +
             bg.color = "#f6f6f6")
 ```
 
-Since our focus is on business operations occurring on the main island, this study will exclude non-business areas such as the North-Eastern Islands, Western Islands, Southern Islands, Central Water Catchment and Western Water Catchment.
+Since our analysis will focus on business operations occurring on the main island, this study will exclude non-business areas such as the North-Eastern Islands, Western Islands, Southern Islands, Central Water Catchment and Western Water Catchment.
 
 ```{r}
 mppa_sf <- mppa %>%
@@ -284,9 +287,10 @@ Next, we extract the unique postal codes from the combined data.
 ```{r}
 postcodes <- unique(combined_data$postal_code)
 length(postcodes)
+length(combined_data$postal_code)
 ```
 
-We have total 595 unique observations in this exercise.
+We have a total of 858 observations, but only 595 unique postal codes in this dataset. This indicates that many businesses share identical addresses, likely due to multiple establishments operating within the same building or complex.
 
 Next, we use the `httr` package to send a GET request to the OneMap API for coordinate retrieval:
 
@@ -418,7 +422,7 @@ tm_shape(cafe_sf) +
             bg.color = "#f6f6f6")
 ```
 
-There are 166 cafes (drink stores/stalls) opened from January 2025 to June 2025. Aside from the central region, their distribution appears relatively even across other areas.
+There are 166 cafes opened from January 2025 to June 2025. Aside from the central region, their distribution appears relatively even across other areas.
 
 ### 2.7.2 Non-specialised Retail Stores
 
@@ -470,7 +474,7 @@ tm_shape(fm_sf) +
             bg.color = "#f6f6f6")
 ```
 
-A total of 237 family offices opened between January and June 2025. The family offices appear with high density concentrated in the CBD area.
+A total of 237 fund management entities opened between January and June 2025. They appear with high density concentrated in the CBD area.
 
 ### 2.7.4 Combined Plot of the Three Industries’ Distribution
 
@@ -580,7 +584,7 @@ animate_by_month()
 
 ![](animation.gif)
 
-Among the three industries, family offices exhibit the highest spatial intensity, with clear clusters concentrated in the CBD area.
+Among the three industries, fund management entities exhibit the highest spatial intensity in the CBD area.
 
 # 3 Geospatial Data wrangling
 
@@ -643,7 +647,7 @@ A point is dropped outside the study area
 cafeSG_ppp
 ```
 
-## Retail Stores
+## Non-specialized Retail Stores
 
 All points are within the study area
 
@@ -651,9 +655,9 @@ All points are within the study area
 retailSG_ppp
 ```
 
-## Family Office
+## Fund Management Entities
 
-A point is dropped outside the study area
+All points are within the study area
 
 ```{r}
 fmSG_ppp
@@ -679,11 +683,14 @@ The hypothesis and alpha value are as follows:
 
 **Significance Level:** A 95% confidence level will be used (α = 0.05)
 
-The code below set random seed for reproduce
+The code below sets a random seed for reproducibility:
 
 ```{r}
 set.seed(1234)
 
+```
+
+```{r}
 clarkevans.test(cafeSG_ppp,
                 correction = "none",
                 clipregion = "sg_owin",
@@ -695,7 +702,7 @@ clarkevans.test(cafeSG_ppp,
 ::: callout-note
 ## Result Interpretation
 
-Based on the Clark and Evans Test result, the R value is 0.59, with statistically siginificant p-value (p \< 0.05). This provides sufficient evidence to reject the null hypothesis of Complete Spatial Randomness (CSR).
+Based on the Clark and Evans Test result, the R value \< 1, with statistically siginificant p-value (p \< 0.05). This provides sufficient evidence to reject the null hypothesis of Complete Spatial Randomness (CSR).
 
 Therefore, we conclude that newly opened cafes in Singapore exhibit a clustered spatial pattern. This suggests that cafes may tend to locate near one another, possibly due to shared preferences for high-footfall areas.
 :::
@@ -735,7 +742,7 @@ plot(kde_cafeSG_km_ppl, main = "bw.ppl")
 plot(kde_cafeSG_km_ad, main = "bw.adaptive")
 ```
 
-The KDE plots above show high-density points around Bishan, Geylang and Downtown Core, which are all located within the Central Region. Next, we zoom in on these three planning areas and reapply the Clark and Evans test as well as the KDE analysis
+The KDE plots above all show high-density points around Bishan, Geylang and Downtown Core, which are all located within the Central Region. Next, we zoom in on these three planning areas and reapply the Clark and Evans test as well as the KDE analysis
 
 ## 4.2 First-Order SPPA at the Planning Area Level
 
@@ -792,7 +799,6 @@ The hypothesis and alpha value are the same as section 4.1:
 ## Geylang
 
 ```{r}
-set.seed(1234)
 
 clarkevans.test(cafe_GL_ppp,
                 correction = "none",
@@ -805,7 +811,6 @@ clarkevans.test(cafe_GL_ppp,
 ## Downtown Core
 
 ```{r}
-set.seed(1234)
 
 clarkevans.test(cafe_DC_ppp,
                 correction = "none",
@@ -818,7 +823,6 @@ clarkevans.test(cafe_DC_ppp,
 ## Bishan
 
 ```{r}
-set.seed(1234)
 
 clarkevans.test(cafe_BS_ppp,
                 correction = "none",
@@ -832,33 +836,46 @@ clarkevans.test(cafe_BS_ppp,
 ::: callout-note
 ## Result Interpretation
 
-The R value of Geylang is 0.8, Downtown Core is 0.74 and Bishan is 0.44, with all statistically significant p-values (p \< 0.05). This provides sufficient evidence to reject the null hypothesis of Complete Spatial Randomness, and conclude that the newly opened cafes in **Geylang**, **Bishan and Downtown Core exhibit clustered spatial patterns**.
+The R values of Geylang, Downtown Core and Bishan are all \< 1, with all statistically significant p-values (p \< 0.05). This provides sufficient evidence to reject the null hypothesis of Complete Spatial Randomness, and conclude that the newly opened cafes in **Geylang**, **Bishan and Downtown Core exhibit clustered spatial patterns**.
 :::
 
 ### 4.2.3 Kernel Density Estimation
 
+"he code below applies fixed bandwidth and adaptive bandwidth methods for KDE analysis of Geylang, Downtown Core and Bishan:
+
 ```{r}
 #| fig.width: 12
 #| fig.height: 6
-par(bg="#f6f6f6",mfrow=c(1,3))
+par(bg="#f6f6f6",mfrow=c(2,3))
 plot(density(cafe_GL_ppp_km, 
              sigma=bw.diggle, 
              edge=TRUE, 
              kernel="gaussian"),
-     main="Geylang")
+     main="Geylang.diggle")
 plot(density(cafe_DC_ppp_km, 
              sigma=bw.diggle, 
              edge=TRUE, 
              kernel="gaussian"),
-     main="Downtown Core")
+     main="Downtown Core.diggle")
 plot(density(cafe_BS_ppp_km, 
              sigma=bw.diggle, 
              edge=TRUE, 
              kernel="gaussian"),
-     main="Bishan")
+     main="Bishan.diggle")
+
+plot(adaptive.density(cafe_GL_ppp_km, 
+  method="kernel"),
+     main="Geylang.adaptive")
+plot(adaptive.density(cafe_DC_ppp_km, 
+  method="kernel"),
+     main="Downtown Core.adaptive")
+plot(adaptive.density(cafe_BS_ppp_km, 
+  method="kernel"),
+     main="Bishan.adaptive")
+
 ```
 
-The KDE plot shows that Bishan has a single dominant hotspot at its center. In contrast, the Downtown Core and Geylang feature multiple hotspots.
+The KDE plots with adaptive bandwidth method show that both Geylang and Bishan have a single dominant hotspot at their centers. In contrast, the Downtown Core features multiple hotspots.
 
 ## 4.3 Second-Order SPPA at the Planning Area Level
 
@@ -888,7 +905,6 @@ plot(G_BS, xlim=c(0,500))
 Monte Carlo test with G-fucntion:
 
 ```{r}
-set.seed(1234)
 
 G_BS.csr <- envelope(cafe_BS_ppp, Gest,rank=1, nsim = 99)
 ```
@@ -901,7 +917,7 @@ plot(G_BS.csr)
 ::: callout-note
 ## Statistical Conclusion
 
-G(r) increases rapidly below 100m and remains above the upper confidence envelope, indicating that approximately 70% of cafes in Bishan have their nearest neighbor within 100m, which is significantly more than expected under spatial randomness.
+G(r) increases rapidly below 50m and remains above the upper confidence envelope, indicating that approximately 70% of cafes in Bishan have their nearest neighbor within 50m, which is significantly more than expected under spatial randomness.
 :::
 
 #### **4.4.1.3 Compute L-function estimation**
@@ -928,8 +944,6 @@ plot(L_BS, . -r ~ r,
 Monte Carlo test with L-fucntion:
 
 ```{r}
-set.seed(1234)
-
 L_BS.csr <- envelope(cafe_BS_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
 ```
 
@@ -941,7 +955,7 @@ plot(L_BS.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
 ::: callout-note
 ## Statistical Conclusion
 
-This suggests Bishan has compact cafe clusters with a typical cluster diameter of 200-400m (radius 100-200m). Beyond this scale, the clustering effect gradually diminishes, but remains statisitically significant up to a of radius 700m.
+This suggests Bishan has compact cafe clusters with a typical cluster diameter of 50-220m (radius 100-440m). Beyond this scale, the clustering effect gradually diminishes, but remains statisitically significant up to a of radius 700m.
 :::
 
 ### 4.3.2 Downtown Core Planning Area
@@ -968,7 +982,6 @@ plot(G_DC, xlim=c(0,500))
 Monte Carlo test with G-fucntion:
 
 ```{r}
-set.seed(1234)
 
 G_DC.csr <- envelope(cafe_DC_ppp, Gest,rank=1, nsim = 99)
 ```
@@ -981,7 +994,7 @@ plot(G_DC.csr)
 ::: callout-note
 ## Statistical Conclusion
 
-G(r) shows that cafes distribution in Downtown Core follow a random pattern and has no clusters statistically.
+G(r) shows that cafes distribution in Downtown Core overall follow a random pattern and has no clusters statistically.
 :::
 
 #### **4.3.3.3 Compute L-function estimation**
@@ -1008,7 +1021,6 @@ plot(L_DC, . -r ~ r,
 Monte Carlo test with L-fucntion:
 
 ```{r}
-set.seed(1234)
 
 L_DC.csr <- envelope(cafe_DC_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
 ```
@@ -1199,7 +1211,6 @@ The tests consistently show R values less than 1 with p-values below 0.05 for ea
 Monte Carlo test with G-fucntion:
 
 ```{r}
-set.seed(1234)
 
 par(bg = "#f6f6f6", mfcol=c(2,3))
 for (m in 1:6) {
@@ -1233,7 +1244,6 @@ Although the G(r) functions do not increase sharply across all months, the resul
 Monte Carlo test with L-fucntion:
 
 ```{r}
-set.seed(1234)
 
 par(bg = "#f6f6f6",mfcol=c(2,3))
 for (m in 1:6) {
@@ -1304,8 +1314,6 @@ fm_non_DC_ppp_km = rescale.ppp(fm_non_DC_ppp,1000,"km")
 ## Downtown Core
 
 ```{r}
-set.seed(1234)
-
 clarkevans.test(fm_DC_ppp,
                 correction = "none",
                 clipregion = "DC_owin",
@@ -1317,8 +1325,6 @@ clarkevans.test(fm_DC_ppp,
 ## Outside Downtown Core
 
 ```{r}
-set.seed(1234)
-
 clarkevans.test(fm_non_DC_ppp,
                 correction = "none",
                 clipregion = "non_dc_owin",
@@ -1339,7 +1345,7 @@ Interestingly, both the CBD (Downtown Core planning area) and areas outside the 
 ```{r}
 #| fig.width: 12
 #| fig.height: 10
-par(bg="#f6f6f6",mfrow=c(2,2))
+par(bg="#f6f6f6",mfrow=c(3,2))
 plot(density(fm_DC_ppp_km, 
              sigma=bw.diggle, 
              edge=TRUE, 
@@ -1360,10 +1366,16 @@ plot(density(fm_non_DC_ppp_km,
              edge=TRUE, 
              kernel="gaussian"),
      main="Outside Downtown Core_ppl")
+plot(adaptive.density(fm_DC_ppp_km, 
+  method="kernel"),
+     main="Downtown Core_adaptive")
+plot(adaptive.density(fm_non_DC_ppp_km, 
+  method="kernel"),
+     main="Outside Downtown Core_adaptive")
 
 ```
 
-As the KDE plots show, there is a high intensity in the CBD area. In the non-CBD areas, a few low-intensity regions are located in the central region, adjacent to the Downtown Core and around Geylang.
+As KDE plots shown, there is a high intensity in the CBD area. In the non-CBD areas, a few low-intensity regions are located in the central region, adjacent to the Downtown Core and around Geylang.
 
 ## 6.3 Second-Order SPPA
 
@@ -1391,8 +1403,6 @@ plot(G_DC, xlim=c(0,500))
 Monte Carlo test with G-fucntion:
 
 ```{r}
-set.seed(1234)
-
 G_DC.csr <- envelope(fm_DC_ppp, Gest,rank=1, nsim = 99)
 ```
 
@@ -1431,8 +1441,6 @@ plot(L_DC, . -r ~ r,
 Monte Carlo test with L-fucntion:
 
 ```{r}
-set.seed(1234)
-
 L_DC.csr <- envelope(fm_DC_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
 ```
 
@@ -1471,8 +1479,6 @@ plot(G_n_DC, xlim=c(0,500))
 Monte Carlo test with G-fucntion:
 
 ```{r}
-set.seed(1234)
-
 G_n_DC.csr <- envelope(fm_non_DC_ppp, Gest,rank=1, nsim = 99)
 ```
 
@@ -1503,16 +1509,14 @@ plot(L_n_DC, . -r ~ r,
 
 **Null and Alternative Hypotheses:**
 
--   H0 = The distribution of fund management entities outside are randomly distributed
--   H1= The distribution of fund management entities outside are not randomly distributed
+-   H0 = The distribution of fund management entities outside Downtown Core are randomly distributed
+-   H1= The distribution of fund management entities outside Downtown Core are not randomly distributed
 
 **Significance Level:** A 98% confidence level will be used (α = 0.02)
 
 Monte Carlo test with L-fucntion:
 
 ```{r}
-set.seed(1234)
-
 L_n_DC.csr <- envelope(fm_non_DC_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
 ```
 
@@ -1722,3 +1726,14 @@ Based on the analysis, it indicates that different industries have different poi
 
 -   **Fund Management Entities (FMEs):**\
     Contrary to the initial assumption of clustering only in the Downtown Core, FMEs demonstrate strong clustering both inside and outside the CBD. This occurs at both broad and short spatial scales, with multiple firms often located within the same buildings or conservation areas (e.g., Boat Quay). This suggests FMEs intentionally co-locate in established commercial nodes to leverage shared networks, amenities or prestige.
+
+# 8 Future Work
+
+1.  **Include Land Use Layer:** Due to time constraints, I didn't include the land use layer in my analysis. This is unfortunate since I believe non-specialized retail stores are likely clustered around residential areas. Without the land use layer, it's difficult to make meaningful comparisons.
+2.  **Include Attribute Data:** Similar to the land use layer, the current dataset only includes registration information. With registration data alone, we can only observe spatial patterns across different regions without full context. Additional data such as demographics or rental prices within each area would enable deeper analysis and help answer detailed questions like: Which age groups do cafes target? Do they serve wealthy families? Are cafes and stores clustered in high-rent areas? How do rental prices compare across different industries?"
+
+# 9 References
+
+-   Kam, T.S. (2025). [First-order Spatial Point Patterns Analysis Methods](https://r4gdsa.netlify.app/chap04#plotting-cartographic-quality-kde-map)
+-   Kam, T.S. (2025). [2nd Order Spatial Point Patterns Analysis Methods](https://r4gdsa.netlify.app/chap05#analysing-spatial-point-process-using-k-function)
+-   Kam, T.S. (2025). [Spatio-Temporal Point Patterns Analysis](https://r4gdsa.netlify.app/chap06#computing-spatio-temporal-kde-1)
