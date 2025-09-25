@@ -170,7 +170,7 @@ For instance if we are studying distribution of GDP per capita of Hunan Provice,
 
 In this section, we will learn how to apply appropriate Local Indicators for Spatial Association (LISA), especially local Moran’I to detect cluster and/or outlier from GDP per capita 2012 of Hunan Province, PRC.
 
-## 4.1 **Computing Contiguity Spatial Weights**
+## 4.1 Computing Contiguity Spatial Weights
 
 Before we can compute the local spatial autocorrelation statistics, we need to construct a spatial weights of the study area. The spatial weights is used to define the neighbourhood relationships between the geographical units (i.e. county) in the study area.
 
@@ -230,7 +230,7 @@ Other robust method includes **Binary weights (`style="B"`)** - Each neighbor ju
     -   S1 and S2 are internal numbers used for calculating variance and significance in Moran’s I or Geary’s C.
 :::
 
-## **4.3 Computing local Moran’s I**
+## 4.3 Computing Local Moran’s I
 
 To compute local Moran’s I, the [`local_moran()`](https://sfdep.josiahparry.com/reference/local_moran) function of **sfdep** will be used. It computes *Ii*values, given a set of *zi* values and a listw object providing neighbour weighting information for the polygon associated with the zi values.
 
@@ -290,7 +290,7 @@ ii.map <- tm_shape(lisa) +
 ii.map
 ```
 
-### **4.3.2 Mapping local Moran’s I p-values**
+### 4.3.2 Mapping local Moran’s I p-values
 
 The choropleth shows there is evidence for both positive and negative Ii values. However, it is useful to consider the p-values for each of these values, as consider above.
 
@@ -318,7 +318,7 @@ tm_polygons(fill = "p_ii",
 p_ii.map
 ```
 
-### **4.3.3** Mapping both local Moran’s I values and p-values
+### 4.3.3 Mapping both local Moran’s I values and p-values
 
 For effective interpretation, it is better to plot both the local Moran’s I values map and its corresponding p-values map next to each other.
 
@@ -340,7 +340,7 @@ tmap_arrange(ii.map, p_ii.map, asp=1, ncol=2)
 -   **Outliers (Low-High):** Counties includes Taojiang & PingJiang in the east region and with negative Local Moran's I values (-2 to -1), indicating spatial outliers. These areas have significantly lower GDPPC compared to their neighbors, representing low-high outliers that stand in stark contrast to the surrounding higher-performing counties. It suggests potential economic shadow effects where nearby high-growth areas may be drawing away skilled labor, investment or resources, creating relative economic disadvantages in neighboring regions.
 :::
 
-## **4.4 Preparing and Visualising LISA Map**
+## 4.4 Preparing and Visualising LISA Map
 
 Visualizing LISA involves creating maps that highlight significant spatial patterns, such as hot spots (high values clustered together) and cold spots (low values clustered together), as well as identifying spatial outliers. Common methods include choropleth maps showing LISA values, Moran scatterplots which depict local spatial autocorrelation for individual locations, and hot spot analysis maps.
 

@@ -231,15 +231,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#visualize-regional-development-indicator" id="toc-visualize-regional-development-indicator" class="nav-link" data-scroll-target="#visualize-regional-development-indicator">3 Visualize Regional Development Indicator</a></li>
   <li><a href="#local-indicators-of-spatial-associationlisa" id="toc-local-indicators-of-spatial-associationlisa" class="nav-link" data-scroll-target="#local-indicators-of-spatial-associationlisa">4 Local Indicators of Spatial Association(LISA)</a>
   <ul class="collapse">
-  <li><a href="#computing-contiguity-spatial-weights" id="toc-computing-contiguity-spatial-weights" class="nav-link" data-scroll-target="#computing-contiguity-spatial-weights">4.1 <strong>Computing Contiguity Spatial Weights</strong></a></li>
+  <li><a href="#computing-contiguity-spatial-weights" id="toc-computing-contiguity-spatial-weights" class="nav-link" data-scroll-target="#computing-contiguity-spatial-weights">4.1 Computing Contiguity Spatial Weights</a></li>
   <li><a href="#row-standardised-weights-matrix" id="toc-row-standardised-weights-matrix" class="nav-link" data-scroll-target="#row-standardised-weights-matrix">4.2 Row-standardised Weights Matrix</a></li>
-  <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i"><strong>4.3&nbsp;Computing local Moran’s I</strong></a>
+  <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i">4.3&nbsp;Computing Local Moran’s I</a>
   <ul class="collapse">
   <li><a href="#mapping-local-morans-i-values" id="toc-mapping-local-morans-i-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-values">4.3.1&nbsp;Mapping local Moran’s I values</a></li>
-  <li><a href="#mapping-local-morans-i-p-values" id="toc-mapping-local-morans-i-p-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-p-values"><strong>4.3.2 Mapping local Moran’s I p-values</strong></a></li>
-  <li><a href="#mapping-both-local-morans-i-values-and-p-values" id="toc-mapping-both-local-morans-i-values-and-p-values" class="nav-link" data-scroll-target="#mapping-both-local-morans-i-values-and-p-values"><strong>4.3.3</strong> Mapping both local Moran’s I values and p-values</a></li>
+  <li><a href="#mapping-local-morans-i-p-values" id="toc-mapping-local-morans-i-p-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-p-values">4.3.2 Mapping local Moran’s I p-values</a></li>
+  <li><a href="#mapping-both-local-morans-i-values-and-p-values" id="toc-mapping-both-local-morans-i-values-and-p-values" class="nav-link" data-scroll-target="#mapping-both-local-morans-i-values-and-p-values">4.3.3 Mapping both local Moran’s I values and p-values</a></li>
   </ul></li>
-  <li><a href="#preparing-and-visualising-lisa-map" id="toc-preparing-and-visualising-lisa-map" class="nav-link" data-scroll-target="#preparing-and-visualising-lisa-map"><strong>4.4&nbsp;Preparing and Visualising LISA Map</strong></a>
+  <li><a href="#preparing-and-visualising-lisa-map" id="toc-preparing-and-visualising-lisa-map" class="nav-link" data-scroll-target="#preparing-and-visualising-lisa-map">4.4&nbsp;Preparing and Visualising LISA Map</a>
   <ul class="collapse">
   <li><a href="#plotting-moran-scatterplot" id="toc-plotting-moran-scatterplot" class="nav-link" data-scroll-target="#plotting-moran-scatterplot">4.4.1 Plotting Moran scatterplot</a></li>
   <li><a href="#plotting-moran-scatterplot-with-standardised-variable" id="toc-plotting-moran-scatterplot-with-standardised-variable" class="nav-link" data-scroll-target="#plotting-moran-scatterplot-with-standardised-variable">4.4.2 Plotting Moran scatterplot with standardised variable</a></li>
@@ -869,7 +869,7 @@ Note
 <p>For instance if we are studying distribution of GDP per capita of Hunan Provice, People Republic of China, <strong>local clusters</strong> in GDP per capita mean that there are counties that have higher or lower rates than is to be expected by chance alone;The idea is to see whether these patterns are&nbsp;<strong>just random</strong>&nbsp;or statistically significant.</p>
 <p>In this section, we will learn how to apply appropriate Local Indicators for Spatial Association (LISA), especially local Moran’I to detect cluster and/or outlier from GDP per capita 2012 of Hunan Province, PRC.</p>
 <section id="computing-contiguity-spatial-weights" class="level2">
-<h2 class="anchored" data-anchor-id="computing-contiguity-spatial-weights">4.1 <strong>Computing Contiguity Spatial Weights</strong></h2>
+<h2 class="anchored" data-anchor-id="computing-contiguity-spatial-weights">4.1 Computing Contiguity Spatial Weights</h2>
 <p>Before we can compute the local spatial autocorrelation statistics, we need to construct a spatial weights of the study area. The spatial weights is used to define the neighbourhood relationships between the geographical units (i.e.&nbsp;county) in the study area.</p>
 <p>In the code chunk below,&nbsp;<a href="https://sfdep.josiahparry.com/reference/st_contiguity"><code>st_contiguity()</code></a>&nbsp;of&nbsp;<strong>sfdep</strong>&nbsp;package is used to compute contiguity weight matrices for the study area. This function builds a neighbours list based on regions with contiguous boundaries. If you look at the documentation you will see that you can pass a “queen” argument that takes TRUE or FALSE as options. If you do not specify this argument the default is set to TRUE, that is, if you don’t specify queen = FALSE this function will return a list of first order neighbours using the Queen criteria.</p>
 <p>Next,&nbsp;<a href="https://sfdep.josiahparry.com/reference/st_weights"><code>st_weights()</code></a>&nbsp;is used to calculate polygon spatial weights from the&nbsp;<em>nb</em>&nbsp;list.</p>
@@ -940,7 +940,7 @@ How to read the result?
 </div>
 </section>
 <section id="computing-local-morans-i" class="level2">
-<h2 class="anchored" data-anchor-id="computing-local-morans-i"><strong>4.3&nbsp;Computing local Moran’s I</strong></h2>
+<h2 class="anchored" data-anchor-id="computing-local-morans-i">4.3&nbsp;Computing Local Moran’s I</h2>
 <p>To compute local Moran’s I, the&nbsp;<a href="https://sfdep.josiahparry.com/reference/local_moran"><code>local_moran()</code></a>&nbsp;function of&nbsp;<strong>sfdep</strong>&nbsp;will be used. It computes&nbsp;<em>Ii</em>values, given a set of&nbsp;<em>zi</em>&nbsp;values and a listw object providing neighbour weighting information for the polygon associated with the zi values.</p>
 <table class="caption-top table">
 <colgroup>
@@ -994,14 +994,14 @@ How to read the result?
 <pre><code>Rows: 88
 Columns: 21
 $ ii           &lt;dbl&gt; -1.468468e-03, 2.587817e-02, -1.198765e-02, 1.022468e-03,…
-$ eii          &lt;dbl&gt; -9.878494e-04, -4.886356e-03, -8.334571e-02, 2.082311e-04…
-$ var_ii       &lt;dbl&gt; 4.658196e-04, 9.471085e-03, 7.824251e-02, 3.831492e-06, 1…
-$ z_ii         &lt;dbl&gt; -0.022268524, 0.316118852, 0.255106608, 0.415974494, 0.35…
-$ p_ii         &lt;dbl&gt; 9.822338e-01, 7.519123e-01, 7.986408e-01, 6.774287e-01, 7…
-$ p_ii_sim     &lt;dbl&gt; 0.92, 0.84, 0.74, 0.72, 0.66, 0.84, 0.04, 0.12, 0.02, 0.1…
-$ p_folded_sim &lt;dbl&gt; 0.46, 0.42, 0.37, 0.36, 0.33, 0.42, 0.02, 0.06, 0.01, 0.0…
-$ skewness     &lt;dbl&gt; -0.8812183, -1.0283691, 0.8228980, 0.4041690, 1.0867959, …
-$ kurtosis     &lt;dbl&gt; 0.912392930, 1.507115644, 0.350060537, -0.284243738, 1.44…
+$ eii          &lt;dbl&gt; 2.239949e-03, 7.357741e-03, -2.276138e-02, 2.113699e-05, …
+$ var_ii       &lt;dbl&gt; 4.192853e-04, 8.167525e-03, 1.069188e-01, 5.763497e-06, 1…
+$ z_ii         &lt;dbl&gt; -0.181106344, 0.204930150, 0.032948774, 0.417094523, 0.51…
+$ p_ii         &lt;dbl&gt; 0.8562841049, 0.8376266986, 0.9737154375, 0.6766092708, 0…
+$ p_ii_sim     &lt;dbl&gt; 0.86, 1.00, 0.78, 0.66, 0.58, 0.70, 0.08, 0.14, 0.04, 0.1…
+$ p_folded_sim &lt;dbl&gt; 0.43, 0.50, 0.39, 0.33, 0.29, 0.35, 0.04, 0.07, 0.02, 0.0…
+$ skewness     &lt;dbl&gt; -0.7051429, -0.6513071, 0.9394877, 0.7189413, 0.6476455, …
+$ kurtosis     &lt;dbl&gt; 0.15983550, 0.27939794, 0.65047800, -0.27697090, -0.76801…
 $ mean         &lt;fct&gt; Low-High, Low-Low, High-Low, High-High, High-High, High-L…
 $ median       &lt;fct&gt; High-High, High-High, High-High, High-High, High-High, Hi…
 $ pysal        &lt;fct&gt; Low-High, Low-Low, High-Low, High-High, High-High, High-L…
@@ -1047,7 +1047,7 @@ $ geometry     &lt;POLYGON [m]&gt; POLYGON ((22320.48 3301894,..., POLYGON ((355
 </div>
 </section>
 <section id="mapping-local-morans-i-p-values" class="level3">
-<h3 class="anchored" data-anchor-id="mapping-local-morans-i-p-values"><strong>4.3.2 Mapping local Moran’s I p-values</strong></h3>
+<h3 class="anchored" data-anchor-id="mapping-local-morans-i-p-values">4.3.2 Mapping local Moran’s I p-values</h3>
 <p>The choropleth shows there is evidence for both positive and negative Ii values. However, it is useful to consider the p-values for each of these values, as consider above.</p>
 <p>The code chunks below produce a choropleth map of Moran’s I p-values by using functions of&nbsp;<strong>tmap</strong>&nbsp;package.</p>
 <div class="cell">
@@ -1078,7 +1078,7 @@ $ geometry     &lt;POLYGON [m]&gt; POLYGON ((22320.48 3301894,..., POLYGON ((355
 </div>
 </section>
 <section id="mapping-both-local-morans-i-values-and-p-values" class="level3">
-<h3 class="anchored" data-anchor-id="mapping-both-local-morans-i-values-and-p-values"><strong>4.3.3</strong> Mapping both local Moran’s I values and p-values</h3>
+<h3 class="anchored" data-anchor-id="mapping-both-local-morans-i-values-and-p-values">4.3.3 Mapping both local Moran’s I values and p-values</h3>
 <p>For effective interpretation, it is better to plot both the local Moran’s I values map and its corresponding p-values map next to each other.</p>
 <p>The code chunk below will be used to create such visualisation.</p>
 <div class="cell">
@@ -1111,7 +1111,7 @@ Result Interpretation
 </section>
 </section>
 <section id="preparing-and-visualising-lisa-map" class="level2">
-<h2 class="anchored" data-anchor-id="preparing-and-visualising-lisa-map"><strong>4.4&nbsp;Preparing and Visualising LISA Map</strong></h2>
+<h2 class="anchored" data-anchor-id="preparing-and-visualising-lisa-map">4.4&nbsp;Preparing and Visualising LISA Map</h2>
 <p>Visualizing LISA involves creating maps that highlight significant spatial patterns, such as hot spots (high values clustered together) and cold spots (low values clustered together), as well as identifying spatial outliers. Common methods include choropleth maps showing LISA values, Moran scatterplots which depict local spatial autocorrelation for individual locations, and hot spot analysis maps.</p>
 <p>The LISA Cluster Map shows the significant locations color coded by type of spatial autocorrelation. The first step before we can generate the LISA cluster map is to plot the Moran scatterplot.</p>
 <section id="plotting-moran-scatterplot" class="level3">
