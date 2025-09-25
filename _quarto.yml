@@ -27,7 +27,11 @@ website:
           - text: "Hands-on 3: Spatio-Temporal Point Patterns Analysis"
             href: Hands-on/Hands-on-Ex03/Hands-on-Ex03.html  
           - text: "Hands-on 4: Spatial Weights and Applications"
-            href: Hands-on/Hands-on-Ex04/Hands-on-Ex04.html            
+            href: Hands-on/Hands-on-Ex04/Hands-on-Ex04.html       
+          - text: "Hands-on 5.a: Global Measures of Spatial Autocorrelation"
+            href: Hands-on/Hands-on-Ex05/Hands-on-Ex05.a.html
+          - text: "Hands-on 5.b: Local Measures of Spatial Autocorrelationn"
+            href: Hands-on/Hands-on-Ex05/Hands-on-Ex05.b.html
 
       - text: "In-class Exercises"
         menu:

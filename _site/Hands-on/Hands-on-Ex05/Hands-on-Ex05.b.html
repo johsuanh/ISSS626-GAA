@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Johsuan Huang">
+<meta name="dcterms.date" content="2025-09-25">
+
+<title>Hands-on 5.b: Local Measures of Spatial Autocorrelationn – ISSS626 GAAxJH</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/favicon/favicon-96x96.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-9e1f2a4632985dffc2c80318c992baf5.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-4ba52ffbc7a8aaf3d7197e379d042a28.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../images/Logo2.png" alt="" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Hands-on Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex01/Hands-on-Ex01_a.html">
+ <span class="dropdown-text">Hands-on 1.a: Geospatial Data Science with R</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex01/Hands-on-Ex01_b.html">
+ <span class="dropdown-text">Hands-on 1.b: Thematic Mapping and GeoVisualisation with R</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex02/Hands-on-Ex02_a.html">
+ <span class="dropdown-text">Hands-on 2.a: 1st Order Spatial Point Patterns Analysis Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex02/Hands-on-Ex02_b.html">
+ <span class="dropdown-text">Hands-on 2.b: 2nd Order Spatial Point Patterns Analysis Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex03/Hands-on-Ex03.html">
+ <span class="dropdown-text">Hands-on 3: Spatio-Temporal Point Patterns Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex04/Hands-on-Ex04.html">
+ <span class="dropdown-text">Hands-on 4: Spatial Weights and Applications</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex05/Hands-on-Ex05.a.html">
+ <span class="dropdown-text">Hands-on 5.a: Global Measures of Spatial Autocorrelation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex05/Hands-on-Ex05.b.html">
+ <span class="dropdown-text">Hands-on 5.b: Local Measures of Spatial Autocorrelationn</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">In-class Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex03/In-class_Ex03a.html">
+ <span class="dropdown-text">In-class 3.a</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex03/In-class_Ex03b.html">
+ <span class="dropdown-text">In-class 3.b</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex04/In-class_Ex04.html">
+ <span class="dropdown-text">In-class 4</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Take-home Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../Take-home/Take-home-Ex1/Take-home_Ex01.html">
+ <span class="dropdown-text">Take-home Ex01: Geospatial Analytics for Public Good</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1 Overview</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">2 Getting Started</a>
+  <ul class="collapse">
+  <li><a href="#the-analytical-question" id="toc-the-analytical-question" class="nav-link" data-scroll-target="#the-analytical-question">2.1 The analytical question</a></li>
+  <li><a href="#the-study-area-and-data" id="toc-the-study-area-and-data" class="nav-link" data-scroll-target="#the-study-area-and-data">2.2 The Study Area and Data</a></li>
+  <li><a href="#setting-the-analytical-toolls" id="toc-setting-the-analytical-toolls" class="nav-link" data-scroll-target="#setting-the-analytical-toolls">2.3 Setting the Analytical Toolls</a></li>
+  <li><a href="#getting-the-data-into-r-environment" id="toc-getting-the-data-into-r-environment" class="nav-link" data-scroll-target="#getting-the-data-into-r-environment">2.4 Getting the Data Into R Environment</a>
+  <ul class="collapse">
+  <li><a href="#import-shapefile" id="toc-import-shapefile" class="nav-link" data-scroll-target="#import-shapefile">2.4.1 Import shapefile</a></li>
+  <li><a href="#import-csv-file" id="toc-import-csv-file" class="nav-link" data-scroll-target="#import-csv-file">2.4.2 Import CSV File</a></li>
+  <li><a href="#perform-relational-join" id="toc-perform-relational-join" class="nav-link" data-scroll-target="#perform-relational-join">2.3.3 Perform Relational Join</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#visualize-regional-development-indicator" id="toc-visualize-regional-development-indicator" class="nav-link" data-scroll-target="#visualize-regional-development-indicator">3 Visualize Regional Development Indicator</a></li>
+  <li><a href="#local-indicators-of-spatial-associationlisa" id="toc-local-indicators-of-spatial-associationlisa" class="nav-link" data-scroll-target="#local-indicators-of-spatial-associationlisa">4 Local Indicators of Spatial Association(LISA)</a>
+  <ul class="collapse">
+  <li><a href="#computing-contiguity-spatial-weights" id="toc-computing-contiguity-spatial-weights" class="nav-link" data-scroll-target="#computing-contiguity-spatial-weights">4.1 <strong>Computing Contiguity Spatial Weights</strong></a></li>
+  <li><a href="#row-standardised-weights-matrix" id="toc-row-standardised-weights-matrix" class="nav-link" data-scroll-target="#row-standardised-weights-matrix">4.2 Row-standardised Weights Matrix</a></li>
+  <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i"><strong>4.3&nbsp;Computing local Moran’s I</strong></a>
+  <ul class="collapse">
+  <li><a href="#mapping-local-morans-i-values" id="toc-mapping-local-morans-i-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-values">4.3.1&nbsp;Mapping local Moran’s I values</a></li>
+  <li><a href="#mapping-local-morans-i-p-values" id="toc-mapping-local-morans-i-p-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-p-values"><strong>4.3.2 Mapping local Moran’s I p-values</strong></a></li>
+  <li><a href="#mapping-both-local-morans-i-values-and-p-values" id="toc-mapping-both-local-morans-i-values-and-p-values" class="nav-link" data-scroll-target="#mapping-both-local-morans-i-values-and-p-values"><strong>4.3.3</strong> Mapping both local Moran’s I values and p-values</a></li>
+  </ul></li>
+  <li><a href="#preparing-and-visualising-lisa-map" id="toc-preparing-and-visualising-lisa-map" class="nav-link" data-scroll-target="#preparing-and-visualising-lisa-map"><strong>4.4&nbsp;Preparing and Visualising LISA Map</strong></a>
+  <ul class="collapse">
+  <li><a href="#plotting-moran-scatterplot" id="toc-plotting-moran-scatterplot" class="nav-link" data-scroll-target="#plotting-moran-scatterplot">4.4.1 Plotting Moran scatterplot</a></li>
+  <li><a href="#plotting-moran-scatterplot-with-standardised-variable" id="toc-plotting-moran-scatterplot-with-standardised-variable" class="nav-link" data-scroll-target="#plotting-moran-scatterplot-with-standardised-variable">4.4.2 Plotting Moran scatterplot with standardised variable</a></li>
+  <li><a href="#preparing-lisa-map-classes" id="toc-preparing-lisa-map-classes" class="nav-link" data-scroll-target="#preparing-lisa-map-classes">4.4.3 Preparing LISA map classes</a></li>
+  <li><a href="#plotting-and-visualising-lisa-map" id="toc-plotting-and-visualising-lisa-map" class="nav-link" data-scroll-target="#plotting-and-visualising-lisa-map">4.4.4 Plotting and visualising LISA map</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">5 Reference</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Hands-on 5.b: Local Measures of Spatial Autocorrelationn</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Johsuan Huang </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 25, 2025</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">September 26, 2025</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level1">
+<h1>1 Overview</h1>
+<p>Local Measures of Spatial Autocorrelation (LMSA) focus on the relationships between each observation and its surroundings, rather than providing a single summary of these relationships across the map. In this sense, they are not summary statistics but scores that allow us to learn more about the spatial structure in our data.</p>
+<p>The general intuition behind the metrics however is similar to that of global ones. Some of them are even mathematically connected, where the global version can be decomposed into a collection of local ones. One such example are <strong>Local Indicators of Spatial Association (LISA)</strong>. Beside LISA, Getis-Ord’s Gi-statistics will be introduce as an alternative LMSA statistics that present complementary information or allow us to obtain similar insights for geographically referenced data.</p>
+<p>In this hands-on exercise, we will learn how to compute Local Measures of Spatial Autocorrelation (LMSA) by using&nbsp;<a href="https://sfdep.josiahparry.com/"><strong>sfdep</strong></a>&nbsp;package. By the end to this hands-on exercise, we will be able to:</p>
+<ul>
+<li>import geospatial data using appropriate function(s) of&nbsp;<strong>sf</strong>&nbsp;package,</li>
+<li>import csv file using appropriate function of&nbsp;<strong>readr</strong>&nbsp;package,</li>
+<li>perform relational join using appropriate join function of&nbsp;<strong>dplyr</strong>&nbsp;package,</li>
+<li>compute Local Indicator of Spatial Association (LISA) statistics for detecting clusters and outliers by using appropriate functions&nbsp;<strong>sfdep</strong>&nbsp;package;</li>
+<li>compute Getis-Ord’s Gi-statistics for detecting hot spot or/and cold spot area by using appropriate functions of&nbsp;<strong>sfdep</strong>&nbsp;package; and</li>
+<li>to visualise the analysis output by using&nbsp;<strong>tmap</strong>&nbsp;package.</li>
+</ul>
+</section>
+<section id="getting-started" class="level1">
+<h1>2 Getting Started</h1>
+<section id="the-analytical-question" class="level2">
+<h2 class="anchored" data-anchor-id="the-analytical-question">2.1 The analytical question</h2>
+<p>In spatial policy, one of the main development objective of the local government and planners is to ensure equal distribution of development in the province. Our task in this study, hence, is to apply appropriate spatial statistical methods to discover if development are even distributed geographically. If the answer is&nbsp;<strong>No</strong>. Then, our next question will be “is there sign of spatial clustering?”. And, if the answer for this question is yes, then our next question will be “<strong>where are these clusters?</strong>”</p>
+<p>In this case study, we are interested to examine the spatial pattern of a selected development indicator (i.e.&nbsp;GDP per capita) of&nbsp;<a href="https://en.wikipedia.org/wiki/Hunan">Hunan Provice</a>, People Republic of China.</p>
+</section>
+<section id="the-study-area-and-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-study-area-and-data">2.2 The Study Area and Data</h2>
+<p>Two data sets will be used in this hands-on exercise, they are:</p>
+<ul>
+<li><p>Hunan province administrative boundary layer at county level. This is a geospatial data set in ESRI shapefile format.</p></li>
+<li><p>Hunan_2012.csv: This csv file contains selected Hunan’s local development indicators in 2012.</p></li>
+</ul>
+</section>
+<section id="setting-the-analytical-toolls" class="level2">
+<h2 class="anchored" data-anchor-id="setting-the-analytical-toolls">2.3 Setting the Analytical Toolls</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Library</th>
+<th>Desc</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://r-spatial.github.io/sf/">sf</a></td>
+<td>handling geospatial data</td>
+</tr>
+<tr class="even">
+<td><a href="https://cran.r-project.org/web/packages/tmap/index.html">tmap</a></td>
+<td>visualization for geospatial data</td>
+</tr>
+<tr class="odd">
+<td>tidyverse</td>
+<td>handling data including packages <strong>readr</strong>, <strong>tidyr and dplyr</strong></td>
+</tr>
+<tr class="even">
+<td>knitr</td>
+<td>generate elegant, flexible, and fast dynamic report</td>
+</tr>
+<tr class="odd">
+<td>sfdep</td>
+<td>compute spatial weights, global and local spatial autocorrelation statistics</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tmap, tidyverse,knitr,sfdep,ggrepel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="getting-the-data-into-r-environment" class="level2">
+<h2 class="anchored" data-anchor-id="getting-the-data-into-r-environment">2.4 Getting the Data Into R Environment</h2>
+<p>In this section, we will learn how to bring a geospatial data and its associated attribute table into R environment. The geospatial data is in ESRI shapefile format and the attribute table is in csv fomat.</p>
+<section id="import-shapefile" class="level3">
+<h3 class="anchored" data-anchor-id="import-shapefile">2.4.1 Import shapefile</h3>
+<p>The code chunk below uses&nbsp;<a href="https://r-spatial.github.io/sf/reference/st_read.html"><code>st_read()</code></a>&nbsp;of&nbsp;<strong>sf</strong>&nbsp;package to import Hunan shapefile into R. The imported shapefile will be&nbsp;<strong>simple features</strong>&nbsp;Object of&nbsp;<strong>sf</strong>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">layer =</span> <span class="st">"Hunan"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">32650</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `Hunan' from data source 
+  `/Users/johsuan/johsuanh/ISSS626-GAA/Hands-on/Hands-on-Ex05/data/geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 88 features and 7 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:32650 
+  wkt:
+PROJCRS["WGS 84 / UTM zone 50N",
+    BASEGEOGCRS["WGS 84",
+        ENSEMBLE["World Geodetic System 1984 ensemble",
+            MEMBER["World Geodetic System 1984 (Transit)"],
+            MEMBER["World Geodetic System 1984 (G730)"],
+            MEMBER["World Geodetic System 1984 (G873)"],
+            MEMBER["World Geodetic System 1984 (G1150)"],
+            MEMBER["World Geodetic System 1984 (G1674)"],
+            MEMBER["World Geodetic System 1984 (G1762)"],
+            MEMBER["World Geodetic System 1984 (G2139)"],
+            MEMBER["World Geodetic System 1984 (G2296)"],
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]],
+            ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4326]],
+    CONVERSION["UTM zone 50N",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",0,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",117,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",0.9996,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",500000,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["(E)",east,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["(N)",north,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Navigation and medium accuracy spatial referencing."],
+        AREA["Between 114°E and 120°E, northern hemisphere between equator and 84°N, onshore and offshore. Brunei. China. Hong Kong. Indonesia. Malaysia - East Malaysia - Sarawak. Mongolia. Philippines. Russian Federation. Taiwan."],
+        BBOX[0,114,84,120]],
+    ID["EPSG",32650]]</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The raw data is in WGS 84 geographic coordinates system. For geospatial analysis, it is appropriate to use projected coordinates system.</p>
+<p>In the code chunk above,&nbsp;<code>st_transform()</code>&nbsp;is used to transform Hunan geospatial data from WGS 84 to UTM zone 50N (i.e.&nbsp;EPSG: 32650).</p>
+<p>Area of use: <strong>Between 114°E and 120°E</strong>, northern hemisphere between equator and 84°N, onshore and offshore. Brunei. China. Hong Kong. Indonesia. Malaysia - East Malaysia - Sarawak. Mongolia. Philippines. Russian Federation. Taiwan</p>
+</div>
+</div>
+<p>After importing the shape file, let’s plot the graph:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">bg=</span><span class="st">"#f6f6f6"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="import-csv-file" class="level3">
+<h3 class="anchored" data-anchor-id="import-csv-file">2.4.2 Import CSV File</h3>
+<p>Next, we will import&nbsp;<em>Hunan_2012.csv</em>&nbsp;into R by using&nbsp;<em>read_csv()</em>&nbsp;of&nbsp;<strong>readr</strong>&nbsp;package. The output is R dataframe class.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>hunan2012 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/Hunan_2012.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(hunan2012))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 2%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">County</th>
+<th style="text-align: left;">City</th>
+<th style="text-align: right;">avg_wage</th>
+<th style="text-align: right;">deposite</th>
+<th style="text-align: right;">FAI</th>
+<th style="text-align: right;">Gov_Rev</th>
+<th style="text-align: right;">Gov_Exp</th>
+<th style="text-align: right;">GDP</th>
+<th style="text-align: right;">GDPPC</th>
+<th style="text-align: right;">GIO</th>
+<th style="text-align: right;">Loan</th>
+<th style="text-align: right;">NIPCR</th>
+<th style="text-align: right;">Bed</th>
+<th style="text-align: right;">Emp</th>
+<th style="text-align: right;">EmpR</th>
+<th style="text-align: right;">EmpRT</th>
+<th style="text-align: right;">Pri_Stu</th>
+<th style="text-align: right;">Sec_Stu</th>
+<th style="text-align: right;">Household</th>
+<th style="text-align: right;">Household_R</th>
+<th style="text-align: right;">NOIP</th>
+<th style="text-align: right;">Pop_R</th>
+<th style="text-align: right;">RSCG</th>
+<th style="text-align: right;">Pop_T</th>
+<th style="text-align: right;">Agri</th>
+<th style="text-align: right;">Service</th>
+<th style="text-align: right;">Disp_Inc</th>
+<th style="text-align: right;">RORP</th>
+<th style="text-align: right;">ROREmp</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Anhua</td>
+<td style="text-align: left;">Yiyang</td>
+<td style="text-align: right;">30544</td>
+<td style="text-align: right;">10967.0</td>
+<td style="text-align: right;">6831.7</td>
+<td style="text-align: right;">456.72</td>
+<td style="text-align: right;">2703.0</td>
+<td style="text-align: right;">13225.0</td>
+<td style="text-align: right;">14567</td>
+<td style="text-align: right;">9276.9</td>
+<td style="text-align: right;">3954.9</td>
+<td style="text-align: right;">3528.3</td>
+<td style="text-align: right;">2718</td>
+<td style="text-align: right;">494.31</td>
+<td style="text-align: right;">441.4</td>
+<td style="text-align: right;">338.0</td>
+<td style="text-align: right;">54.175</td>
+<td style="text-align: right;">32.830</td>
+<td style="text-align: right;">290.4</td>
+<td style="text-align: right;">234.5</td>
+<td style="text-align: right;">101</td>
+<td style="text-align: right;">670.3</td>
+<td style="text-align: right;">5760.60</td>
+<td style="text-align: right;">910.8</td>
+<td style="text-align: right;">4942.253</td>
+<td style="text-align: right;">5414.5</td>
+<td style="text-align: right;">12373</td>
+<td style="text-align: right;">0.7359464</td>
+<td style="text-align: right;">0.8929619</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Anren</td>
+<td style="text-align: left;">Chenzhou</td>
+<td style="text-align: right;">28058</td>
+<td style="text-align: right;">4598.9</td>
+<td style="text-align: right;">6386.1</td>
+<td style="text-align: right;">220.57</td>
+<td style="text-align: right;">1454.7</td>
+<td style="text-align: right;">4941.2</td>
+<td style="text-align: right;">12761</td>
+<td style="text-align: right;">4189.2</td>
+<td style="text-align: right;">2555.3</td>
+<td style="text-align: right;">3271.8</td>
+<td style="text-align: right;">970</td>
+<td style="text-align: right;">290.82</td>
+<td style="text-align: right;">255.4</td>
+<td style="text-align: right;">99.4</td>
+<td style="text-align: right;">33.171</td>
+<td style="text-align: right;">17.505</td>
+<td style="text-align: right;">104.6</td>
+<td style="text-align: right;">121.9</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">243.2</td>
+<td style="text-align: right;">2386.40</td>
+<td style="text-align: right;">388.7</td>
+<td style="text-align: right;">2357.764</td>
+<td style="text-align: right;">3814.1</td>
+<td style="text-align: right;">16072</td>
+<td style="text-align: right;">0.6256753</td>
+<td style="text-align: right;">0.8782065</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">31935</td>
+<td style="text-align: right;">5517.2</td>
+<td style="text-align: right;">3541.0</td>
+<td style="text-align: right;">243.64</td>
+<td style="text-align: right;">1779.5</td>
+<td style="text-align: right;">12482.0</td>
+<td style="text-align: right;">23667</td>
+<td style="text-align: right;">5108.9</td>
+<td style="text-align: right;">2806.9</td>
+<td style="text-align: right;">7693.7</td>
+<td style="text-align: right;">1931</td>
+<td style="text-align: right;">336.39</td>
+<td style="text-align: right;">270.5</td>
+<td style="text-align: right;">205.9</td>
+<td style="text-align: right;">19.584</td>
+<td style="text-align: right;">17.819</td>
+<td style="text-align: right;">148.1</td>
+<td style="text-align: right;">135.4</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">346.0</td>
+<td style="text-align: right;">3957.90</td>
+<td style="text-align: right;">528.3</td>
+<td style="text-align: right;">4524.410</td>
+<td style="text-align: right;">14100.0</td>
+<td style="text-align: right;">16610</td>
+<td style="text-align: right;">0.6549309</td>
+<td style="text-align: right;">0.8041262</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Baojing</td>
+<td style="text-align: left;">Hunan West</td>
+<td style="text-align: right;">30843</td>
+<td style="text-align: right;">2250.0</td>
+<td style="text-align: right;">1005.4</td>
+<td style="text-align: right;">192.59</td>
+<td style="text-align: right;">1379.1</td>
+<td style="text-align: right;">4087.9</td>
+<td style="text-align: right;">14563</td>
+<td style="text-align: right;">3623.5</td>
+<td style="text-align: right;">1253.7</td>
+<td style="text-align: right;">4191.3</td>
+<td style="text-align: right;">927</td>
+<td style="text-align: right;">195.17</td>
+<td style="text-align: right;">145.6</td>
+<td style="text-align: right;">116.4</td>
+<td style="text-align: right;">19.249</td>
+<td style="text-align: right;">11.831</td>
+<td style="text-align: right;">73.2</td>
+<td style="text-align: right;">69.9</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">184.1</td>
+<td style="text-align: right;">768.04</td>
+<td style="text-align: right;">281.3</td>
+<td style="text-align: right;">1118.561</td>
+<td style="text-align: right;">541.8</td>
+<td style="text-align: right;">13455</td>
+<td style="text-align: right;">0.6544614</td>
+<td style="text-align: right;">0.7460163</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Chaling</td>
+<td style="text-align: left;">Zhuzhou</td>
+<td style="text-align: right;">31251</td>
+<td style="text-align: right;">8241.4</td>
+<td style="text-align: right;">6508.4</td>
+<td style="text-align: right;">620.19</td>
+<td style="text-align: right;">1947.0</td>
+<td style="text-align: right;">11585.0</td>
+<td style="text-align: right;">20078</td>
+<td style="text-align: right;">9157.7</td>
+<td style="text-align: right;">4287.4</td>
+<td style="text-align: right;">3887.7</td>
+<td style="text-align: right;">1449</td>
+<td style="text-align: right;">330.29</td>
+<td style="text-align: right;">299.0</td>
+<td style="text-align: right;">154.0</td>
+<td style="text-align: right;">33.906</td>
+<td style="text-align: right;">20.548</td>
+<td style="text-align: right;">148.7</td>
+<td style="text-align: right;">139.4</td>
+<td style="text-align: right;">106</td>
+<td style="text-align: right;">301.6</td>
+<td style="text-align: right;">4009.50</td>
+<td style="text-align: right;">578.4</td>
+<td style="text-align: right;">3793.550</td>
+<td style="text-align: right;">5444.0</td>
+<td style="text-align: right;">20461</td>
+<td style="text-align: right;">0.5214385</td>
+<td style="text-align: right;">0.9052651</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Changning</td>
+<td style="text-align: left;">Hengyang</td>
+<td style="text-align: right;">28518</td>
+<td style="text-align: right;">10860.0</td>
+<td style="text-align: right;">7920.0</td>
+<td style="text-align: right;">769.86</td>
+<td style="text-align: right;">2631.6</td>
+<td style="text-align: right;">19886.0</td>
+<td style="text-align: right;">24418</td>
+<td style="text-align: right;">37392.0</td>
+<td style="text-align: right;">4242.8</td>
+<td style="text-align: right;">9528.0</td>
+<td style="text-align: right;">3605</td>
+<td style="text-align: right;">548.61</td>
+<td style="text-align: right;">415.1</td>
+<td style="text-align: right;">273.7</td>
+<td style="text-align: right;">81.831</td>
+<td style="text-align: right;">44.485</td>
+<td style="text-align: right;">211.2</td>
+<td style="text-align: right;">211.7</td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">448.2</td>
+<td style="text-align: right;">5220.40</td>
+<td style="text-align: right;">816.3</td>
+<td style="text-align: right;">6430.782</td>
+<td style="text-align: right;">13074.6</td>
+<td style="text-align: right;">20868</td>
+<td style="text-align: right;">0.5490628</td>
+<td style="text-align: right;">0.7566395</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="perform-relational-join" class="level3">
+<h3 class="anchored" data-anchor-id="perform-relational-join">2.3.3 Perform Relational Join</h3>
+<p>The code chunk below will be used to update the attribute table of&nbsp;<em>hunan</em>’s SpatialPolygonsDataFrame with the attribute fields of&nbsp;<em>hunan2012</em>&nbsp;dataframe. This is performed by using&nbsp;<em>left_join()</em>&nbsp;of&nbsp;<strong>dplyr</strong>&nbsp;package.</p>
+<p>After performing a left join, we remove unnecessary columns and retain only ‘NAME_2’, ‘ID_3’, ‘NAME_3’, ‘ENGTYPE_3’, ‘County’, and ‘GDPPC’ for further analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan,hunan2012,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">by =</span> <span class="st">"County"</span>)  <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">7</span>, <span class="dv">15</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(hunan,<span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 15%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">NAME_2</th>
+<th style="text-align: right;">ID_3</th>
+<th style="text-align: left;">NAME_3</th>
+<th style="text-align: left;">ENGTYPE_3</th>
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">GDPPC</th>
+<th style="text-align: left;">geometry</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21098</td>
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: right;">23667</td>
+<td style="text-align: left;">POLYGON ((22320.48 3301894,…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21100</td>
+<td style="text-align: left;">Hanshou</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Hanshou</td>
+<td style="text-align: right;">20981</td>
+<td style="text-align: left;">POLYGON ((35522.96 3230355,…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21101</td>
+<td style="text-align: left;">Jinshi</td>
+<td style="text-align: left;">County City</td>
+<td style="text-align: left;">Jinshi</td>
+<td style="text-align: right;">34592</td>
+<td style="text-align: left;">POLYGON ((5120.127 3285521,…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21102</td>
+<td style="text-align: left;">Li</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Li</td>
+<td style="text-align: right;">24473</td>
+<td style="text-align: left;">POLYGON ((-43433.9 3326204,…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21103</td>
+<td style="text-align: left;">Linli</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Linli</td>
+<td style="text-align: right;">25554</td>
+<td style="text-align: left;">POLYGON ((-19307.27 3304609…</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sf"         "data.frame"</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="visualize-regional-development-indicator" class="level1">
+<h1>3 Visualize Regional Development Indicator</h1>
+<p>Now, we are going to prepare a basemap and a choropleth map showing the distribution of GDP Per Capita (GDPPC) 2012 by using&nbsp;<strong>tmap</strong>&nbsp;package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>equal <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(hunan) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"GDPPC"</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">style =</span> <span class="st">"equal"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">n =</span> <span class="dv">5</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">values =</span> <span class="st">"brewer.blues"</span>)) <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a> <span class="fu">tm_title</span>(<span class="st">"Equal interval classification"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>)) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="fu">c</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>quantile <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(hunan) <span class="sc">+</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"GDPPC"</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">style =</span> <span class="st">"quantile"</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>                <span class="at">n =</span> <span class="dv">5</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>                <span class="at">values =</span> <span class="st">"brewer.blues"</span>)) <span class="sc">+</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a> <span class="fu">tm_title</span>(<span class="st">"Quantile classification"</span>,</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>)) <span class="sc">+</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="fu">c</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>),</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(equal, </span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>             quantile, </span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>             <span class="at">asp=</span><span class="dv">1</span>, </span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>             <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="local-indicators-of-spatial-associationlisa" class="level1">
+<h1>4 Local Indicators of Spatial Association(LISA)</h1>
+<p>Local Indicators of Spatial Association (LISA)&nbsp;are statistics that measure&nbsp;spatial patterns at a local level, unlike global measures (like Moran’s I or Geary’s C) which summarize the whole area. It evaluate the <strong>existence of clusters and/or outliers</strong>:</p>
+<ul>
+<li><strong>Clusters:</strong>&nbsp;neighboring areas with similar values (high-high or low-low).</li>
+<li><strong>Outliers:</strong>&nbsp;areas that are very different from their neighbors (high-low or low-high).</li>
+</ul>
+<p>For instance if we are studying distribution of GDP per capita of Hunan Provice, People Republic of China, <strong>local clusters</strong> in GDP per capita mean that there are counties that have higher or lower rates than is to be expected by chance alone;The idea is to see whether these patterns are&nbsp;<strong>just random</strong>&nbsp;or statistically significant.</p>
+<p>In this section, we will learn how to apply appropriate Local Indicators for Spatial Association (LISA), especially local Moran’I to detect cluster and/or outlier from GDP per capita 2012 of Hunan Province, PRC.</p>
+<section id="computing-contiguity-spatial-weights" class="level2">
+<h2 class="anchored" data-anchor-id="computing-contiguity-spatial-weights">4.1 <strong>Computing Contiguity Spatial Weights</strong></h2>
+<p>Before we can compute the local spatial autocorrelation statistics, we need to construct a spatial weights of the study area. The spatial weights is used to define the neighbourhood relationships between the geographical units (i.e.&nbsp;county) in the study area.</p>
+<p>In the code chunk below,&nbsp;<a href="https://sfdep.josiahparry.com/reference/st_contiguity"><code>st_contiguity()</code></a>&nbsp;of&nbsp;<strong>sfdep</strong>&nbsp;package is used to compute contiguity weight matrices for the study area. This function builds a neighbours list based on regions with contiguous boundaries. If you look at the documentation you will see that you can pass a “queen” argument that takes TRUE or FALSE as options. If you do not specify this argument the default is set to TRUE, that is, if you don’t specify queen = FALSE this function will return a list of first order neighbours using the Queen criteria.</p>
+<p>Next,&nbsp;<a href="https://sfdep.josiahparry.com/reference/st_weights"><code>st_weights()</code></a>&nbsp;is used to calculate polygon spatial weights from the&nbsp;<em>nb</em>&nbsp;list.</p>
+<p><code>st_weights()</code>&nbsp;provides three arguments, they are:</p>
+<ul>
+<li><p>nb: A neighbor list object as created by&nbsp;<code>st_neighbors()</code>.</p></li>
+<li><p>style: Default “W” for row standardized weights. This value can also be “B”, “C”, “U”, “minmax”, and “S”. B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al.&nbsp;1999, p.&nbsp;167-168 (sums over all links to n).</p></li>
+<li><p>allow_zero: If TRUE, assigns zero as lagged value to zone without neighbors.</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>wm_q <span class="ot">&lt;-</span> hunan <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">st_contiguity</span>(geometry, <span class="at">queen =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">wt =</span> <span class="fu">st_weights</span>(nb, <span class="at">style =</span> <span class="st">"W"</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How to read the result?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The summary report above shows that:</p>
+<ul>
+<li>There are total 88 area units/conties in Hunan.</li>
+<li>Across all units, there are&nbsp;448 total neighbor connections, where one region is considered a neighbor of another.</li>
+<li>Only&nbsp;around 5.8%&nbsp;(448 / (88*88) ) of all possible region-to-region connections are considered neighbors</li>
+<li>On average, each region has&nbsp;around 5 neighbors (448/88)&nbsp;under Queen contiguity.</li>
+<li>The Link number distribution says 2 regions (Region 30 &amp; 65) has only 1 neighbor, 2 regions has 2 neighbors,..,1 region (Region 85) has 11 neighbors</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="row-standardised-weights-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="row-standardised-weights-matrix">4.2 Row-standardised Weights Matrix</h2>
+<p>Next, we need to assign weights to each neighboring polygon. By doing this, we can <strong>measure “influence” of neighboring regions.</strong></p>
+<p>In our case, each neighboring polygon will be assigned <strong>equal weight</strong> (<strong>style=“W”</strong>). This is accomplished by assigning the fraction: <strong>1/n</strong> to each neighboring county then summing the weighted income values. While the method is simple and intuitive, the drawback is that boundary regions have fewer neighbors, so their lagged values might be biased, thus potentially over- or under-estimating the true nature of the spatial autocorrelation in the data</p>
+<p>Other robust method includes <strong>Binary weights (<code>style="B"</code>)</strong> - Each neighbor just gets&nbsp;<strong>1</strong>, non-neighbors get&nbsp;<strong>0</strong>.</p>
+<ul>
+<li><p>The input of&nbsp;<a href="https://r-spatial.github.io/spdep/reference/nb2listw.html"><code>nb2listw()</code></a>&nbsp;must be an object of class&nbsp;<strong>nb</strong>. The syntax of the function has two major arguments, namely style and zero.poly.</p></li>
+<li><p>The zero.policy=TRUE option allows for lists of <strong>non-neighbors</strong>. R will&nbsp;<strong>allow observations with no neighbors</strong>, treating them as having&nbsp;<strong>weights = 0</strong>. If FALSE(the default), R will throw an&nbsp;<strong>error</strong>&nbsp;if any observation has no neighbors.</p></li>
+<li><p><em>style</em>&nbsp;can take values “W”, “B”, “C”, “U”, “minmax” and “S”. B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al.&nbsp;1999, p.&nbsp;167-168 (sums over all links to n)</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+How to read the result?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>n: Number of observations (regions/polygons). Here, 88 regions/polygons.</li>
+<li>nn: Total number of neighbor pairs. Together, these polygons have&nbsp;<strong>7744 neighbor connections</strong>.</li>
+<li>S0: Sum of all weights in the matrix. The weights are&nbsp;<strong>row-standardized (<code>W</code>)</strong>, so each row sums to 1 →&nbsp;<code>S0 = 88</code></li>
+<li>S1: Sum of&nbsp;<strong>squared weights</strong></li>
+<li>S2: Sum of <strong>squared sums of weights per row</strong>
+<ul>
+<li>S1 and S2 are&nbsp;internal numbers&nbsp;used for calculating variance and significance in&nbsp;Moran’s I or Geary’s C.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="computing-local-morans-i" class="level2">
+<h2 class="anchored" data-anchor-id="computing-local-morans-i"><strong>4.3&nbsp;Computing local Moran’s I</strong></h2>
+<p>To compute local Moran’s I, the&nbsp;<a href="https://sfdep.josiahparry.com/reference/local_moran"><code>local_moran()</code></a>&nbsp;function of&nbsp;<strong>sfdep</strong>&nbsp;will be used. It computes&nbsp;<em>Ii</em>values, given a set of&nbsp;<em>zi</em>&nbsp;values and a listw object providing neighbour weighting information for the polygon associated with the zi values.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Local Moran’s I Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Ii &gt; 1</strong></td>
+<td>Positive &amp; Strong clustering</td>
+</tr>
+<tr class="even">
+<td><strong>0 &lt; I_i &lt; 1</strong></td>
+<td>Positive &amp; Moderate positive clustering</td>
+</tr>
+<tr class="odd">
+<td><strong>Ii ≈ 0</strong></td>
+<td>No spatial autocorrelation (random distribution)</td>
+</tr>
+<tr class="even">
+<td><strong>Ii &lt; 0</strong></td>
+<td>Negative spatial autocorrelation (outliers)</td>
+</tr>
+</tbody>
+</table>
+<p>The code chunks below are used to compute local Moran’s I of&nbsp;<em>GDPPC2012</em>&nbsp;at the county level.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> wm_q <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">local_moran =</span> <span class="fu">local_moran</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    GDPPC, nb, wt, <span class="at">nsim =</span> <span class="dv">99</span>),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(local_moran)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>local_moran()</code>&nbsp;function returns a matrix of values whose columns are:</p>
+<ul>
+<li>Ii: the local Moran’s I statistics</li>
+<li>E.Ii: the expectation of local moran statistic under the randomisation hypothesis</li>
+<li>Var.Ii: the variance of local moran statistic under the randomisation hypothesis</li>
+<li>Z.Ii:the standard deviate of local moran statistic</li>
+<li>Pr(): the p-value of local moran statistic</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(lisa)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 88
+Columns: 21
+$ ii           &lt;dbl&gt; -1.468468e-03, 2.587817e-02, -1.198765e-02, 1.022468e-03,…
+$ eii          &lt;dbl&gt; -9.878494e-04, -4.886356e-03, -8.334571e-02, 2.082311e-04…
+$ var_ii       &lt;dbl&gt; 4.658196e-04, 9.471085e-03, 7.824251e-02, 3.831492e-06, 1…
+$ z_ii         &lt;dbl&gt; -0.022268524, 0.316118852, 0.255106608, 0.415974494, 0.35…
+$ p_ii         &lt;dbl&gt; 9.822338e-01, 7.519123e-01, 7.986408e-01, 6.774287e-01, 7…
+$ p_ii_sim     &lt;dbl&gt; 0.92, 0.84, 0.74, 0.72, 0.66, 0.84, 0.04, 0.12, 0.02, 0.1…
+$ p_folded_sim &lt;dbl&gt; 0.46, 0.42, 0.37, 0.36, 0.33, 0.42, 0.02, 0.06, 0.01, 0.0…
+$ skewness     &lt;dbl&gt; -0.8812183, -1.0283691, 0.8228980, 0.4041690, 1.0867959, …
+$ kurtosis     &lt;dbl&gt; 0.912392930, 1.507115644, 0.350060537, -0.284243738, 1.44…
+$ mean         &lt;fct&gt; Low-High, Low-Low, High-Low, High-High, High-High, High-L…
+$ median       &lt;fct&gt; High-High, High-High, High-High, High-High, High-High, Hi…
+$ pysal        &lt;fct&gt; Low-High, Low-Low, High-Low, High-High, High-High, High-L…
+$ nb           &lt;nb&gt; &lt;2, 3, 4, 57, 85&gt;, &lt;1, 57, 58, 78, 85&gt;, &lt;1, 4, 5, 85&gt;, &lt;1,…
+$ wt           &lt;list&gt; &lt;0.2, 0.2, 0.2, 0.2, 0.2&gt;, &lt;0.2, 0.2, 0.2, 0.2, 0.2&gt;, &lt;0…
+$ NAME_2       &lt;chr&gt; "Changde", "Changde", "Changde", "Changde", "Changde", "C…
+$ ID_3         &lt;int&gt; 21098, 21100, 21101, 21102, 21103, 21104, 21109, 21110, 2…
+$ NAME_3       &lt;chr&gt; "Anxiang", "Hanshou", "Jinshi", "Li", "Linli", "Shimen", …
+$ ENGTYPE_3    &lt;chr&gt; "County", "County", "County City", "County", "County", "C…
+$ County       &lt;chr&gt; "Anxiang", "Hanshou", "Jinshi", "Li", "Linli", "Shimen", …
+$ GDPPC        &lt;dbl&gt; 23667, 20981, 34592, 24473, 25554, 27137, 63118, 62202, 7…
+$ geometry     &lt;POLYGON [m]&gt; POLYGON ((22320.48 3301894,..., POLYGON ((35522.9…</code></pre>
+</div>
+</div>
+<section id="mapping-local-morans-i-values" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-local-morans-i-values">4.3.1&nbsp;Mapping local Moran’s I values</h3>
+<p>Using choropleth mapping functions of&nbsp;<strong>tmap</strong>&nbsp;package, we can plot the local Moran’s I values by using the code chinks below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ii.map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"ii"</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">style =</span> <span class="st">"pretty"</span>,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">n =</span> <span class="dv">5</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">values =</span> <span class="st">"brewer.RdBu"</span>),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">title =</span> <span class="st">"Local Morans'I"</span>)) <span class="sc">+</span> </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">fill_alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Loal Morans'I of GDPPC (Queen's method)"</span>,</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="fu">c</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>),</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>ii.map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mapping-local-morans-i-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-local-morans-i-p-values"><strong>4.3.2 Mapping local Moran’s I p-values</strong></h3>
+<p>The choropleth shows there is evidence for both positive and negative Ii values. However, it is useful to consider the p-values for each of these values, as consider above.</p>
+<p>The code chunks below produce a choropleth map of Moran’s I p-values by using functions of&nbsp;<strong>tmap</strong>&nbsp;package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>p_ii.map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"p_ii"</span>, </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="cn">Inf</span>),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">values =</span> <span class="st">"-brewer.Reds"</span>),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">title =</span> <span class="st">"p-value"</span>)) <span class="sc">+</span> </span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">fill_alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"P-values of Loal Moran's I of GDPPC (Queen's method)"</span>,</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="fu">c</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>),</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>p_ii.map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mapping-both-local-morans-i-values-and-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-both-local-morans-i-values-and-p-values"><strong>4.3.3</strong> Mapping both local Moran’s I values and p-values</h3>
+<p>For effective interpretation, it is better to plot both the local Moran’s I values map and its corresponding p-values map next to each other.</p>
+<p>The code chunk below will be used to create such visualisation.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(ii.map, p_ii.map, <span class="at">asp=</span><span class="dv">1</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Result Interpretation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p><strong>Hot Spots (High-High clusters):</strong> Counties includingChangsha, Wangcheng and Liuyang in the eastern region form a prominent high-high cluster with high Local Moran’s I values (3-5) and statistically significant p-values. This cluster represents an economic agglomeration where high-GDPPC counties are spatially concentrated, likely benefiting from urban spillover effects and economic synergies.</p></li>
+<li><p><strong>Cold Spots (Low-Low Clusters):</strong> Counties including Longhui and Wugang in the western region form a low-low cluster, with low Local Moran’s I values (0-1) and statistically significant p-values. This pattern indicates a concentration of economically disadvantaged areas, suggesting regional disparities and potential geographic barriers to economic development in the western part of the province.</p></li>
+<li><p><strong>Outliers (Low-High):</strong> Counties includes Taojiang &amp; PingJiang in the east region and with negative Local Moran’s I values (-2 to -1), indicating spatial outliers. These areas have significantly lower GDPPC compared to their neighbors, representing&nbsp;low-high outliers that stand in stark contrast to the surrounding higher-performing counties. It suggests potential&nbsp;economic shadow effects&nbsp;where nearby high-growth areas may be drawing away skilled labor, investment or resources, creating relative economic disadvantages in neighboring regions.</p></li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="preparing-and-visualising-lisa-map" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-and-visualising-lisa-map"><strong>4.4&nbsp;Preparing and Visualising LISA Map</strong></h2>
+<p>Visualizing LISA involves creating maps that highlight significant spatial patterns, such as hot spots (high values clustered together) and cold spots (low values clustered together), as well as identifying spatial outliers. Common methods include choropleth maps showing LISA values, Moran scatterplots which depict local spatial autocorrelation for individual locations, and hot spot analysis maps.</p>
+<p>The LISA Cluster Map shows the significant locations color coded by type of spatial autocorrelation. The first step before we can generate the LISA cluster map is to plot the Moran scatterplot.</p>
+<section id="plotting-moran-scatterplot" class="level3">
+<h3 class="anchored" data-anchor-id="plotting-moran-scatterplot">4.4.1 Plotting Moran scatterplot</h3>
+<p>A Moran Scatterplot is a graphical tool in spatial analysis that visualizes the relationship between a variable’s values and the average values of its neighboring locations (its spatial lag) to identify spatial autocorrelation. By plotting standardized values of the variable on the x-axis and its spatial lag on the y-axis, the plot’s slope represents Moran’s I, revealing patterns of high-high or low-low value clusters and high-low or low-high value outliers.</p>
+<p>In the code chunk below,&nbsp;<a href="https://sfdep.josiahparry.com/reference/st_lag"><code>st_lag()</code></a>&nbsp;of&nbsp;<strong>sfdep</strong>&nbsp;package is used to calculates the spatial lag of GDPPC given a neighbor (i.e.&nbsp;nb) and weights list (i.e.&nbsp;wt).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> lisa <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lag_GDPPC =</span> <span class="fu">st_lag</span>(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    GDPPC, nb, wt),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(lag_GDPPC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, the code chunk below is used to plot the Moran Scatterplot of GDPPC against its spatial lag version as shown in the code cunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> lisa, </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> GDPPC, </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> lag_GDPPC)) <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, </span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">se =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> County),</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">size =</span> <span class="dv">3</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>                  <span class="at">max.overlaps =</span> <span class="dv">5</span>)<span class="sc">+</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"GDPPC"</span>,</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Spatial Lag of GDPPC"</span>,</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Local Moran's I Scatterplot"</span>) <span class="sc">+</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The Moran Scatterplot above is not very intuitive. To support effective visual communication, the code chunk below is used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> lisa, </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> GDPPC, </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> lag_GDPPC, </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">color =</span> mean)) <span class="sc">+</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, </span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">se =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> County),</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                  <span class="at">size =</span> <span class="dv">3</span>,</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">max.overlaps =</span> <span class="dv">10</span>)<span class="sc">+</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept=</span><span class="fu">mean</span>(lisa<span class="sc">$</span>lag_GDPPC), <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept=</span><span class="fu">mean</span>(lisa<span class="sc">$</span>GDPPC), <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"High-High"</span> <span class="ot">=</span> <span class="st">"red"</span>, </span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Low-Low"</span> <span class="ot">=</span> <span class="st">"blue"</span>,</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Low-High"</span> <span class="ot">=</span> <span class="st">"lightblue"</span>, </span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>               <span class="st">"High-Low"</span> <span class="ot">=</span> <span class="st">"pink"</span>)) <span class="sc">+</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"GDPPC"</span>,</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Spatial Lag of GDPPC"</span>,</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Moran Scatterplot with LISA Quadrants"</span>) <span class="sc">+</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Notice that the plot is split in 4 quadrants. The top right corner belongs to areas that have high GDPPC and are surrounded by other areas that have the average level of GDPPC. This are the high-high locations in the lesson slide.</p>
+</section>
+<section id="plotting-moran-scatterplot-with-standardised-variable" class="level3">
+<h3 class="anchored" data-anchor-id="plotting-moran-scatterplot-with-standardised-variable">4.4.2 Plotting Moran scatterplot with standardised variable</h3>
+<p>First we will use&nbsp;<a href="https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/scale"><em>scale()</em></a>&nbsp;to centers and scales the variable. Here centering is done by subtracting the mean (omitting NAs) the corresponding columns, and scaling is done by dividing the (centered) variable by their standard deviations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> lisa <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">z_GDPPC =</span> <span class="fu">scale</span>(GDPPC),</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">z_lag_GDPPC =</span> <span class="fu">scale</span>(lag_GDPPC),</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The&nbsp;<a href="https://www.rdocumentation.org/packages/pbdDMAT/versions/0.5-1/topics/as.vector"><em>as.vector()</em></a>&nbsp;added to the end is to make sure that the data type we get out of this is a vector, that map neatly into out dataframe.</p>
+<p>Now, we are ready to plot the Moran scatterplot again by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> lisa, </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> z_GDPPC, </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> z_lag_GDPPC, </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">color =</span> mean)) <span class="sc">+</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">se =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(<span class="fu">aes</span>(<span class="at">label =</span> County),</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>                  <span class="at">size =</span> <span class="dv">3</span>,</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">max.overlaps =</span> <span class="dv">10</span>)<span class="sc">+</span>  </span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept=</span><span class="fu">mean</span>(lisa<span class="sc">$</span>z_lag_GDPPC), <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept=</span><span class="fu">mean</span>(lisa<span class="sc">$</span>z_GDPPC), <span class="at">lty=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"High-High"</span> <span class="ot">=</span> <span class="st">"red"</span>, </span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Low-Low"</span> <span class="ot">=</span> <span class="st">"blue"</span>,</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Low-High"</span> <span class="ot">=</span> <span class="st">"lightblue"</span>, </span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>               <span class="st">"High-Low"</span> <span class="ot">=</span> <span class="st">"pink"</span>)) <span class="sc">+</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Standardised GDPPC"</span>,</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Standardised Spatial Lag of GDPPC"</span>,</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Standardised Moran Scatterplot with LISA Quadrants"</span>) <span class="sc">+</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>))  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="preparing-lisa-map-classes" class="level3">
+<h3 class="anchored" data-anchor-id="preparing-lisa-map-classes">4.4.3 Preparing LISA map classes</h3>
+<p>The code chunks below show the steps to prepare a LISA cluster map.</p>
+<p>Next, derives the spatially lagged variable of interest (i.e.&nbsp;GDPPC) and centers the spatially lagged variable around its mean.</p>
+<p>This is follow by centering the local Moran’s around the mean.</p>
+<p>Next, we will set a statistical significance level for the local Moran.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>signif <span class="ot">&lt;-</span> <span class="fl">0.05</span>       </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="plotting-and-visualising-lisa-map" class="level3">
+<h3 class="anchored" data-anchor-id="plotting-and-visualising-lisa-map">4.4.4 Plotting and visualising LISA map</h3>
+<p>By default, the LISA classes are stored in&nbsp;<em>mean</em>,&nbsp;<em>median</em>&nbsp;and&nbsp;<em>pysal</em>&nbsp;fields of lisa sf data frame. To prepare the LISA map, we will derive a new field called LISA-cluster from either one of these three field by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> lisa <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">LISA_cluster =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>      p_ii <span class="sc">&lt;</span> <span class="fl">0.05</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.character</span>(mean), </span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Insignificant"</span>),</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">LISA_cluster =</span> <span class="fu">factor</span>(</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>      LISA_cluster,</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Insignificant"</span>, <span class="st">"Low-Low"</span>, <span class="st">"Low-High"</span>, <span class="st">"High-Low"</span>, <span class="st">"High-High"</span>) <span class="co"># by mean value</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Notice that a new class called&nbsp;<em>Insignificant</em>&nbsp;has been added for records whereby p_ii &gt; 0.05.</p>
+<p>Now, we can plot the LISA map by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>lisa_map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span> </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"LISA_cluster"</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.scale =</span> <span class="fu">tm_scale_categorical</span>(</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"grey80"</span>,      <span class="co"># Insignificant</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"blue"</span>,        <span class="co"># Low-Low</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"lightblue"</span>,   <span class="co"># Low-High</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"pink"</span>,        <span class="co"># High-Low</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"red"</span>          <span class="co"># High-High</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">"LISA Cluster"</span>,</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>))</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Local Moran's I Clusters (p &lt; 0.05)"</span>,</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>lisa_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="reference" class="level1">
+<h1>5 Reference</h1>
+<ul>
+<li>Kam, T.S. (2025).&nbsp;<a href="https://r4gdsa.netlify.app/chap10">Local Measures of Spatial Autocorrelation</a></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>© 2025 Johsuan Huang ʕ•ᴥ•ʔ | Site built with <a href="https://quarto.org">Quarto</a> | Hosted on <a href="https://www.netlify.com/">Netlify</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

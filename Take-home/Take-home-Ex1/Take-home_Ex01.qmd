@@ -51,7 +51,7 @@ SSIC 663 includes businesses such as Hedge fund management, Private equity firms
 This analysis uses the following libraries:
 
 | Library | Desc |
-|------------------------------------|------------------------------------|
+|----|----|
 | **sf** | handling geospatial data |
 | **tmap** | visualization for geospatial data |
 | **tidyverse** | handling data including packages **readr**, **tidyr and dplyr** |
