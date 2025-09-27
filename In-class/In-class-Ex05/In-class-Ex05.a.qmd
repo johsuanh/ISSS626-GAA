@@ -1,0 +1,299 @@
+---
+title: "In-class 5.a: Global Measures of Spatial Autocorrelation Using sfdep"
+author: Johsuan Huang
+date: 2025-09-27
+date-modified: "last-modified"
+description: ""
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+# 1 Overview
+
+In this hands-on exercise, we will learn how to compute Global Measures of Spatial Autocorrelation (GMSA) by using **sfdep** package.
+
+## 1.1 spdep vs. sfdep
+
+`spdep` is an R package widely used for spatial dependence, spatial autocorrelation, and spatial econometrics. It provides tools for creating spatial weights, calculating spatial autocorrelation statistics (like Moran's I, Geary's C), and running spatial regression models.
+
+`sfdep` is a newer package designed to work with **sf** objects (simple features) in R. The **sf** package has become the modern standard for handling spatial vector data in R, replacing the older **sp** package. **sfdep** is meant to complement **sf** by providing spatial dependence tools that integrate more naturally with sf's data structures.
+
+# 2 Getting Started
+
+## 2.1 Setting the Analytical Toolls
+
+| Library | Desc |
+|------------------------------------|------------------------------------|
+| [sf](https://r-spatial.github.io/sf/) | handling geospatial data |
+| [tmap](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
+| tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
+| knitr | generate elegant, flexible, and fast dynamic report |
+| [spdep](https://r-spatial.github.io/spdep/index.html) | create spatial weights matrix objects from polygon contiguities |
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse,knitr,sfdep,ggplot2,kendall)
+```
+
+## 2.3 Getting the Data Into R Environment
+
+In this section, we will learn how to bring a geospatial data and its associated attribute table into R environment. The geospatial data is in ESRI shapefile format and the attribute table is in csv fomat.
+
+### 2.3.1 Import shapefile
+
+The code chunk below uses [`st_read()`](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan") %>%
+   st_transform(crs = 32650)
+```
+
+```{r}
+st_crs(hunan)
+```
+
+After importing the shape file, let's plot the graph:
+
+```{r}
+par(bg="#f6f6f6")
+plot(hunan)
+```
+
+### 2.3.2 Import CSV File
+
+Next, we will import *Hunan_2012.csv* into R by using *read_csv()* of **readr** package. The output is R dataframe class.
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+      
+```
+
+```{r}
+kable(head(hunan2012))
+```
+
+### 2.3.3 Perform Relational Join
+
+```{r}
+hunan_GDPPC <- left_join(hunan,hunan2012,
+                   by = "County")  %>%
+  select(1:4, 7, 15)
+kable(head(hunan,5))
+class(hunan)
+```
+
+# 3 Visualize Regional Development Indicator
+
+Now, we are going to prepare a basemap and a choropleth map showing the distribution of GDP Per Capita (GDPPC) 2012 by using **tmap** package:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+
+equal <- tm_shape(hunan_GDPPC) +
+  tm_polygons(fill = "GDPPC",
+              fill.scale = tm_scale_intervals(
+                style = "equal",
+                n = 5,
+                values = "brewer.blues")) +
+  tm_text("NAME_3", size=0.6)+
+ tm_title("Equal interval classification",
+           position = tm_pos_out("center", "top", "center")) +
+  tm_layout(
+    legend.position = c("left", "bottom"),
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+
+quantile <- tm_shape(hunan_GDPPC) +
+  tm_polygons(fill = "GDPPC",
+              fill.scale = tm_scale_intervals(
+                style = "quantile",
+                n = 5,
+                values = "brewer.blues")) +
+  tm_text("NAME_3", size=0.6)+
+ tm_title("Quantile classification",
+           position = tm_pos_out("center", "top", "center")) +
+  tm_layout(
+    legend.position = c("left", "bottom"),
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+
+tmap_arrange(equal, 
+             quantile, 
+             asp=1, 
+             ncol=2)
+```
+
+# 4 Global Measures of Spatial Autocorrelation
+
+In this section, we will learn how to compute global spatial autocorrelation statistics and to perform spatial complete randomness test for global spatial autocorrelation.
+
+## 4.1 Compute Contiguity Spatial Weights & Create Row-standardised Weights Matrix  Using sfdep package
+
+In the code chunk below, [`st_contiguity()`](https://sfdep.josiahparry.com/reference/st_contiguity) of **sfdep** package is used to compute contiguity weight matrices for the study area. This function builds a neighbours list based on regions with contiguous boundaries. If you look at the documentation you will see that you can pass a “queen” argument that takes TRUE or FALSE as options. If you do not specify this argument the default is set to TRUE, that is, if you don’t specify queen = FALSE this function will return a list of first order neighbours using the Queen criteria.
+
+Next, [`st_weights()`](https://sfdep.josiahparry.com/reference/st_weights) is used to calculate polygon spatial weights from the *nb* list.
+
+`st_weights()` provides three arguments, they are:
+
+-   nb: A neighbor list object as created by `st_neighbors()`.
+
+-   style: Default “W” for row standardized weights. This value can also be “B”, “C”, “U”, “minmax”, and “S”. B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. 1999, p. 167-168 (sums over all links to n).
+
+-   allow_zero: If TRUE, assigns zero as lagged value to zone without neighbors.
+
+```{r}
+wm_q <- hunan_GDPPC %>% 
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb, style = "W"),
+         .before = 1)
+kable(head(wm_q))
+```
+
+The output is in df instead of the list form. If we use sdpep we need to use poly2nb() and nb2listw() to compute the spatial weights and create row-standardized matrix. However, using sfdep allows us to complete the tasks using the code above.
+
+# 5 Global Measures of Spatial Autocorrelation: Moran’s I
+
+In this section, we will learn how to perform Moran’s I statistics testing by using [`moran.test()`](https://r-spatial.github.io/spdep/reference/moran.test.html)of **spdep**.
+
+Moran’s I quantifies the degree to which a variable at one location is similar to values at nearby locations. It measures **global correlation**, sensitive to overall clustering:
+
+| Global Moran’s I Value | Meaning |
+|---------------------|---------------------------------------------------|
+| **I \> 0** | Positive spatial autocorrelation (similar values cluster together) |
+| **I ≈ 0** | No spatial autocorrelation (random distribution) |
+| **I \< 0** | Negative spatial autocorrelation (neighbors are dissimilar, dispersed pattern) |
+
+Typical range is between –1 (perfect dispersion) and +1 (perfect clustering), though in practice the bounds depend on the weight matrix.
+
+The arguments of moran.test() include:
+
+| Argument | Description |
+|------------------|------------------------------------------------------|
+| randomisation | variance of I calculated under the assumption of randomisation, if FALSE normality |
+| zero.policy | if attribute not set, use global option value; if TRUE assign zero to the lagged value of zones without neighbours, if FALSE assign NA |
+| alternative | the alternative hypothesis, must be one of greater (default), less or two.sided. |
+
+## 5.1 Computing Global Monte Carlo Moran’s I
+
+```{r}
+set.seed(1234)
+```
+
+-   H0: GDP per capita values are randomly distributed across spatial units
+-   H1: GDP per capita values show positive spatial autocorrelation
+-   Significance level: α = 0.05
+
+The default H1 is two-sided test.
+
+```{r}
+global_moran_perm(wm_q$GDPPC,
+                  wm_q$nb, # neighbor list object 
+                  wm_q$wt, # weights list 
+                  nsim=99) # 100 simulations
+```
+
+::: callout-note
+## Result Interpretation
+
+The statistical report on previous tab shows that the p-value is smaller than alpha value of 0.05.
+
+Hence, we have enough statistical evidence to reject the null hypothesis that the spatial distribution of GPD per capita are resemble random distribution (i.e. independent from spatial).
+
+Because the Moran's I statistics is greater than 0. We can infer that the spatial distribution shows sign of clustering.
+:::
+
+# 6 Computing Local Moran’s I
+
+```{r}
+set.seed(1234)
+```
+
+```{r}
+lisa <- wm_q %>% 
+  mutate(local_moran = local_moran(
+    GDPPC, nb, wt, nsim = 99),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+```{r}
+glimpse(lisa)
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+ii.map <- tm_shape(lisa) +
+  tm_polygons(fill = "ii",
+              fill.scale = tm_scale_intervals(
+                style = "pretty",
+                n = 5,
+                values = "brewer.RdBu"),
+              fill.legend = tm_legend(
+                title = "Local Morans'I")) + 
+  tm_borders(fill_alpha = 0.5) +
+  tm_text("NAME_3", size=0.6)+
+  tm_title("Loal Morans'I of GDPPC (Queen's method)",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    legend.position = c("left", "bottom"),
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+ii.map
+```
+
+```{r}
+lisa <- lisa %>%
+  mutate(
+    LISA_cluster = ifelse(
+      p_ii_sim < 0.05, 
+      as.character(mean), 
+      "Insignificant"),
+    LISA_cluster = factor(
+      LISA_cluster,
+      levels = c("Insignificant", "Low-Low", "Low-High", "High-Low", "High-High") # by mean value
+    )
+  )
+```
+
+# 7 LIAS Map
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+
+lisa_map <- tm_shape(lisa) + 
+  tm_polygons(
+    fill = "LISA_cluster",
+    fill.scale = tm_scale_categorical(
+      values = c(
+        "grey80",      # Insignificant
+        "blue",        # Low-Low
+        "lightblue",   # Low-High
+        "pink",        # High-Low
+        "red"          # High-High
+      )
+    ),
+    fill.legend = tm_legend(
+      title = "LISA Cluster",
+      position = tm_pos_in("left", "bottom"))
+  ) +
+  tm_text("NAME_3", size=0.6)+
+  tm_title("Local Moran's I Clusters (p_sim < 0.05)",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+lisa_map
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+tmap_arrange(ii.map, lisa_map, asp=1, ncol=2)
+```

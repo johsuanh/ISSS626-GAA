@@ -180,6 +180,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../In-class/In-class-Ex04/In-class_Ex04.html">
  <span class="dropdown-text">In-class 4</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex05/In-class_Ex05.html">
+ <span class="dropdown-text">In-class 5</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -247,7 +251,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#plotting-and-visualising-lisa-map" id="toc-plotting-and-visualising-lisa-map" class="nav-link" data-scroll-target="#plotting-and-visualising-lisa-map">4.4.4 Plotting and visualising LISA map</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">5 Reference</a></li>
+  <li><a href="#hot-spots-and-cold-spots-analysis-hcsa" id="toc-hot-spots-and-cold-spots-analysis-hcsa" class="nav-link" data-scroll-target="#hot-spots-and-cold-spots-analysis-hcsa">5 Hot Spots and Cold Spots Analysis (HCSA)</a>
+  <ul class="collapse">
+  <li><a href="#deriving-distance-weight-matrix" id="toc-deriving-distance-weight-matrix" class="nav-link" data-scroll-target="#deriving-distance-weight-matrix">5.1 Deriving distance weight matrix</a>
+  <ul class="collapse">
+  <li><a href="#computing-fixed-distance-weights" id="toc-computing-fixed-distance-weights" class="nav-link" data-scroll-target="#computing-fixed-distance-weights">5.1.1 Computing fixed distance weights</a></li>
+  <li><a href="#computing-adaptive-distance-weights" id="toc-computing-adaptive-distance-weights" class="nav-link" data-scroll-target="#computing-adaptive-distance-weights">5.1.2&nbsp;Computing adaptive distance weights</a></li>
+  </ul></li>
+  <li><a href="#computing-local-gi" id="toc-computing-local-gi" class="nav-link" data-scroll-target="#computing-local-gi">5.2 Computing local Gi*</a></li>
+  <li><a href="#preparing-and-visualising-hcsa-map" id="toc-preparing-and-visualising-hcsa-map" class="nav-link" data-scroll-target="#preparing-and-visualising-hcsa-map">5.3 Preparing and Visualising HCSA Map</a>
+  <ul class="collapse">
+  <li><a href="#mapping-gi-with-fix-distance-weights" id="toc-mapping-gi-with-fix-distance-weights" class="nav-link" data-scroll-target="#mapping-gi-with-fix-distance-weights">5.3.1 Mapping Gi* with fix distance weights</a></li>
+  <li><a href="#mapping-local-gi-p-values" id="toc-mapping-local-gi-p-values" class="nav-link" data-scroll-target="#mapping-local-gi-p-values">5.3.2 Mapping local Gi* p-values</a></li>
+  <li><a href="#mapping-both-gi-values-and-p-values" id="toc-mapping-both-gi-values-and-p-values" class="nav-link" data-scroll-target="#mapping-both-gi-values-and-p-values">5.3.3 Mapping both Gi* values and p-values</a></li>
+  <li><a href="#plotting-and-visualising-hcsa-map" id="toc-plotting-and-visualising-hcsa-map" class="nav-link" data-scroll-target="#plotting-and-visualising-hcsa-map">5.3.4 Plotting and visualising HCSA Map</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">6 Reference</a></li>
   </ul>
 </nav>
     </div>
@@ -280,7 +300,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 26, 2025</p>
+      <p class="date-modified">September 27, 2025</p>
     </div>
   </div>
     
@@ -994,14 +1014,14 @@ How to read the result?
 <pre><code>Rows: 88
 Columns: 21
 $ ii           &lt;dbl&gt; -1.468468e-03, 2.587817e-02, -1.198765e-02, 1.022468e-03,…
-$ eii          &lt;dbl&gt; 2.239949e-03, 7.357741e-03, -2.276138e-02, 2.113699e-05, …
-$ var_ii       &lt;dbl&gt; 4.192853e-04, 8.167525e-03, 1.069188e-01, 5.763497e-06, 1…
-$ z_ii         &lt;dbl&gt; -0.181106344, 0.204930150, 0.032948774, 0.417094523, 0.51…
-$ p_ii         &lt;dbl&gt; 0.8562841049, 0.8376266986, 0.9737154375, 0.6766092708, 0…
-$ p_ii_sim     &lt;dbl&gt; 0.86, 1.00, 0.78, 0.66, 0.58, 0.70, 0.08, 0.14, 0.04, 0.1…
-$ p_folded_sim &lt;dbl&gt; 0.43, 0.50, 0.39, 0.33, 0.29, 0.35, 0.04, 0.07, 0.02, 0.0…
-$ skewness     &lt;dbl&gt; -0.7051429, -0.6513071, 0.9394877, 0.7189413, 0.6476455, …
-$ kurtosis     &lt;dbl&gt; 0.15983550, 0.27939794, 0.65047800, -0.27697090, -0.76801…
+$ eii          &lt;dbl&gt; -3.255866e-03, 9.685243e-03, -6.800777e-02, -1.485044e-04…
+$ var_ii       &lt;dbl&gt; 4.582864e-04, 9.162718e-03, 9.401134e-02, 5.480224e-06, 1…
+$ z_ii         &lt;dbl&gt; 0.08349353, 0.16916608, 0.18270647, 0.50020427, 0.4345378…
+$ p_ii         &lt;dbl&gt; 0.9334591186, 0.8656660090, 0.8550283414, 0.6169312546, 0…
+$ p_ii_sim     &lt;dbl&gt; 0.90, 0.88, 0.74, 0.54, 0.58, 0.80, 0.08, 0.10, 0.02, 0.1…
+$ p_folded_sim &lt;dbl&gt; 0.45, 0.44, 0.37, 0.27, 0.29, 0.40, 0.04, 0.05, 0.01, 0.0…
+$ skewness     &lt;dbl&gt; -0.6803939, -0.9937358, 0.7933378, 1.0276625, 0.8375897, …
+$ kurtosis     &lt;dbl&gt; 0.07447830, 0.81814921, -0.17073309, 0.53609014, 0.097078…
 $ mean         &lt;fct&gt; Low-High, Low-Low, High-Low, High-High, High-High, High-L…
 $ median       &lt;fct&gt; High-High, High-High, High-High, High-High, High-High, Hi…
 $ pysal        &lt;fct&gt; Low-High, Low-Low, High-Low, High-High, High-High, High-L…
@@ -1252,7 +1272,7 @@ Result Interpretation
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> lisa <span class="sc">%&gt;%</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">LISA_cluster =</span> <span class="fu">ifelse</span>(</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>      p_ii <span class="sc">&lt;</span> <span class="fl">0.05</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>      p_ii_sim <span class="sc">&lt;</span> <span class="fl">0.05</span>, </span>
 <span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.character</span>(mean), </span>
 <span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Insignificant"</span>),</span>
 <span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">LISA_cluster =</span> <span class="fu">factor</span>(</span>
@@ -1261,7 +1281,7 @@ Result Interpretation
 <span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Notice that a new class called&nbsp;<em>Insignificant</em>&nbsp;has been added for records whereby p_ii &gt; 0.05.</p>
+<p>Notice that a new class called&nbsp;<em>Insignificant</em>&nbsp;has been added for records whereby p_ii_sim &gt; 0.05.</p>
 <p>Now, we can plot the LISA map by using the code chunk below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>lisa_map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span> </span>
@@ -1281,7 +1301,7 @@ Result Interpretation
 <span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>))</span>
 <span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
 <span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Local Moran's I Clusters (p &lt; 0.05)"</span>,</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Local Moran's I Clusters (p_sim &lt; 0.05)"</span>,</span>
 <span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
 <span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
 <span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
@@ -1295,11 +1315,252 @@ Result Interpretation
 </div>
 </div>
 </div>
+<p>For effective interpretation, it is better to plot both the local Moran’s I values map and its corresponding p-values map next to each other.</p>
+<p>The code chunk below will be used to create such visualisation.</p>
+<p>We can also include the local Moran’s I map and p-value map as shown below for easy comparison.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(ii.map, lisa_map, <span class="at">asp=</span><span class="dv">1</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="hot-spots-and-cold-spots-analysis-hcsa" class="level1">
+<h1>5 Hot Spots and Cold Spots Analysis (HCSA)</h1>
+<p>Hot spots and cold spots analysis is a technique used in spatial statistics to identify statistically significant clusters of high values (hot spots) and low values (cold spots) of a geographically referenced attribute (i.e.&nbsp;GDPPC). These analyses help visualize and understand spatial patterns, revealing areas where data points are clustered more densely than would be expected by random chance.</p>
+<p>Figure below shows the hot spots and cold spots of GDP per capita of Hunan Provice, People Republic of China.</p>
+<p>The term hot spots refer to areas where high values are concentrated and surrounded by other high values. It has been used generically across disciplines to describe a region or value that is higher relative to its surroundings (Lepers et al 2005, Aben et al 2012, Isobe et al 2015). For example, a hot spot analysis might reveal clusters of high GDP per capita in a province, indicating areas with significantly higher GDP per capita than other parts of the province.</p>
+<p>On the other hands, the term cold spots refer to areas where low values are concentrated and surrounded by other low values. An example could be clusters of low GDP per capita, indicating areas where GDP per capita is consistently low.</p>
+<p>HCSA uses statistical methods, like the Getis-Ord Gi* statistic, to determine if the observed clustering is statistically significant or could have occurred randomly.</p>
+<p>The analysis consists of four steps:</p>
+<ul>
+<li>Deriving spatial weight matrix</li>
+<li>Computing Gi* statistics</li>
+<li>Mapping Gi* statistics</li>
+<li>Communicating the analysis results</li>
+</ul>
+<section id="deriving-distance-weight-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="deriving-distance-weight-matrix">5.1 Deriving distance weight matrix</h2>
+<p>Whist the spatial autocorrelation considered units which shared borders, for Getis-Ord Gi* statistics, we are defining neighbours based on distance.</p>
+<p>There are two type of distance-based proximity matrix, they are:</p>
+<ul>
+<li>fixed distance weight matrix,</li>
+<li>adaptive distance weight matrix, and</li>
+<li>inverse distance weights.</li>
+</ul>
+<section id="computing-fixed-distance-weights" class="level3">
+<h3 class="anchored" data-anchor-id="computing-fixed-distance-weights">5.1.1 Computing fixed distance weights</h3>
+<p>In this section, we will learn how to compute fixed distance weight matrix by using&nbsp;<code>st_dist_band()</code>&nbsp;and&nbsp;<code>st_weights()</code>&nbsp;of sfdep package.</p>
+<p>Firstly, we need to determine <strong>the upper limit for distance band</strong> by using the steps below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>ct <span class="ot">&lt;-</span> <span class="fu">critical_threshold</span>(<span class="fu">st_geometry</span>(hunan))</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>ct</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 60799.91</code></pre>
+</div>
+</div>
+<p>The summary report shows that the largest first nearest neighbour distance is 60.80 km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.</p>
+<p>Using the critical threshold value computed above, code chunk below is used to compute the fixed distance weight.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>hunan_fdw <span class="ot">&lt;-</span> hunan <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">include_self</span>(</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_dist_band</span>(</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">st_geometry</span>(geometry), </span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">upper =</span> ct)),</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt =</span> <span class="fu">st_weights</span>(nb, </span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">style =</span> <span class="st">"W"</span>),</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Noted that for Gi*&nbsp;<code>include_self()</code>&nbsp;must be used to endure that&nbsp;<img src="https://r4gdsa.netlify.app/chap10/images/img1.jpg" width="61" height="16">.</p>
+</div>
+</div>
+</section>
+<section id="computing-adaptive-distance-weights" class="level3">
+<h3 class="anchored" data-anchor-id="computing-adaptive-distance-weights">5.1.2&nbsp;Computing adaptive distance weights</h3>
+<p>One of the characteristics of fixed distance weight matrix is that more densely settled areas (usually the urban areas) tend to have more neighbours and the less densely settled areas (usually the rural counties) tend to have lesser neighbours. Having many neighbours smooth the neighbour relationship across more neighbours.</p>
+<p>It is possible to control the numbers of neighbours directly using k-nearest neighbours, either accepting asymmetric neighbours or imposing symmetry as shown in the code chunk below.</p>
+<p>In this section, you will learn how to compute fixed distance weight matrix by using&nbsp;<code>st_dist_band()</code>&nbsp;and&nbsp;<code>st_weights()</code>&nbsp;of sfdep package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>hunan_adw <span class="ot">&lt;-</span> hunan <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">include_self</span>(</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_knn</span>(</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">st_geometry</span>(geometry),</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">k =</span> <span class="dv">6</span>)),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt =</span> <span class="fu">st_weights</span>(</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>      nb, <span class="at">style =</span> <span class="st">"W"</span>),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="computing-local-gi" class="level2">
+<h2 class="anchored" data-anchor-id="computing-local-gi">5.2 Computing local Gi*</h2>
+<p>Local Gi* (pronounced “G-i-star”) is a Getis-Ord statistic used in spatial analysis to identify statistically significant hot spots and cold spots of high or low attribute values within a dataset. It measures the spatial clustering of values by comparing the total value within a specified neighborhood to the global total, producing a Z-score and p-value for each location to determine the likelihood that the observed pattern is not due to random chance.</p>
+<p>In this sub-section, you will gain hands-on experience on performing Gi* analysis by using&nbsp;<code>local_gstar_perm()</code>&nbsp;of sfdep package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>HCSA_fdw <span class="ot">&lt;-</span> hunan_fdw <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">gistar =</span> <span class="fu">local_gstar_perm</span>(</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>      GDPPC, nb, wt, <span class="at">nsim =</span> <span class="dv">99</span>),</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(gistar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="preparing-and-visualising-hcsa-map" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-and-visualising-hcsa-map">5.3 Preparing and Visualising HCSA Map</h2>
+<section id="mapping-gi-with-fix-distance-weights" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-gi-with-fix-distance-weights">5.3.1 Mapping Gi* with fix distance weights</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>Gi_star_map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA_fdw) <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"gi_star"</span>,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">style =</span> <span class="st">"pretty"</span>,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">n =</span> <span class="dv">6</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">values =</span> <span class="st">"brewer.rd_bu"</span>),</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">title =</span> <span class="st">"Gi*"</span>,</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>      ))) <span class="sc">+</span> </span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">fill_alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Gi* of GDPPC (Fixed Bandwidth d = 60799.91m)"</span>,</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>Gi_star_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mapping-local-gi-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-local-gi-p-values">5.3.2 Mapping local Gi* p-values</h3>
+<p>The choropleth shows there is evidence for both positive and negative Ii values. However, it is useful to consider the p-values for each of these values, as consider above.</p>
+<p>The code chunk below plots a choropleth map of p-values of Gi* by using functions of&nbsp;<strong>tmap</strong> package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>p_values_map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA_fdw) <span class="sc">+</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"p_sim"</span>, </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="cn">Inf</span>),</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">values =</span> <span class="st">"-brewer.Reds"</span>),</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">title =</span> <span class="st">"simulated p-value"</span>,</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>      ))) <span class="sc">+</span> </span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">fill_alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"p-values of local Gi* of GDPPC (Fixed distance)"</span>,</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>p_values_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mapping-both-gi-values-and-p-values" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-both-gi-values-and-p-values">5.3.3 Mapping both Gi* values and p-values</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(Gi_star_map, p_values_map, <span class="at">asp=</span><span class="dv">1</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plotting-and-visualising-hcsa-map" class="level3">
+<h3 class="anchored" data-anchor-id="plotting-and-visualising-hcsa-map">5.3.4 Plotting and visualising HCSA Map</h3>
+<p>By default, the HCSA classes are stored in&nbsp;<em>cluster</em>&nbsp;field of&nbsp;<em>HCSA_fdw</em>&nbsp;sf data frame. To prepare the HSCA map, we will derive a new field called&nbsp;<em>HCSA_cluster</em>&nbsp;from&nbsp;<em>cluster</em>&nbsp;field by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>HCSA_fdw <span class="ot">&lt;-</span> HCSA_fdw <span class="sc">%&gt;%</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">HCSA_cluster =</span> <span class="fu">case_when</span>(</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    p_sim <span class="sc">&gt;</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">"Insignificant"</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    p_sim <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> cluster <span class="sc">==</span> <span class="st">"High"</span> <span class="sc">~</span> <span class="st">"Hot spot"</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    p_sim <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> cluster <span class="sc">==</span> <span class="st">"Low"</span>  <span class="sc">~</span> <span class="st">"Cold spot"</span>,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Other"</span>),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">HCSA_cluster =</span> <span class="fu">factor</span>(</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>      HCSA_cluster,</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Insignificant"</span>, <span class="st">"Hot spot"</span>, <span class="st">"Cold spot"</span>)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Notice that a new class called&nbsp;<em>Insignificant</em>&nbsp;has been added for records whereby p_sim &gt; 0.05.</p>
+<p>Now, we can plot the HCSA map by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>HCSA_map <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA_fdw) <span class="sc">+</span> </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"HCSA_cluster"</span>,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.scale =</span> <span class="fu">tm_scale_categorical</span>(</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"grey80"</span>,      <span class="co"># Insignificant</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"red"</span>,        <span class="co"># Low-Low</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"blue"</span>          <span class="co"># High-High</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">"HSCA Cluster"</span>,</span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>)))<span class="sc">+</span> </span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"HCSA Clusters (p_sim &lt; 0.05)"</span>,</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>HCSA_map</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(Gi_star_map, HCSA_map, <span class="at">asp=</span><span class="dv">1</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Hands-on-Ex05.b_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 </section>
 <section id="reference" class="level1">
-<h1>5 Reference</h1>
+<h1>6 Reference</h1>
 <ul>
 <li>Kam, T.S. (2025).&nbsp;<a href="https://r4gdsa.netlify.app/chap10">Local Measures of Spatial Autocorrelation</a></li>
 </ul>

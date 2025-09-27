@@ -46,7 +46,7 @@ Two data sets will be used in this hands-on exercise, they are:
 ## 2.3 Setting the Analytical Toolls
 
 | Library | Desc |
-|-----------------|------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | [sf](https://r-spatial.github.io/sf/) | handling geospatial data |
 | [tmap](https://cran.r-project.org/web/packages/tmap/index.html) | visualization for geospatial data |
 | tidyverse | handling data including packages **readr**, **tidyr and dplyr** |
@@ -479,7 +479,7 @@ By default, the LISA classes are stored in *mean*, *median* and *pysal* fie
 lisa <- lisa %>%
   mutate(
     LISA_cluster = ifelse(
-      p_ii < 0.05,
+      p_ii_sim < 0.05, 
       as.character(mean), 
       "Insignificant"),
     LISA_cluster = factor(
@@ -489,7 +489,7 @@ lisa <- lisa %>%
   )
 ```
 
-Notice that a new class called *Insignificant* has been added for records whereby p_ii \> 0.05.
+Notice that a new class called *Insignificant* has been added for records whereby p_ii_sim \> 0.05.
 
 Now, we can plot the LISA map by using the code chunk below.
 
@@ -513,7 +513,7 @@ lisa_map <- tm_shape(lisa) +
       position = tm_pos_in("left", "bottom"))
   ) +
   tm_text("NAME_3", size=0.6)+
-  tm_title("Local Moran's I Clusters (p < 0.05)",
+  tm_title("Local Moran's I Clusters (p_sim < 0.05)",
            position = tm_pos_out("center", "top", "center"))+
   tm_layout(
     bg.color = "#f6f6f6",
@@ -521,6 +521,234 @@ lisa_map <- tm_shape(lisa) +
 lisa_map
 ```
 
-# 5 Reference
+For effective interpretation, it is better to plot both the local Moran’s I values map and its corresponding p-values map next to each other.
+
+The code chunk below will be used to create such visualisation.
+
+We can also include the local Moran’s I map and p-value map as shown below for easy comparison.
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+tmap_arrange(ii.map, lisa_map, asp=1, ncol=2)
+```
+
+# 5 Hot Spots and Cold Spots Analysis (HCSA)
+
+Hot spots and cold spots analysis is a technique used in spatial statistics to identify statistically significant clusters of high values (hot spots) and low values (cold spots) of a geographically referenced attribute (i.e. GDPPC). These analyses help visualize and understand spatial patterns, revealing areas where data points are clustered more densely than would be expected by random chance.
+
+Figure below shows the hot spots and cold spots of GDP per capita of Hunan Provice, People Republic of China.
+
+The term hot spots refer to areas where high values are concentrated and surrounded by other high values. It has been used generically across disciplines to describe a region or value that is higher relative to its surroundings (Lepers et al 2005, Aben et al 2012, Isobe et al 2015). For example, a hot spot analysis might reveal clusters of high GDP per capita in a province, indicating areas with significantly higher GDP per capita than other parts of the province.
+
+On the other hands, the term cold spots refer to areas where low values are concentrated and surrounded by other low values. An example could be clusters of low GDP per capita, indicating areas where GDP per capita is consistently low.
+
+HCSA uses statistical methods, like the Getis-Ord Gi\* statistic, to determine if the observed clustering is statistically significant or could have occurred randomly.
+
+The analysis consists of four steps:
+
+-   Deriving spatial weight matrix
+-   Computing Gi\* statistics
+-   Mapping Gi\* statistics
+-   Communicating the analysis results
+
+## 5.1 Deriving distance weight matrix
+
+Whist the spatial autocorrelation considered units which shared borders, for Getis-Ord Gi\* statistics, we are defining neighbours based on distance.
+
+There are two type of distance-based proximity matrix, they are:
+
+-   fixed distance weight matrix,
+-   adaptive distance weight matrix, and
+-   inverse distance weights.
+
+### 5.1.1 Computing fixed distance weights
+
+In this section, we will learn how to compute fixed distance weight matrix by using `st_dist_band()` and `st_weights()` of sfdep package.
+
+Firstly, we need to determine **the upper limit for distance band** by using the steps below:
+
+```{r}
+ct <- critical_threshold(st_geometry(hunan))
+ct
+```
+
+The summary report shows that the largest first nearest neighbour distance is 60.80 km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.
+
+Using the critical threshold value computed above, code chunk below is used to compute the fixed distance weight.
+
+```{r}
+hunan_fdw <- hunan %>% 
+  mutate(nb = include_self(
+    st_dist_band(
+      st_geometry(geometry), 
+                 upper = ct)),
+    wt = st_weights(nb, 
+                      style = "W"),
+    .before = 1) 
+```
+
+::: callout-note
+Noted that for Gi\* `include_self()` must be used to endure that ![](https://r4gdsa.netlify.app/chap10/images/img1.jpg){width="61" height="16"}.
+:::
+
+### 5.1.2 Computing adaptive distance weights
+
+One of the characteristics of fixed distance weight matrix is that more densely settled areas (usually the urban areas) tend to have more neighbours and the less densely settled areas (usually the rural counties) tend to have lesser neighbours. Having many neighbours smooth the neighbour relationship across more neighbours.
+
+It is possible to control the numbers of neighbours directly using k-nearest neighbours, either accepting asymmetric neighbours or imposing symmetry as shown in the code chunk below.
+
+In this section, you will learn how to compute fixed distance weight matrix by using `st_dist_band()` and `st_weights()` of sfdep package.
+
+```{r}
+hunan_adw <- hunan %>%
+  mutate(nb = include_self(
+    st_knn(
+      st_geometry(geometry),
+      k = 6)),
+    wt = st_weights(
+      nb, style = "W"),
+    .before = 1)
+```
+
+## 5.2 Computing local Gi\*
+
+Local Gi\* (pronounced “G-i-star”) is a Getis-Ord statistic used in spatial analysis to identify statistically significant hot spots and cold spots of high or low attribute values within a dataset. It measures the spatial clustering of values by comparing the total value within a specified neighborhood to the global total, producing a Z-score and p-value for each location to determine the likelihood that the observed pattern is not due to random chance.
+
+In this sub-section, you will gain hands-on experience on performing Gi\* analysis by using `local_gstar_perm()` of sfdep package:
+
+```{r}
+HCSA_fdw <- hunan_fdw %>%
+  mutate(
+    gistar = local_gstar_perm(
+      GDPPC, nb, wt, nsim = 99),
+    .before = 1) %>%
+  unnest(gistar)
+```
+
+## 5.3 Preparing and Visualising HCSA Map
+
+### 5.3.1 Mapping Gi\* with fix distance weights
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+
+Gi_star_map <- tm_shape(HCSA_fdw) +
+  tm_polygons(fill = "gi_star",
+              fill.scale = tm_scale_intervals(
+                style = "pretty",
+                n = 6,
+                values = "brewer.rd_bu"),
+              fill.legend = tm_legend(
+                title = "Gi*",
+                position = tm_pos_in("left", "bottom"
+      ))) + 
+  tm_borders(fill_alpha = 0.5) +
+  tm_title("Gi* of GDPPC (Fixed Bandwidth d = 60799.91m)",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_text("NAME_3", size=0.6)+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+Gi_star_map
+```
+
+### 5.3.2 Mapping local Gi\* p-values
+
+The choropleth shows there is evidence for both positive and negative Ii values. However, it is useful to consider the p-values for each of these values, as consider above.
+
+The code chunk below plots a choropleth map of p-values of Gi\* by using functions of **tmap** package:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+
+p_values_map <- tm_shape(HCSA_fdw) +
+  tm_polygons(fill = "p_sim", 
+              fill.scale = tm_scale_intervals(
+                breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+                values = "-brewer.Reds"),
+              fill.legend = tm_legend(
+                title = "simulated p-value",
+                position = tm_pos_in("left", "bottom"
+      ))) + 
+  tm_borders(fill_alpha = 0.5) +
+  tm_title("p-values of local Gi* of GDPPC (Fixed distance)",
+             position = tm_pos_out("center", "top", "center"))+
+  tm_text("NAME_3", size=0.6)+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+p_values_map
+  
+```
+
+### 5.3.3 Mapping both Gi\* values and p-values
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+tmap_arrange(Gi_star_map, p_values_map, asp=1, ncol=2)
+
+```
+
+### 5.3.4 Plotting and visualising HCSA Map
+
+By default, the HCSA classes are stored in *cluster* field of *HCSA_fdw* sf data frame. To prepare the HSCA map, we will derive a new field called *HCSA_cluster* from *cluster* field by using the code chunk below.
+
+```{r}
+
+HCSA_fdw <- HCSA_fdw %>%
+  mutate(HCSA_cluster = case_when(
+    p_sim > 0.05 ~ "Insignificant",
+    p_sim <= 0.05 & cluster == "High" ~ "Hot spot",
+    p_sim <= 0.05 & cluster == "Low"  ~ "Cold spot",
+    TRUE ~ "Other"),
+    HCSA_cluster = factor(
+      HCSA_cluster,
+      levels = c("Insignificant", "Hot spot", "Cold spot")
+    ),
+    .before = 1
+  )
+```
+
+Notice that a new class called *Insignificant* has been added for records whereby p_sim \> 0.05.
+
+Now, we can plot the HCSA map by using the code chunk below.
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+HCSA_map <- tm_shape(HCSA_fdw) + 
+  tm_polygons(
+    fill = "HCSA_cluster",
+    fill.scale = tm_scale_categorical(
+      values = c(
+        "grey80",      # Insignificant
+        "red",        # Low-Low
+        "blue"          # High-High
+      )
+    ),
+    fill.legend = tm_legend(
+      title = "HSCA Cluster",
+      position = tm_pos_in("left", "bottom")))+ 
+  tm_title("HCSA Clusters (p_sim < 0.05)",
+             position = tm_pos_out("center", "top", "center"))+
+  tm_text("NAME_3", size=0.6)+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+
+HCSA_map
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+tmap_arrange(Gi_star_map, HCSA_map, asp=1, ncol=2)
+```
+
+# 6 Reference
 
 -   Kam, T.S. (2025). [Local Measures of Spatial Autocorrelation](https://r4gdsa.netlify.app/chap10)
