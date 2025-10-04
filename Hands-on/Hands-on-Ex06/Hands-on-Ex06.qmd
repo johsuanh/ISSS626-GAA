@@ -483,7 +483,7 @@ Notice the mean and standard deviation of the Z-score standardised clustering va
 *Z-score standardisation method should only be used if we would assume all variables come from some normal distribution.*
 :::
 
-## 6.5 Visualise the Standardised Clustering Variables 
+## 6.5 Visualise the Standardised Clustering Variables
 
 Beside reviewing the summary statistics of the standardised clustering variables, it is also a good practice to visualise their distribution graphical.
 
@@ -655,6 +655,7 @@ The [**gap statistic**](http://www.web.stanford.edu/~hastie/Papers/gap.pdf) co
 To compute the gap statistic, [*clusGap()*](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/clusGap) of [**cluster**](https://cran.r-project.org/web/packages/cluster/index.html) package will be used.
 
 ```{r}
+
 set.seed(12345)
 gap_stat <- clusGap(shan_ict, 
                     FUN = hcut, 
@@ -670,6 +671,7 @@ Also note that the [*hcut*](https://rpkgs.datanovia.com/factoextra/reference/hc
 Next, we can visualise the plot by using [*fviz_gap_stat()*](https://rpkgs.datanovia.com/factoextra/reference/fviz_nbclust.html) of [**factoextra**](https://rpkgs.datanovia.com/factoextra/index.html) package.
 
 ```{r}
+par(bg="#f6f6f6")
 fviz_gap_stat(gap_stat)
 ```
 
@@ -728,8 +730,13 @@ heatmaply(normalize(shan_ict_mat),
           xlab = "ICT Indicators",
           ylab = "Townships of Shan State",
           width = 600,
-          height = 600
-)
+          height = 1000
+)%>%
+  layout(plot_bgcolor = "#f6f6f6",paper_bgcolor = "#f6f6f6",
+         legend = list(
+      bgcolor = "#f6f6f6"  # legend background
+
+    ))
 ```
 
 ## 6.12 Mapping the clusters formed
