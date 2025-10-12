@@ -35,7 +35,7 @@ In this hands-on exercise, we will learn how to compute Global Measures of Spati
 | [spdep](https://r-spatial.github.io/spdep/index.html) | create spatial weights matrix objects from polygon contiguities |
 
 ```{r}
-pacman::p_load(sf, tmap, tidyverse,knitr,sfdep,ggplot2,kendall)
+pacman::p_load(sf, tmap, tidyverse,knitr,sfdep,ggplot2,Kendall)
 ```
 
 ## 2.3 Getting the Data Into R Environment
@@ -132,7 +132,7 @@ tmap_arrange(equal,
 
 In this section, we will learn how to compute global spatial autocorrelation statistics and to perform spatial complete randomness test for global spatial autocorrelation.
 
-## 4.1 Compute Contiguity Spatial Weights & Create Row-standardised Weights Matrix  Using sfdep package
+## 4.1 Compute Contiguity Spatial Weights & Create Row-standardised Weights Matrix Using sfdep package
 
 In the code chunk below, [`st_contiguity()`](https://sfdep.josiahparry.com/reference/st_contiguity) of **sfdep** package is used to compute contiguity weight matrices for the study area. This function builds a neighbours list based on regions with contiguous boundaries. If you look at the documentation you will see that you can pass a “queen” argument that takes TRUE or FALSE as options. If you do not specify this argument the default is set to TRUE, that is, if you don’t specify queen = FALSE this function will return a list of first order neighbours using the Queen criteria.
 
@@ -163,7 +163,7 @@ In this section, we will learn how to perform Moran’s I statistics testing by 
 Moran’s I quantifies the degree to which a variable at one location is similar to values at nearby locations. It measures **global correlation**, sensitive to overall clustering:
 
 | Global Moran’s I Value | Meaning |
-|---------------------|---------------------------------------------------|
+|-----------------|-------------------------------------------------------|
 | **I \> 0** | Positive spatial autocorrelation (similar values cluster together) |
 | **I ≈ 0** | No spatial autocorrelation (random distribution) |
 | **I \< 0** | Negative spatial autocorrelation (neighbors are dissimilar, dispersed pattern) |
@@ -173,7 +173,7 @@ Typical range is between –1 (perfect dispersion) and +1 (perfect clustering), 
 The arguments of moran.test() include:
 
 | Argument | Description |
-|------------------|------------------------------------------------------|
+|-------------------|-----------------------------------------------------|
 | randomisation | variance of I calculated under the assumption of randomisation, if FALSE normality |
 | zero.policy | if attribute not set, use global option value; if TRUE assign zero to the lagged value of zones without neighbours, if FALSE assign NA |
 | alternative | the alternative hypothesis, must be one of greater (default), less or two.sided. |
@@ -251,7 +251,7 @@ ii.map
 lisa <- lisa %>%
   mutate(
     LISA_cluster = ifelse(
-      p_ii_sim < 0.05, 
+      p_folded_sim < 0.05, 
       as.character(mean), 
       "Insignificant"),
     LISA_cluster = factor(
@@ -284,7 +284,7 @@ lisa_map <- tm_shape(lisa) +
       position = tm_pos_in("left", "bottom"))
   ) +
   tm_text("NAME_3", size=0.6)+
-  tm_title("Local Moran's I Clusters (p_sim < 0.05)",
+  tm_title("Local Moran's I Clusters (p_folded_sim < 0.05)",
            position = tm_pos_out("center", "top", "center"))+
   tm_layout(
     bg.color = "#f6f6f6",
@@ -297,3 +297,115 @@ lisa_map
 #| fig.height: 10
 tmap_arrange(ii.map, lisa_map, asp=1, ncol=2)
 ```
+
+# 8 Hot Spot and Cold Spot Area Analysis (HCSA)
+
+## 8.1 Compute local Gi\* statisitics
+
+building a spatial weight matrix
+
+```{r}
+wm_idw <- hunan_GDPPC %>%
+  mutate(nb = include_self(
+    st_contiguity(geometry)),
+    wts = st_inverse_distance(nb,
+                              geometry,
+                              scale = 1,
+                              alpha = 1),
+    .before = 1)
+
+```
+
+```{r}
+set.seed(1234)
+
+HCSA <- wm_idw %>%
+  mutate(local_Gi = local_gstar_perm(
+    GDPPC, nb, wts, nsim = 99),
+    .before =1) %>%
+  unnest(local_Gi)
+HCSA
+```
+
+## 8.2 Visualize local HCSA
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+local_gi <- tm_shape(HCSA) + 
+  tm_borders(alpha=0.8)+
+  tm_fill("gi_star") +
+  tm_text("NAME_3", size=0.6)+
+  tm_title("Gi* of GDPPC",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+local_gi
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+p_sim_gi <- tm_shape(HCSA) + 
+  tm_borders(alpha=0.8)+
+  tm_fill("p_folded_sim") +
+  tm_text("NAME_3", size=0.6)+
+  tm_title("p_value of Gi*",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+p_sim_gi
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+tmap_arrange(local_gi,p_sim_gi)
+```
+
+## 8.3 Visualize hot spot and cold spot areas
+
+```{r}
+HCSA_sig <- HCSA %>% filter(p_folded_sim <0.05)
+HCSA_sig
+```
+
+Low clusters are cold spots with locations having high values and surrounded by other low values.
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+
+tm_shape(HCSA) + 
+  tm_polygons()+
+tm_shape(HCSA_sig)+
+  tm_fill("cluster") +
+  tm_text("NAME_3", size=0.6)+
+  tm_title("Hot Spot and Cold Spot",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+
+```
+
+# 9 Local Moran's I & Gi\* Comparison
+
+**Local Moran's I** tells you if a location is similar to or different from its neighbors, while **Gi**\* tells you if there's a concentration of high or low values in an area.
+
+| **Aspect** | **Local Moran's I (LISA)** | Gi\* |
+|--------------------------|-----------------------|-----------------------|
+| **What it measures** | Similarity between a location and its neighbors | Intensity of clustering (concentration of high or low values) |
+| **Output types** | Four categories: High-High, Low-Low, High-Low, Low-High | Two categories: Hot spots (positive z-scores), Cold spots (negative z-scores) |
+| **Detects clusters** | Yes (HH and LL) | Yes (HH and LL) |
+| **Detects outliers** | Yes (HL and LH) | No |
+| **Statistical output** | Local Moran's I statistic + p-value | Z-score + p-value |
+| **Interpretation** | Identifies both conformity and deviation from neighbors | Identifies areas with statistically significant concentration of values |
+| **Null hypothesis** | No local spatial association | Random spatial distribution |
+| **Value range** | Can be positive or negative | Z-scores (typically -3 to +3) |
+| **Includes focal value** | **No (compares focal location to neighbors only)** | **Yes (includes the location itself in calculation)** |
+| **Best for** | Finding spatial anomalies, gentrification patterns, unusual crime patterns | Disease surveillance, identifying service deserts, retail site selection |
+| **Visualization** | Typically shown as categorical maps (4 colors) | Typically shown as continuous gradient or confidence intervals |
+| **Sensitivity to outliers** | More sensitive (by design) | Less sensitive |

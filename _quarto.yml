@@ -43,8 +43,10 @@ website:
             href: In-class/In-class-Ex03/In-class_Ex03b.html
           - text: "In-class 4"
             href: In-class/In-class-Ex04/In-class_Ex04.html
-          - text: "In-class 5"
-            href: In-class/In-class-Ex05/In-class_Ex05.html
+          - text: "In-class 5.a: LISA MAP"
+            href: In-class/In-class-Ex05/In-class_Ex05.a.html
+          - text: "In-class 5.b: EHSA"
+            href: In-class/In-class-Ex05/In-class_Ex05.b.html            
           - text: "In-class 6"
             href: In-class/In-class-Ex06/In-class-Ex06.html
       - text: "Take-home Exercises"

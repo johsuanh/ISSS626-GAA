@@ -1,0 +1,3313 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Johsuan Huang">
+<meta name="dcterms.date" content="2025-09-27">
+
+<title>In-class 5.b: Emerging Hot Spot Analysis – ISSS626 GAAxJH</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../images/favicon/favicon-96x96.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-9e1f2a4632985dffc2c80318c992baf5.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-4ba52ffbc7a8aaf3d7197e379d042a28.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="../../site_libs/plotly-binding-4.11.0/plotly.js"></script>
+<script src="../../site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="../../site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="../../site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="../../site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="../../site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="../../site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../images/Logo2.png" alt="" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Hands-on Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex01/Hands-on-Ex01_a.html">
+ <span class="dropdown-text">Hands-on 1.a: Geospatial Data Science with R</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex01/Hands-on-Ex01_b.html">
+ <span class="dropdown-text">Hands-on 1.b: Thematic Mapping and GeoVisualisation with R</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex02/Hands-on-Ex02_a.html">
+ <span class="dropdown-text">Hands-on 2.a: 1st Order Spatial Point Patterns Analysis Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex02/Hands-on-Ex02_b.html">
+ <span class="dropdown-text">Hands-on 2.b: 2nd Order Spatial Point Patterns Analysis Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex03/Hands-on-Ex03.html">
+ <span class="dropdown-text">Hands-on 3: Spatio-Temporal Point Patterns Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex04/Hands-on-Ex04.html">
+ <span class="dropdown-text">Hands-on 4: Spatial Weights and Applications</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex05/Hands-on-Ex05.a.html">
+ <span class="dropdown-text">Hands-on 5.a: Global Measures of Spatial Autocorrelation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex05/Hands-on-Ex05.b.html">
+ <span class="dropdown-text">Hands-on 5.b: Local Measures of Spatial Autocorrelationn</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on/Hands-on-Ex06/Hands-on-Ex06.html">
+ <span class="dropdown-text">Hands-on 6: Geographical Segmentation with Spatially Constrained Clustering Techniques</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-in-class-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">In-class Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex03/In-class_Ex03a.html">
+ <span class="dropdown-text">In-class 3.a</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex03/In-class_Ex03b.html">
+ <span class="dropdown-text">In-class 3.b</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex04/In-class_Ex04.html">
+ <span class="dropdown-text">In-class 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex05/In-class_Ex05.a.html">
+ <span class="dropdown-text">In-class 5.a: LISA MAP</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex05/In-class_Ex05.b.html">
+ <span class="dropdown-text">In-class 5.b: EHSA</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex06/In-class-Ex06.html">
+ <span class="dropdown-text">In-class 6</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-take-home-exercises" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Take-home Exercises</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercises">    
+        <li>
+    <a class="dropdown-item" href="../../Take-home/Take-home-Ex1/Take-home_Ex01.html">
+ <span class="dropdown-text">Take-home Ex01: Geospatial Analytics for Public Good</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1 Overview</a>
+  <ul class="collapse">
+  <li><a href="#comparison" id="toc-comparison" class="nav-link" data-scroll-target="#comparison">1.1 Comparison</a></li>
+  </ul></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">2 Getting Started</a>
+  <ul class="collapse">
+  <li><a href="#load-r-packages" id="toc-load-r-packages" class="nav-link" data-scroll-target="#load-r-packages">2.1 Load R packages</a></li>
+  <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data">2.2 The Data</a>
+  <ul class="collapse">
+  <li><a href="#import-shapefile" id="toc-import-shapefile" class="nav-link" data-scroll-target="#import-shapefile">2.2.1 Import shapefile</a></li>
+  <li><a href="#import-csv-file" id="toc-import-csv-file" class="nav-link" data-scroll-target="#import-csv-file">2.2.2 Import CSV File</a></li>
+  <li><a href="#create-a-time-series-cube" id="toc-create-a-time-series-cube" class="nav-link" data-scroll-target="#create-a-time-series-cube">2.2.3 Create a Time Series Cube</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#compute-gi" id="toc-compute-gi" class="nav-link" data-scroll-target="#compute-gi">3 Compute Gi*</a>
+  <ul class="collapse">
+  <li><a href="#deriving-the-spatial-weights" id="toc-deriving-the-spatial-weights" class="nav-link" data-scroll-target="#deriving-the-spatial-weights">3.1 Deriving the spatial weights</a></li>
+  </ul></li>
+  <li><a href="#mann-kendall-test" id="toc-mann-kendall-test" class="nav-link" data-scroll-target="#mann-kendall-test">4 Mann-Kendall Test</a>
+  <ul class="collapse">
+  <li><a href="#mann-kendall-test-on-gi" id="toc-mann-kendall-test-on-gi" class="nav-link" data-scroll-target="#mann-kendall-test-on-gi">4.1 Mann-Kendall Test on Gi</a></li>
+  <li><a href="#performing-emerging-hotspot-analysis" id="toc-performing-emerging-hotspot-analysis" class="nav-link" data-scroll-target="#performing-emerging-hotspot-analysis">4.2 Performing Emerging Hotspot Analysis</a></li>
+  <li><a href="#visualize-ehsa" id="toc-visualize-ehsa" class="nav-link" data-scroll-target="#visualize-ehsa">4.5 Visualize EHSA</a></li>
+  <li><a href="#interpretation-of-ehsa-classes" id="toc-interpretation-of-ehsa-classes" class="nav-link" data-scroll-target="#interpretation-of-ehsa-classes">4.6 Interpretation of EHSA classes</a>
+  <ul class="collapse">
+  <li><a href="#hot-spot" id="toc-hot-spot" class="nav-link" data-scroll-target="#hot-spot">4.6.1 Hot Spot</a></li>
+  <li><a href="#cold-spot" id="toc-cold-spot" class="nav-link" data-scroll-target="#cold-spot">4.6.2 Cold Spot</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">5 Reference</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">In-class 5.b: Emerging Hot Spot Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Johsuan Huang </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 27, 2025</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">October 12, 2025</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level1">
+<h1>1 Overview</h1>
+<p>Emerging Hot Spot Analysis (EHSA) is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:</p>
+<ul>
+<li>Building a space-time cube,</li>
+<li>Calculating Getis-Ord local Gi* statistic for each bin by using an FDR correction,</li>
+<li>Evaluating these hot and cold spot trends by using Mann-Kendall trend test,</li>
+<li>Categorising each study area location by referring to the resultant trend z-score and p-value for each location with data, and with the hot spot z-score and p-value for each bin.</li>
+<li>EHSA classifies locations into patterns based on:
+<ol type="1">
+<li><p><strong>Statistical significance</strong>&nbsp;(hot spot, cold spot, not significant)</p></li>
+<li><p><strong>Trend over time</strong>&nbsp;(increasing, decreasing, stable)</p></li>
+<li><p><strong>Consistency</strong>&nbsp;(persistent, sporadic, oscillating)</p></li>
+</ol></li>
+</ul>
+<section id="comparison" class="level2">
+<h2 class="anchored" data-anchor-id="comparison">1.1 Comparison</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><strong>Analysis</strong></th>
+<th><strong>Spatial</strong></th>
+<th><strong>Temporal</strong></th>
+<th><strong>Output</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Gi</strong>*</td>
+<td>V</td>
+<td>X</td>
+<td>Hot/cold spots at one time</td>
+</tr>
+<tr class="even">
+<td><strong>Local Moran’s I</strong></td>
+<td>V</td>
+<td>X</td>
+<td>Clusters + outliers at one time</td>
+</tr>
+<tr class="odd">
+<td><strong>EHSA</strong></td>
+<td>V</td>
+<td>V</td>
+<td>Hot/cold spot trends over time</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="getting-started" class="level1">
+<h1>2 Getting Started</h1>
+<section id="load-r-packages" class="level2">
+<h2 class="anchored" data-anchor-id="load-r-packages">2.1 Load R packages</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, sfdep, tmap, plotly, tidyverse, Kendall, patchwork,knitr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="the-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-data">2.2 The Data</h2>
+<p>For the purpose of this in-class exercise, the Hunan data sets will be used. There are two data sets in this use case, they are:</p>
+<ul>
+<li>Hunan, a geospatial data set in ESRI shapefile format, and</li>
+<li>Hunan_GDPPC, an attribute data set in csv format.</li>
+</ul>
+<p>Before getting started, reveal the content of&nbsp;<em>Hunan_GDPPC.csv</em>&nbsp;by using Notepad and MS Excel.</p>
+<section id="import-shapefile" class="level3">
+<h3 class="anchored" data-anchor-id="import-shapefile">2.2.1 Import shapefile</h3>
+<p>The code chunk below uses&nbsp;<a href="https://r-spatial.github.io/sf/reference/st_read.html"><code>st_read()</code></a>&nbsp;of&nbsp;<strong>sf</strong>&nbsp;package to import Hunan shapefile into R. The imported shapefile will be&nbsp;<strong>simple features</strong>&nbsp;Object of&nbsp;<strong>sf</strong>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">layer =</span> <span class="st">"Hunan"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">32650</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `Hunan' from data source 
+  `/Users/johsuan/johsuanh/ISSS626-GAA/In-class/In-class-Ex05/data/geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 88 features and 7 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:32650 
+  wkt:
+PROJCRS["WGS 84 / UTM zone 50N",
+    BASEGEOGCRS["WGS 84",
+        ENSEMBLE["World Geodetic System 1984 ensemble",
+            MEMBER["World Geodetic System 1984 (Transit)"],
+            MEMBER["World Geodetic System 1984 (G730)"],
+            MEMBER["World Geodetic System 1984 (G873)"],
+            MEMBER["World Geodetic System 1984 (G1150)"],
+            MEMBER["World Geodetic System 1984 (G1674)"],
+            MEMBER["World Geodetic System 1984 (G1762)"],
+            MEMBER["World Geodetic System 1984 (G2139)"],
+            MEMBER["World Geodetic System 1984 (G2296)"],
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]],
+            ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4326]],
+    CONVERSION["UTM zone 50N",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",0,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",117,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",0.9996,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",500000,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["(E)",east,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["(N)",north,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Navigation and medium accuracy spatial referencing."],
+        AREA["Between 114°E and 120°E, northern hemisphere between equator and 84°N, onshore and offshore. Brunei. China. Hong Kong. Indonesia. Malaysia - East Malaysia - Sarawak. Mongolia. Philippines. Russian Federation. Taiwan."],
+        BBOX[0,114,84,120]],
+    ID["EPSG",32650]]</code></pre>
+</div>
+</div>
+<p>After importing the shape file, let’s plot the graph:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">bg=</span><span class="st">"#f6f6f6"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.b_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="import-csv-file" class="level3">
+<h3 class="anchored" data-anchor-id="import-csv-file">2.2.2 Import CSV File</h3>
+<p>Next, we will import&nbsp;<em>Hunan_2012.csv</em>&nbsp;into R by using&nbsp;<em>read_csv()</em>&nbsp;of&nbsp;<strong>readr</strong>&nbsp;package. The output is R dataframe class.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>GDPPC <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/Hunan_GDPPC.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(GDPPC))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Year</th>
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">GDPPC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Longshan</td>
+<td style="text-align: right;">3469</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">24612</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Wangcheng</td>
+<td style="text-align: right;">14659</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Ningxiang</td>
+<td style="text-align: right;">11687</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">13406</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Zhuzhou</td>
+<td style="text-align: right;">8546</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="create-a-time-series-cube" class="level3">
+<h3 class="anchored" data-anchor-id="create-a-time-series-cube">2.2.3 Create a Time Series Cube</h3>
+<p>In the code chunk below,&nbsp;<a href="https://sfdep.josiahparry.com/reference/spacetime.html"><code>spacetime()</code></a>&nbsp;of sfdep ised used to create an spatio-temporal cube:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>GDPPC_st <span class="ot">&lt;-</span> <span class="fu">spacetime</span>(GDPPC,hunan,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">.loc_col =</span> <span class="st">"County"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">.time_col =</span> <span class="st">"Year"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>GDPPC_st</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,496 × 3
+    Year County    GDPPC
+ * &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+ 1  2005 Longshan   3469
+ 2  2005 Changsha  24612
+ 3  2005 Wangcheng 14659
+ 4  2005 Ningxiang 11687
+ 5  2005 Liuyang   13406
+ 6  2005 Zhuzhou    8546
+ 7  2005 You       10944
+ 8  2005 Chaling    8040
+ 9  2005 Yanling    7383
+10  2005 Liling    11688
+# ℹ 1,486 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC_st)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="compute-gi" class="level1">
+<h1>3 Compute Gi*</h1>
+<p>Next, we will compute the local Gi* statistics.</p>
+<section id="deriving-the-spatial-weights" class="level2">
+<h2 class="anchored" data-anchor-id="deriving-the-spatial-weights">3.1 Deriving the spatial weights</h2>
+<p>The code chunk below will be used to derive an inverse distance weights. Closer neighbors (Weight = 1/distance) have higher influences.</p>
+<ul>
+<li><code>activate()</code>&nbsp;of dplyr package is used to activate the geometry component of the spatial data, telling R to work with the spatial features (polygons/points)</li>
+<li><code>mutate()</code>&nbsp;of dplyr package is used to create two new columns&nbsp;<em>nb</em>&nbsp;and&nbsp;<em>wt</em>.</li>
+<li>Then we will activate the data context again and copy over the nb and wt columns to each time-slice using&nbsp;<code>set_nbs()</code>&nbsp;and&nbsp;<code>set_wts()</code>
+<ul>
+<li><strong>row order is very important so do not rearrange the observations after using&nbsp;<code>set_nbs()</code>&nbsp;or&nbsp;<code>set_wts()</code></strong></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>GDPPC_nb <span class="ot">&lt;-</span> GDPPC_st <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">activate</span>(<span class="st">"geometry"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># includes focal value for Gi* calculation</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Finds neighbors based on shared boundaries(queen method)</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">nb =</span> <span class="fu">include_self</span>(<span class="fu">st_contiguity</span>(geometry,<span class="at">queen=</span><span class="cn">TRUE</span>)), </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># inverve distance weights</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#weight = scale / (distance ^ alpha)</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">wt =</span> <span class="fu">st_inverse_distance</span>(nb, geometry, <span class="at">scale =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="dv">1</span>) </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_nbs</span>(<span class="st">"nb"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_wts</span>(<span class="st">"wt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we can observe the table include variables for year, county, neighbors (include itself) and weights assigned to its neighbors.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(GDPPC_nb))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 17%">
+<col style="width: 67%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Year</th>
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">GDPPC</th>
+<th style="text-align: left;">nb</th>
+<th style="text-align: left;">wt</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: right;">8184</td>
+<td style="text-align: left;">1, 2, 3, 4, 57, 85</td>
+<td style="text-align: left;">0.000000e+00, 1.535214e-05, 3.582140e-05, 2.166411e-05, 2.885791e-05, 1.064135e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Hanshou</td>
+<td style="text-align: right;">6560</td>
+<td style="text-align: left;">1, 2, 57, 58, 78, 85</td>
+<td style="text-align: left;">1.535214e-05, 0.000000e+00, 1.614606e-05, 1.873186e-05, 2.276814e-05, 1.644739e-05</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Jinshi</td>
+<td style="text-align: right;">9956</td>
+<td style="text-align: left;">1, 3, 4, 5, 85</td>
+<td style="text-align: left;">3.582140e-05, 0.000000e+00, 4.420648e-05, 4.002680e-05, 1.251247e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Li</td>
+<td style="text-align: right;">8394</td>
+<td style="text-align: left;">1, 3, 4, 5, 6</td>
+<td style="text-align: left;">2.166411e-05, 4.420648e-05, 0.000000e+00, 4.600656e-05, 1.738748e-05</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Linli</td>
+<td style="text-align: right;">8850</td>
+<td style="text-align: left;">3, 4, 5, 6, 85</td>
+<td style="text-align: left;">4.002680e-05, 4.600656e-05, 0.000000e+00, 2.105831e-05, 1.392166e-05</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">9244</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Next, we calculate the Gi* for each location per year using <code>local_gstar_perm()</code> for the Gi* calculation permutation test. The result of <code>local_gstar_perm()</code> is presented in a list-column format, contaning columns for Gi*,cluster, e_gi, var_gi, std_dev… Hence, we then use <code>tidyr::unnest()</code> to transform the nested list result into seperate columns:</p>
+<ul>
+<li><code>gi</code>: the observed statistic</li>
+<li><code>e_gi</code>: the permutation sample mean</li>
+<li><code>var_gi</code>: the permutation sample variance</li>
+<li><code>p_value</code>: the p-value using sample mean and standard deviation</li>
+<li><code>p_sim</code>: the simulated p-value&nbsp;from the permutation test. The raw p-value from comparing your observed statistic to the permutation distribution</li>
+<li><code>p_folded_sim</code>: p-value based on the implementation of Pysal which always assumes a two-sided test taking the minimum possible p-value</li>
+<li><code>skewness</code>: sample skewness</li>
+<li><code>kurtosis</code>: sample kurtosis</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>gi_stars <span class="ot">&lt;-</span> GDPPC_nb <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year) <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gi_star =</span> <span class="fu">local_gstar_perm</span>(GDPPC, nb, wt,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">nsim=</span><span class="dv">999</span>, <span class="co">#default</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">alternative =</span> <span class="st">"two.sided"</span> )) <span class="sc">%&gt;%</span> <span class="co">#default</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(gi_star) <span class="sc">%&gt;%</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">classification =</span> <span class="fu">case_when</span>(</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>      p_folded_sim <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> cluster <span class="sc">==</span> <span class="st">"High"</span> <span class="sc">~</span> <span class="st">"High GDP Cluster"</span>,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>      p_folded_sim <span class="sc">&lt;=</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> cluster <span class="sc">==</span> <span class="st">"Low"</span> <span class="sc">~</span> <span class="st">"Low GDP Cluster"</span>,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Not Significant"</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s check the result:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(gi_stars))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 8%">
+<col style="width: 35%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 2%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Year</th>
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">GDPPC</th>
+<th style="text-align: left;">nb</th>
+<th style="text-align: left;">wt</th>
+<th style="text-align: right;">gi_star</th>
+<th style="text-align: left;">cluster</th>
+<th style="text-align: right;">e_gi</th>
+<th style="text-align: right;">var_gi</th>
+<th style="text-align: right;">std_dev</th>
+<th style="text-align: right;">p_value</th>
+<th style="text-align: right;">p_sim</th>
+<th style="text-align: right;">p_folded_sim</th>
+<th style="text-align: right;">skewness</th>
+<th style="text-align: right;">kurtosis</th>
+<th style="text-align: left;">classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: right;">8184</td>
+<td style="text-align: left;">1, 2, 3, 4, 57, 85</td>
+<td style="text-align: left;">0.000000e+00, 1.535214e-05, 3.582140e-05, 2.166411e-05, 2.885791e-05, 1.064135e-05</td>
+<td style="text-align: right;">0.3981239</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0115783</td>
+<td style="text-align: right;">2.8e-06</td>
+<td style="text-align: right;">0.3286018</td>
+<td style="text-align: right;">0.7424567</td>
+<td style="text-align: right;">0.584</td>
+<td style="text-align: right;">0.292</td>
+<td style="text-align: right;">0.9561178</td>
+<td style="text-align: right;">0.9860752</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Hanshou</td>
+<td style="text-align: right;">6560</td>
+<td style="text-align: left;">1, 2, 57, 58, 78, 85</td>
+<td style="text-align: left;">1.535214e-05, 0.000000e+00, 1.614606e-05, 1.873186e-05, 2.276814e-05, 1.644739e-05</td>
+<td style="text-align: right;">-0.2369095</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0108830</td>
+<td style="text-align: right;">2.7e-06</td>
+<td style="text-align: right;">0.0147254</td>
+<td style="text-align: right;">0.9882513</td>
+<td style="text-align: right;">0.830</td>
+<td style="text-align: right;">0.415</td>
+<td style="text-align: right;">0.8747532</td>
+<td style="text-align: right;">0.9090782</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Jinshi</td>
+<td style="text-align: right;">9956</td>
+<td style="text-align: left;">1, 3, 4, 5, 85</td>
+<td style="text-align: left;">3.582140e-05, 0.000000e+00, 4.420648e-05, 4.002680e-05, 1.251247e-05</td>
+<td style="text-align: right;">1.0530865</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0126140</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">0.5489800</td>
+<td style="text-align: right;">0.5830192</td>
+<td style="text-align: right;">0.458</td>
+<td style="text-align: right;">0.229</td>
+<td style="text-align: right;">1.0603495</td>
+<td style="text-align: right;">1.6952344</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Li</td>
+<td style="text-align: right;">8394</td>
+<td style="text-align: left;">1, 3, 4, 5, 6</td>
+<td style="text-align: left;">2.166411e-05, 4.420648e-05, 0.000000e+00, 4.600656e-05, 1.738748e-05</td>
+<td style="text-align: right;">0.9656557</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117677</td>
+<td style="text-align: right;">3.1e-06</td>
+<td style="text-align: right;">0.9137805</td>
+<td style="text-align: right;">0.3608322</td>
+<td style="text-align: right;">0.340</td>
+<td style="text-align: right;">0.170</td>
+<td style="text-align: right;">0.9557172</td>
+<td style="text-align: right;">1.2873111</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Linli</td>
+<td style="text-align: right;">8850</td>
+<td style="text-align: left;">3, 4, 5, 6, 85</td>
+<td style="text-align: left;">4.002680e-05, 4.600656e-05, 0.000000e+00, 2.105831e-05, 1.392166e-05</td>
+<td style="text-align: right;">1.0475392</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0120329</td>
+<td style="text-align: right;">2.9e-06</td>
+<td style="text-align: right;">0.8891194</td>
+<td style="text-align: right;">0.3739389</td>
+<td style="text-align: right;">0.352</td>
+<td style="text-align: right;">0.176</td>
+<td style="text-align: right;">0.7707301</td>
+<td style="text-align: right;">0.4628213</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">9244</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.2100740</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0121006</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">-0.1908352</td>
+<td style="text-align: right;">0.8486547</td>
+<td style="text-align: right;">0.976</td>
+<td style="text-align: right;">0.488</td>
+<td style="text-align: right;">0.8855153</td>
+<td style="text-align: right;">0.8846681</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="mann-kendall-test" class="level1">
+<h1>4 Mann-Kendall Test</h1>
+<p>A&nbsp;<strong>monotonic series</strong>&nbsp;or function is one that only increases (or decreases) and never changes direction. So long as the function either stays flat or continues to increase, it is monotonic.</p>
+<ul>
+<li>H0: No monotonic trend</li>
+<li>H1: Monotonic trend is present</li>
+</ul>
+<p>In Emerging Hot Spot Analysis, Mann-Kendall tests whether a location’s Gi* values are&nbsp;<strong>trending over time</strong>:</p>
+<ul>
+<li>Increasing trend → Intensifying hot/cold spot</li>
+<li>Decreasing trend → Diminishing hot/cold spot</li>
+<li>No trend but significant → Persistent hot/cold spot</li>
+</ul>
+<p><strong>Interpretation</strong></p>
+<ul>
+<li><p>Reject the null-hypothesis null if the p-value is smaller than the alpha value (i.e.&nbsp;1-confident level)</p></li>
+<li><p>Tau ranges between -1 and 1 where:</p>
+<ul>
+<li><p>-1 is a perfectly decreasing series, and</p></li>
+<li><p>1 is a perfectly increasing series.</p></li>
+</ul></li>
+</ul>
+<section id="mann-kendall-test-on-gi" class="level2">
+<h2 class="anchored" data-anchor-id="mann-kendall-test-on-gi">4.1 Mann-Kendall Test on Gi</h2>
+<p>With these Gi* measures we can then evaluate each location for a trend using the Mann-Kendall test. The code chunk run MK tests on all counties:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>mk_results <span class="ot">&lt;-</span> gi_stars <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(County) <span class="sc">%&gt;%</span>  <span class="co"># Replace with your county ID variable</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mk_tau =</span> <span class="fu">MannKendall</span>(gi_star)<span class="sc">$</span>tau,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mk_pvalue =</span> <span class="fu">MannKendall</span>(gi_star)<span class="sc">$</span>sl,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">trend_direction =</span> <span class="fu">case_when</span>(</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>      mk_pvalue <span class="sc">&gt;</span> <span class="fl">0.05</span> <span class="sc">~</span> <span class="st">"No significant trend"</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>      mk_tau <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"Increasing trend"</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>      mk_tau <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"Decreasing trend"</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We take Changsha for example:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cbg <span class="ot">&lt;-</span> gi_stars <span class="sc">%&gt;%</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(County <span class="sc">==</span> <span class="st">"Changsha"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(County, Year, gi_star)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> cbg, </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Year, </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> gi_star)) <span class="sc">+</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_light</span>()<span class="sc">+</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid =</span> <span class="fu">element_blank</span>())</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplotly</span>(c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-94c95b538ab8aa406bec" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-94c95b538ab8aa406bec">{"x":{"data":[{"x":[2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021],"y":[5.0282995066289065,5.1692011079782327,5.2958892892912894,5.6039537096873984,6.2788862246004742,5.9357455762937326,5.7508709054298892,5.6942475830114585,5.7085054237054784,5.760812156173353,6.0971272412571889,6.0036547779673155,6.2028053540357915,6.0371816202738309,6.579432171885526,5.7669155664195504,5.7486534794156494],"text":["Year: 2005<br />gi_star: 5.028300","Year: 2006<br />gi_star: 5.169201","Year: 2007<br />gi_star: 5.295889","Year: 2008<br />gi_star: 5.603954","Year: 2009<br />gi_star: 6.278886","Year: 2010<br />gi_star: 5.935746","Year: 2011<br />gi_star: 5.750871","Year: 2012<br />gi_star: 5.694248","Year: 2013<br />gi_star: 5.708505","Year: 2014<br />gi_star: 5.760812","Year: 2015<br />gi_star: 6.097127","Year: 2016<br />gi_star: 6.003655","Year: 2017<br />gi_star: 6.202805","Year: 2018<br />gi_star: 6.037182","Year: 2019<br />gi_star: 6.579432","Year: 2020<br />gi_star: 5.766916","Year: 2021<br />gi_star: 5.748653"],"type":"scatter","mode":"lines","line":{"width":1.8897637795275593,"color":"rgba(0,0,0,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.305936073059364,"r":7.3059360730593621,"b":37.260273972602747,"l":43.105022831050235},"plot_bgcolor":"rgba(246,246,246,1)","paper_bgcolor":"rgba(246,246,246,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[2004.2,2021.8],"tickmode":"array","ticktext":["2005","2010","2015","2020"],"tickvals":[2005,2010,2015,2020],"categoryorder":"array","categoryarray":["2005","2010","2015","2020"],"nticks":null,"ticks":"outside","tickcolor":"rgba(179,179,179,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"Year","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[4.9507428733660754,6.656988805148357],"tickmode":"array","ticktext":["5.0","5.5","6.0","6.5"],"tickvals":[5,5.5,6,6.5],"categoryorder":"array","categoryarray":["5.0","5.5","6.0","6.5"],"nticks":null,"ticks":"outside","tickcolor":"rgba(179,179,179,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"gi_star","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":"rgba(255,255,255,1)","line":{"color":"rgba(179,179,179,1)","width":0,"linetype":"solid"},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"2f283d0c3697":{"x":{},"y":{},"type":"scatter"}},"cur_data":"2f283d0c3697","visdat":{"2f283d0c3697":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>changsha_mk <span class="ot">&lt;-</span> mk_results <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span> (County <span class="sc">==</span> <span class="st">"Changsha"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>changsha_mk</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  County   mk_tau mk_pvalue trend_direction 
+  &lt;chr&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;           
+1 Changsha  0.485   0.00742 Increasing trend</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This pattern suggests that Changsha experienced increasing spatial concentration (becoming more of a hot spot relative to its neighbors) through most of the time period, but this trend may have reversed or weakened recently.</p>
+</div>
+</div>
+<p>We can also sort to show significant emerging hot/cold spots by abs tau</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>emerging_top10 <span class="ot">&lt;-</span> mk_results <span class="sc">%&gt;%</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(mk_pvalue, <span class="fu">abs</span>(mk_tau)) <span class="sc">%&gt;%</span> </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(emerging_top10)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">mk_tau</th>
+<th style="text-align: right;">mk_pvalue</th>
+<th style="text-align: left;">trend_direction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Shuangfeng</td>
+<td style="text-align: right;">0.8676472</td>
+<td style="text-align: right;">1.40e-06</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Xiangtan</td>
+<td style="text-align: right;">0.8676472</td>
+<td style="text-align: right;">1.40e-06</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Xiangxiang</td>
+<td style="text-align: right;">0.8676472</td>
+<td style="text-align: right;">1.40e-06</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chengbu</td>
+<td style="text-align: right;">-0.8235295</td>
+<td style="text-align: right;">4.80e-06</td>
+<td style="text-align: left;">Decreasing trend</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Dongan</td>
+<td style="text-align: right;">-0.8235295</td>
+<td style="text-align: right;">4.80e-06</td>
+<td style="text-align: left;">Decreasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Wugang</td>
+<td style="text-align: right;">-0.8088236</td>
+<td style="text-align: right;">7.10e-06</td>
+<td style="text-align: left;">Decreasing trend</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Huayuan</td>
+<td style="text-align: right;">-0.7941177</td>
+<td style="text-align: right;">1.05e-05</td>
+<td style="text-align: left;">Decreasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Shaoshan</td>
+<td style="text-align: right;">0.7941177</td>
+<td style="text-align: right;">1.05e-05</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">0.7794119</td>
+<td style="text-align: right;">1.53e-05</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Zhuzhou</td>
+<td style="text-align: right;">0.7647060</td>
+<td style="text-align: right;">2.21e-05</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="performing-emerging-hotspot-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="performing-emerging-hotspot-analysis">4.2 Performing Emerging Hotspot Analysis</h2>
+<p>Lastly, we will perform EHSA analysis by using&nbsp;<a href="https://sfdep.josiahparry.com/reference/emerging_hotspot_analysis.html"><code>emerging_hotspot_analysis()</code></a>&nbsp;of sfdep package. It takes a spacetime object x (i.e.&nbsp;GDPPC_st), and the quoted name of the variable of interest (i.e.&nbsp;GDPPC) for .var argument. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation to be performed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>ehsa <span class="ot">&lt;-</span> <span class="fu">emerging_hotspot_analysis</span>(</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> GDPPC_nb, </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">include_gi =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">.var =</span> <span class="st">"GDPPC"</span>, </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">1</span>,      <span class="co"># time lag = 1</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">nsim =</span> <span class="dv">199</span>, <span class="co"># 200 simulation</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">nb_col =</span> <span class="st">"nb"</span>,    </span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">wt_col =</span> <span class="st">"wt"</span>,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">threshold =</span> <span class="fl">0.05</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ehsa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 88 × 4
+   location     tau    p_value classification     
+   &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;              
+ 1 Anxiang    0.206 0.266      sporadic coldspot  
+ 2 Hanshou    0.176 0.343      sporadic hotspot   
+ 3 Jinshi     0.721 0.0000645  oscilating hotspot 
+ 4 Li        -0.853 0.00000217 sporadic coldspot  
+ 5 Linli      0.162 0.387      oscilating hotspot 
+ 6 Shimen    -0.603 0.000848   oscilating coldspot
+ 7 Liuyang    0.853 0.00000215 sporadic hotspot   
+ 8 Ningxiang -0.574 0.00151    sporadic coldspot  
+ 9 Wangcheng -0.147 0.434      sporadic coldspot  
+10 Anren      0.412 0.0235     oscilating coldspot
+# ℹ 78 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> ehsa,</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> classification)) <span class="sc">+</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">fill =</span> <span class="st">"#93A4CC"</span>, <span class="at">color =</span> <span class="st">"grey30"</span>)<span class="sc">+</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>),</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>,<span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid =</span> <span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.b_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="visualize-ehsa" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-ehsa">4.5 Visualize EHSA</h2>
+<p>Before we can do so, we need to join both&nbsp;<em>hunan</em>&nbsp;and&nbsp;<em>ehsa</em>&nbsp;together by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>hunan_ehsa <span class="ot">&lt;-</span> hunan <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(ehsa,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">join_by</span>(County <span class="sc">==</span> location))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, tmap functions will be used to plot a categorical choropleth map by using the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ehsa_sig <span class="ot">&lt;-</span> hunan_ehsa  <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(p_value <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(hunan_ehsa) <span class="sc">+</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">fill_alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(ehsa_sig) <span class="sc">+</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"classification"</span>) <span class="sc">+</span> </span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">fill_alpha =</span> <span class="fl">0.4</span>)<span class="sc">+</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Emerging Hotspot Analysis"</span>,</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.b_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>selected_locations <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Liuyang"</span>, <span class="st">"Changsha"</span>, <span class="st">"Pingjiang"</span>, <span class="st">"Shimen"</span>, <span class="st">"Hengdong"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>plot_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> selected_locations) {</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># data for current county</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  plot_data <span class="ot">&lt;-</span> gi_stars <span class="sc">%&gt;%</span> </span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(County <span class="sc">==</span> i) <span class="sc">%&gt;%</span> </span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(County, Year, gi_star, p_folded_sim, classification)</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># classification from EHSA results</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  classification_ehsa <span class="ot">&lt;-</span> ehsa <span class="sc">%&gt;%</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(location <span class="sc">==</span> i) <span class="sc">%&gt;%</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(classification) <span class="sc">%&gt;%</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unique</span>()</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  plot_list[[i]] <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> plot_data, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> gi_star, <span class="at">color =</span> classification)) <span class="sc">+</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.96</span>, <span class="fl">1.96</span>), </span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>               <span class="at">linetype =</span> <span class="st">"dashed"</span>, </span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>               <span class="at">color =</span> <span class="st">"gray50"</span>, </span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>               <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.5</span>, <span class="at">color =</span> <span class="st">"gray30"</span>) <span class="sc">+</span></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">min</span>(plot_data<span class="sc">$</span>Year), <span class="at">y =</span> <span class="fl">2.2</span>, </span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a>             <span class="at">label =</span> <span class="st">" z = 1.96, p&lt;0.05)"</span>, </span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>             <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"gray40"</span>) <span class="sc">+</span></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fu">min</span>(plot_data<span class="sc">$</span>Year), <span class="at">y =</span> <span class="sc">-</span><span class="fl">2.2</span>, </span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a>             <span class="at">label =</span> <span class="st">"z = -1.96, p&lt;0.05"</span>, </span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a>             <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">color =</span> <span class="st">"gray40"</span>) <span class="sc">+</span></span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># classification from Gi*</span></span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"High GDP Cluster"</span> <span class="ot">=</span> <span class="st">"#d7191c"</span>, </span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"Low GDP Cluster"</span> <span class="ot">=</span> <span class="st">"#2c7bb6"</span>,</span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"Not Significant"</span> <span class="ot">=</span> <span class="st">"gray60"</span>)) <span class="sc">+</span></span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_light</span>() <span class="sc">+</span></span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste0</span>(i, <span class="st">": "</span>, tools<span class="sc">::</span><span class="fu">toTitleCase</span>(classification_ehsa)),</span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"Classification"</span>) <span class="sc">+</span></span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>),</span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a>          <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a>          <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a>          <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a>          <span class="at">legend.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#f6f6f6"</span>),</span>
+<span id="cb29-45"><a href="#cb29-45" aria-hidden="true" tabindex="-1"></a>          <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
+<span id="cb29-46"><a href="#cb29-46" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb29-47"><a href="#cb29-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-48"><a href="#cb29-48" aria-hidden="true" tabindex="-1"></a>(plot_list[[<span class="st">"Changsha"</span>]] <span class="sc">+</span> plot_list[[<span class="st">"Liuyang"</span>]] <span class="sc">+</span> plot_list[[<span class="st">"Pingjiang"</span>]]) <span class="sc">/</span> </span>
+<span id="cb29-49"><a href="#cb29-49" aria-hidden="true" tabindex="-1"></a>  (plot_list[[<span class="st">"Shimen"</span>]] <span class="sc">+</span> plot_list[[<span class="st">"Hengdong"</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.b_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>EHSA</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>selected_locations <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Liuyang"</span>, <span class="st">"Changsha"</span>, <span class="st">"Pingjiang"</span>, <span class="st">"Shimen"</span>, <span class="st">"Hengdong"</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>filtered_data <span class="ot">&lt;-</span> ehsa_sig  <span class="sc">%&gt;%</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(NAME_3 <span class="sc">%in%</span> selected_locations)<span class="sc">%&gt;%</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(NAME_3, classification, tau, p_value)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(filtered_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 24%">
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">NAME_3</th>
+<th style="text-align: left;">classification</th>
+<th style="text-align: right;">tau</th>
+<th style="text-align: right;">p_value</th>
+<th style="text-align: left;">geometry</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: left;">oscilating coldspot</td>
+<td style="text-align: right;">-0.6029412</td>
+<td style="text-align: right;">0.0008481</td>
+<td style="text-align: left;">POLYGON ((-89888.78 3347561…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: left;">sporadic hotspot</td>
+<td style="text-align: right;">0.8529413</td>
+<td style="text-align: right;">0.0000021</td>
+<td style="text-align: left;">POLYGON ((205590.4 3163847,…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: left;">oscilating hotspot</td>
+<td style="text-align: right;">0.4117647</td>
+<td style="text-align: right;">0.0234762</td>
+<td style="text-align: left;">POLYGON ((114163.5 3015705,…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: left;">sporadic coldspot</td>
+<td style="text-align: right;">-0.4558824</td>
+<td style="text-align: right;">0.0119794</td>
+<td style="text-align: left;">POLYGON ((192667.6 3218916,…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: left;">oscilating hotspot</td>
+<td style="text-align: right;">0.7500001</td>
+<td style="text-align: right;">0.0000317</td>
+<td style="text-align: left;">POLYGON ((100963.9 3107975,…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Gi* trend</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>gi_trend <span class="ot">&lt;-</span> mk_results <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(County <span class="sc">%in%</span> selected_locations)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(gi_trend)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">mk_tau</th>
+<th style="text-align: right;">mk_pvalue</th>
+<th style="text-align: left;">trend_direction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">0.4852942</td>
+<td style="text-align: right;">0.0074170</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">0.3823530</td>
+<td style="text-align: right;">0.0356565</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">0.7794119</td>
+<td style="text-align: right;">0.0000153</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">0.6470589</td>
+<td style="text-align: right;">0.0003387</td>
+<td style="text-align: left;">Increasing trend</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">0.1617647</td>
+<td style="text-align: right;">0.3870140</td>
+<td style="text-align: left;">No significant trend</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Gi* details</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>gi_details <span class="ot">&lt;-</span> gi_stars <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(County <span class="sc">%in%</span> selected_locations)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(gi_details)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 1%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 10%">
+<col style="width: 36%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Year</th>
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">GDPPC</th>
+<th style="text-align: left;">nb</th>
+<th style="text-align: left;">wt</th>
+<th style="text-align: right;">gi_star</th>
+<th style="text-align: left;">cluster</th>
+<th style="text-align: right;">e_gi</th>
+<th style="text-align: right;">var_gi</th>
+<th style="text-align: right;">std_dev</th>
+<th style="text-align: right;">p_value</th>
+<th style="text-align: right;">p_sim</th>
+<th style="text-align: right;">p_folded_sim</th>
+<th style="text-align: right;">skewness</th>
+<th style="text-align: right;">kurtosis</th>
+<th style="text-align: left;">classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">9244.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.2100740</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0121006</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">-0.1908352</td>
+<td style="text-align: right;">0.8486547</td>
+<td style="text-align: right;">0.976</td>
+<td style="text-align: right;">0.488</td>
+<td style="text-align: right;">0.8855153</td>
+<td style="text-align: right;">0.8846681</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">13406.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">3.9145467</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0142368</td>
+<td style="text-align: right;">3.2e-06</td>
+<td style="text-align: right;">2.9962566</td>
+<td style="text-align: right;">0.0027332</td>
+<td style="text-align: right;">0.026</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">1.0435281</td>
+<td style="text-align: right;">1.4243454</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">8066.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.6897773</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0115787</td>
+<td style="text-align: right;">2.6e-06</td>
+<td style="text-align: right;">0.6322083</td>
+<td style="text-align: right;">0.5272508</td>
+<td style="text-align: right;">0.460</td>
+<td style="text-align: right;">0.230</td>
+<td style="text-align: right;">0.7792436</td>
+<td style="text-align: right;">1.1986134</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">5817.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">2.5626852</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104466</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">3.6430979</td>
+<td style="text-align: right;">0.0002694</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.8251446</td>
+<td style="text-align: right;">0.9108653</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2005</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">24612.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.0282995</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0175778</td>
+<td style="text-align: right;">1.8e-06</td>
+<td style="text-align: right;">2.0804388</td>
+<td style="text-align: right;">0.0374853</td>
+<td style="text-align: right;">0.058</td>
+<td style="text-align: right;">0.029</td>
+<td style="text-align: right;">0.6063296</td>
+<td style="text-align: right;">0.8995033</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2006</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">10556.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.1267865</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0120007</td>
+<td style="text-align: right;">2.9e-06</td>
+<td style="text-align: right;">-0.2299918</td>
+<td style="text-align: right;">0.8180981</td>
+<td style="text-align: right;">0.948</td>
+<td style="text-align: right;">0.474</td>
+<td style="text-align: right;">0.7951558</td>
+<td style="text-align: right;">0.7317278</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2006</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">15631.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">3.9896789</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0143509</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">3.1702735</td>
+<td style="text-align: right;">0.0015230</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">0.007</td>
+<td style="text-align: right;">0.8700371</td>
+<td style="text-align: right;">0.9161052</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2006</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">9249.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.6106272</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0114988</td>
+<td style="text-align: right;">2.8e-06</td>
+<td style="text-align: right;">0.5806215</td>
+<td style="text-align: right;">0.5614956</td>
+<td style="text-align: right;">0.506</td>
+<td style="text-align: right;">0.253</td>
+<td style="text-align: right;">0.6486887</td>
+<td style="text-align: right;">0.3721617</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2006</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">6570.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">2.6380485</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0105114</td>
+<td style="text-align: right;">3.3e-06</td>
+<td style="text-align: right;">3.5746702</td>
+<td style="text-align: right;">0.0003507</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">0.9455667</td>
+<td style="text-align: right;">0.9977911</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2006</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">29407.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.1692011</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0178441</td>
+<td style="text-align: right;">1.7e-06</td>
+<td style="text-align: right;">2.2437285</td>
+<td style="text-align: right;">0.0248499</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">0.3213732</td>
+<td style="text-align: right;">-0.0331491</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2007</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">11760.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.1662363</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117549</td>
+<td style="text-align: right;">3.1e-06</td>
+<td style="text-align: right;">-0.4120542</td>
+<td style="text-align: right;">0.6802997</td>
+<td style="text-align: right;">0.742</td>
+<td style="text-align: right;">0.371</td>
+<td style="text-align: right;">0.9820615</td>
+<td style="text-align: right;">1.4121086</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2007</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">19151.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">3.8544326</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0144749</td>
+<td style="text-align: right;">3.3e-06</td>
+<td style="text-align: right;">2.9350509</td>
+<td style="text-align: right;">0.0033349</td>
+<td style="text-align: right;">0.028</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">1.1063137</td>
+<td style="text-align: right;">1.5196107</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2007</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">11563.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.3611321</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0116928</td>
+<td style="text-align: right;">2.9e-06</td>
+<td style="text-align: right;">0.2032450</td>
+<td style="text-align: right;">0.8389435</td>
+<td style="text-align: right;">0.726</td>
+<td style="text-align: right;">0.363</td>
+<td style="text-align: right;">0.6891334</td>
+<td style="text-align: right;">0.5319984</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2007</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">8065.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">2.8504878</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104858</td>
+<td style="text-align: right;">3.3e-06</td>
+<td style="text-align: right;">3.9385639</td>
+<td style="text-align: right;">0.0000820</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">1.1353219</td>
+<td style="text-align: right;">1.9432592</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2007</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">36272.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.2958893</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0180493</td>
+<td style="text-align: right;">1.8e-06</td>
+<td style="text-align: right;">2.4129861</td>
+<td style="text-align: right;">0.0158224</td>
+<td style="text-align: right;">0.032</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">0.4572667</td>
+<td style="text-align: right;">0.2380507</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2008</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">12902.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.3826165</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0113671</td>
+<td style="text-align: right;">3.5e-06</td>
+<td style="text-align: right;">-0.4419739</td>
+<td style="text-align: right;">0.6585081</td>
+<td style="text-align: right;">0.758</td>
+<td style="text-align: right;">0.379</td>
+<td style="text-align: right;">1.1508807</td>
+<td style="text-align: right;">2.3163215</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2008</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">25545.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.1530907</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0150757</td>
+<td style="text-align: right;">3.7e-06</td>
+<td style="text-align: right;">3.0956705</td>
+<td style="text-align: right;">0.0019637</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.9562910</td>
+<td style="text-align: right;">0.9625991</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2008</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">13874.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.3492512</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0115499</td>
+<td style="text-align: right;">3.3e-06</td>
+<td style="text-align: right;">0.2831131</td>
+<td style="text-align: right;">0.7770902</td>
+<td style="text-align: right;">0.684</td>
+<td style="text-align: right;">0.342</td>
+<td style="text-align: right;">0.8438191</td>
+<td style="text-align: right;">1.2541112</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2008</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">9748.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.0244753</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104968</td>
+<td style="text-align: right;">3.9e-06</td>
+<td style="text-align: right;">4.0393085</td>
+<td style="text-align: right;">0.0000536</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">1.2271099</td>
+<td style="text-align: right;">2.4003223</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2008</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">46371.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.6039537</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0186690</td>
+<td style="text-align: right;">2.1e-06</td>
+<td style="text-align: right;">2.6527424</td>
+<td style="text-align: right;">0.0079841</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">0.009</td>
+<td style="text-align: right;">0.4361139</td>
+<td style="text-align: right;">-0.0136641</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2009</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">17355.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.0013305</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0119409</td>
+<td style="text-align: right;">4.7e-06</td>
+<td style="text-align: right;">-0.2659625</td>
+<td style="text-align: right;">0.7902681</td>
+<td style="text-align: right;">0.914</td>
+<td style="text-align: right;">0.457</td>
+<td style="text-align: right;">1.3518643</td>
+<td style="text-align: right;">2.7633133</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2009</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">31397.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.3920617</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0157221</td>
+<td style="text-align: right;">5.1e-06</td>
+<td style="text-align: right;">3.2690151</td>
+<td style="text-align: right;">0.0010792</td>
+<td style="text-align: right;">0.028</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">1.5211959</td>
+<td style="text-align: right;">3.4725222</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2009</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">16461.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.1637461</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117811</td>
+<td style="text-align: right;">4.5e-06</td>
+<td style="text-align: right;">-0.0199580</td>
+<td style="text-align: right;">0.9840769</td>
+<td style="text-align: right;">0.832</td>
+<td style="text-align: right;">0.416</td>
+<td style="text-align: right;">1.0924597</td>
+<td style="text-align: right;">1.2646048</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2009</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">10617.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.4419788</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104404</td>
+<td style="text-align: right;">5.1e-06</td>
+<td style="text-align: right;">4.4702312</td>
+<td style="text-align: right;">0.0000078</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">1.3708469</td>
+<td style="text-align: right;">3.0660661</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2009</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">64022.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">6.2788862</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0207965</td>
+<td style="text-align: right;">2.5e-06</td>
+<td style="text-align: right;">3.1221951</td>
+<td style="text-align: right;">0.0017951</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">0.5641237</td>
+<td style="text-align: right;">0.0777553</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2010</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">20501.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.0902539</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0118922</td>
+<td style="text-align: right;">5.0e-06</td>
+<td style="text-align: right;">-0.3373175</td>
+<td style="text-align: right;">0.7358776</td>
+<td style="text-align: right;">0.858</td>
+<td style="text-align: right;">0.429</td>
+<td style="text-align: right;">1.1581986</td>
+<td style="text-align: right;">1.9064782</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2010</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">42619.32</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.4921872</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0167828</td>
+<td style="text-align: right;">5.3e-06</td>
+<td style="text-align: right;">2.9167370</td>
+<td style="text-align: right;">0.0035371</td>
+<td style="text-align: right;">0.028</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">1.2654892</td>
+<td style="text-align: right;">2.3799223</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2010</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">19781.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.2249599</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0118392</td>
+<td style="text-align: right;">4.3e-06</td>
+<td style="text-align: right;">0.0209623</td>
+<td style="text-align: right;">0.9832758</td>
+<td style="text-align: right;">0.858</td>
+<td style="text-align: right;">0.429</td>
+<td style="text-align: right;">0.8082357</td>
+<td style="text-align: right;">0.8348503</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2010</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">12527.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.2461026</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104415</td>
+<td style="text-align: right;">5.4e-06</td>
+<td style="text-align: right;">4.1518484</td>
+<td style="text-align: right;">0.0000330</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.9839029</td>
+<td style="text-align: right;">0.9286616</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2010</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">70604.01</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.9357456</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0198289</td>
+<td style="text-align: right;">3.1e-06</td>
+<td style="text-align: right;">2.9687274</td>
+<td style="text-align: right;">0.0029904</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.7673458</td>
+<td style="text-align: right;">1.1310392</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2011</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">24409.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.2018753</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0116709</td>
+<td style="text-align: right;">4.2e-06</td>
+<td style="text-align: right;">-0.3975700</td>
+<td style="text-align: right;">0.6909472</td>
+<td style="text-align: right;">0.820</td>
+<td style="text-align: right;">0.410</td>
+<td style="text-align: right;">0.7101542</td>
+<td style="text-align: right;">0.2867609</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2011</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">54768.72</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.3470262</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0170344</td>
+<td style="text-align: right;">5.3e-06</td>
+<td style="text-align: right;">2.7252343</td>
+<td style="text-align: right;">0.0064256</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0.015</td>
+<td style="text-align: right;">1.3092954</td>
+<td style="text-align: right;">2.6366305</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2011</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">24044.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.1882778</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117272</td>
+<td style="text-align: right;">4.6e-06</td>
+<td style="text-align: right;">0.0368208</td>
+<td style="text-align: right;">0.9706279</td>
+<td style="text-align: right;">0.852</td>
+<td style="text-align: right;">0.426</td>
+<td style="text-align: right;">0.8678353</td>
+<td style="text-align: right;">0.8354058</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2011</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">15105.53</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.1053957</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0100544</td>
+<td style="text-align: right;">5.0e-06</td>
+<td style="text-align: right;">4.4236686</td>
+<td style="text-align: right;">0.0000097</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">1.2172416</td>
+<td style="text-align: right;">1.8342085</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2011</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">80356.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.7508709</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0189401</td>
+<td style="text-align: right;">3.4e-06</td>
+<td style="text-align: right;">3.2374373</td>
+<td style="text-align: right;">0.0012061</td>
+<td style="text-align: right;">0.012</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">0.6408000</td>
+<td style="text-align: right;">0.4078581</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2012</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">27137.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.2710334</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117889</td>
+<td style="text-align: right;">5.1e-06</td>
+<td style="text-align: right;">-0.4932149</td>
+<td style="text-align: right;">0.6218608</td>
+<td style="text-align: right;">0.766</td>
+<td style="text-align: right;">0.383</td>
+<td style="text-align: right;">0.8760180</td>
+<td style="text-align: right;">0.6850228</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2012</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">63118.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.3660736</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0173014</td>
+<td style="text-align: right;">5.3e-06</td>
+<td style="text-align: right;">2.6336429</td>
+<td style="text-align: right;">0.0084474</td>
+<td style="text-align: right;">0.042</td>
+<td style="text-align: right;">0.021</td>
+<td style="text-align: right;">1.1879606</td>
+<td style="text-align: right;">1.7016596</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2012</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">27485.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.2593820</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117361</td>
+<td style="text-align: right;">4.7e-06</td>
+<td style="text-align: right;">0.1102409</td>
+<td style="text-align: right;">0.9122183</td>
+<td style="text-align: right;">0.774</td>
+<td style="text-align: right;">0.387</td>
+<td style="text-align: right;">0.8800522</td>
+<td style="text-align: right;">0.6562462</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2012</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">17252.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.0661104</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0102107</td>
+<td style="text-align: right;">5.1e-06</td>
+<td style="text-align: right;">4.2278243</td>
+<td style="text-align: right;">0.0000236</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">1.0808071</td>
+<td style="text-align: right;">1.7090404</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2012</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">88656.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.6942476</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0186672</td>
+<td style="text-align: right;">4.0e-06</td>
+<td style="text-align: right;">3.0446908</td>
+<td style="text-align: right;">0.0023292</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.9368679</td>
+<td style="text-align: right;">1.4974016</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2013</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">30054.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.2661413</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117730</td>
+<td style="text-align: right;">5.1e-06</td>
+<td style="text-align: right;">-0.4832497</td>
+<td style="text-align: right;">0.6289184</td>
+<td style="text-align: right;">0.744</td>
+<td style="text-align: right;">0.372</td>
+<td style="text-align: right;">0.8372762</td>
+<td style="text-align: right;">0.3544739</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2013</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">71634.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.4214245</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0173833</td>
+<td style="text-align: right;">4.4e-06</td>
+<td style="text-align: right;">2.9622250</td>
+<td style="text-align: right;">0.0030542</td>
+<td style="text-align: right;">0.026</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">0.9921599</td>
+<td style="text-align: right;">0.9347864</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2013</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">30326.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.3108210</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117623</td>
+<td style="text-align: right;">4.9e-06</td>
+<td style="text-align: right;">0.1525130</td>
+<td style="text-align: right;">0.8787823</td>
+<td style="text-align: right;">0.770</td>
+<td style="text-align: right;">0.385</td>
+<td style="text-align: right;">0.7055318</td>
+<td style="text-align: right;">0.1738581</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2013</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">19076.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.0751967</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0102934</td>
+<td style="text-align: right;">5.2e-06</td>
+<td style="text-align: right;">4.2035041</td>
+<td style="text-align: right;">0.0000263</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.8832453</td>
+<td style="text-align: right;">0.5871164</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2013</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">97249.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.7085054</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0185334</td>
+<td style="text-align: right;">3.6e-06</td>
+<td style="text-align: right;">3.3800498</td>
+<td style="text-align: right;">0.0007247</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">0.6721823</td>
+<td style="text-align: right;">0.6420895</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2014</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">32286.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.2398199</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117445</td>
+<td style="text-align: right;">4.8e-06</td>
+<td style="text-align: right;">-0.4525982</td>
+<td style="text-align: right;">0.6508381</td>
+<td style="text-align: right;">0.824</td>
+<td style="text-align: right;">0.412</td>
+<td style="text-align: right;">0.8524189</td>
+<td style="text-align: right;">0.4817711</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2014</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">78127.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.4657938</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0174848</td>
+<td style="text-align: right;">5.1e-06</td>
+<td style="text-align: right;">2.7745897</td>
+<td style="text-align: right;">0.0055271</td>
+<td style="text-align: right;">0.036</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">1.1201588</td>
+<td style="text-align: right;">1.4426892</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2014</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">33307.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.3947053</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0116784</td>
+<td style="text-align: right;">4.6e-06</td>
+<td style="text-align: right;">0.2877645</td>
+<td style="text-align: right;">0.7735270</td>
+<td style="text-align: right;">0.660</td>
+<td style="text-align: right;">0.330</td>
+<td style="text-align: right;">0.9682571</td>
+<td style="text-align: right;">0.9864046</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2014</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">20521.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.1019030</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0101311</td>
+<td style="text-align: right;">5.0e-06</td>
+<td style="text-align: right;">4.4056338</td>
+<td style="text-align: right;">0.0000105</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.9102668</td>
+<td style="text-align: right;">0.7574401</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2014</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">107562.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.7608122</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0185360</td>
+<td style="text-align: right;">3.7e-06</td>
+<td style="text-align: right;">3.3695821</td>
+<td style="text-align: right;">0.0007528</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">0.007</td>
+<td style="text-align: right;">0.8183595</td>
+<td style="text-align: right;">0.7085247</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2015</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">35202.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.2120229</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0116896</td>
+<td style="text-align: right;">5.6e-06</td>
+<td style="text-align: right;">-0.3726742</td>
+<td style="text-align: right;">0.7093910</td>
+<td style="text-align: right;">0.852</td>
+<td style="text-align: right;">0.426</td>
+<td style="text-align: right;">1.2233345</td>
+<td style="text-align: right;">1.9674780</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2015</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">85426.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.6490522</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0175387</td>
+<td style="text-align: right;">5.4e-06</td>
+<td style="text-align: right;">3.0123924</td>
+<td style="text-align: right;">0.0025920</td>
+<td style="text-align: right;">0.024</td>
+<td style="text-align: right;">0.012</td>
+<td style="text-align: right;">1.1689975</td>
+<td style="text-align: right;">1.3312753</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2015</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">36790.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.4846116</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0118404</td>
+<td style="text-align: right;">5.2e-06</td>
+<td style="text-align: right;">0.3048118</td>
+<td style="text-align: right;">0.7605095</td>
+<td style="text-align: right;">0.658</td>
+<td style="text-align: right;">0.329</td>
+<td style="text-align: right;">1.0665963</td>
+<td style="text-align: right;">1.5838602</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2015</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">22238.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.2875348</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0101968</td>
+<td style="text-align: right;">5.9e-06</td>
+<td style="text-align: right;">4.2968853</td>
+<td style="text-align: right;">0.0000173</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">1.1397993</td>
+<td style="text-align: right;">1.2084754</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2015</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">128715.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">6.0971272</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0197104</td>
+<td style="text-align: right;">3.8e-06</td>
+<td style="text-align: right;">3.3111285</td>
+<td style="text-align: right;">0.0009292</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.7826219</td>
+<td style="text-align: right;">0.4080632</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2016</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">39871.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.1127068</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117495</td>
+<td style="text-align: right;">4.7e-06</td>
+<td style="text-align: right;">-0.3111060</td>
+<td style="text-align: right;">0.7557200</td>
+<td style="text-align: right;">0.912</td>
+<td style="text-align: right;">0.456</td>
+<td style="text-align: right;">0.8865448</td>
+<td style="text-align: right;">0.6182769</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2016</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">92823.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.6003619</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0173142</td>
+<td style="text-align: right;">4.8e-06</td>
+<td style="text-align: right;">3.1270945</td>
+<td style="text-align: right;">0.0017654</td>
+<td style="text-align: right;">0.032</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">1.3794972</td>
+<td style="text-align: right;">2.9865140</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2016</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">41012.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.5297775</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0119013</td>
+<td style="text-align: right;">4.6e-06</td>
+<td style="text-align: right;">0.3350800</td>
+<td style="text-align: right;">0.7375647</td>
+<td style="text-align: right;">0.646</td>
+<td style="text-align: right;">0.323</td>
+<td style="text-align: right;">0.8152479</td>
+<td style="text-align: right;">0.5179060</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2016</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">24369.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.2259000</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0102767</td>
+<td style="text-align: right;">6.7e-06</td>
+<td style="text-align: right;">3.8847494</td>
+<td style="text-align: right;">0.0001024</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">1.3492001</td>
+<td style="text-align: right;">2.1813449</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2016</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">135712.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">6.0036548</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0191664</td>
+<td style="text-align: right;">3.3e-06</td>
+<td style="text-align: right;">3.5769798</td>
+<td style="text-align: right;">0.0003476</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.8118429</td>
+<td style="text-align: right;">0.8510730</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2017</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">41855.00</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">-0.0342940</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0118549</td>
+<td style="text-align: right;">5.0e-06</td>
+<td style="text-align: right;">-0.2574014</td>
+<td style="text-align: right;">0.7968689</td>
+<td style="text-align: right;">0.926</td>
+<td style="text-align: right;">0.463</td>
+<td style="text-align: right;">1.0715341</td>
+<td style="text-align: right;">1.5378854</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2017</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">98683.00</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.8895243</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0176975</td>
+<td style="text-align: right;">4.8e-06</td>
+<td style="text-align: right;">3.1655348</td>
+<td style="text-align: right;">0.0015480</td>
+<td style="text-align: right;">0.026</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">1.0887191</td>
+<td style="text-align: right;">1.4469844</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2017</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">43995.00</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.6716944</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0118978</td>
+<td style="text-align: right;">4.4e-06</td>
+<td style="text-align: right;">0.4886620</td>
+<td style="text-align: right;">0.6250810</td>
+<td style="text-align: right;">0.550</td>
+<td style="text-align: right;">0.275</td>
+<td style="text-align: right;">0.7519580</td>
+<td style="text-align: right;">0.2728550</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2017</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">26209.00</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.3467259</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104698</td>
+<td style="text-align: right;">6.0e-06</td>
+<td style="text-align: right;">4.0910196</td>
+<td style="text-align: right;">0.0000429</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">1.1496042</td>
+<td style="text-align: right;">1.6196385</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2017</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">144225.00</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">6.2028054</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0194094</td>
+<td style="text-align: right;">3.1e-06</td>
+<td style="text-align: right;">3.5928321</td>
+<td style="text-align: right;">0.0003271</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">0.7925709</td>
+<td style="text-align: right;">1.0197739</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2018</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">46830.37</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.1235592</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0121089</td>
+<td style="text-align: right;">4.4e-06</td>
+<td style="text-align: right;">-0.2147911</td>
+<td style="text-align: right;">0.8299302</td>
+<td style="text-align: right;">0.950</td>
+<td style="text-align: right;">0.475</td>
+<td style="text-align: right;">0.8987086</td>
+<td style="text-align: right;">0.8437718</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2018</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">100200.10</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.6287538</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0172315</td>
+<td style="text-align: right;">4.7e-06</td>
+<td style="text-align: right;">2.8121171</td>
+<td style="text-align: right;">0.0049217</td>
+<td style="text-align: right;">0.028</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">1.1053742</td>
+<td style="text-align: right;">1.6895438</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2018</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">45690.89</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.5680550</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117697</td>
+<td style="text-align: right;">3.9e-06</td>
+<td style="text-align: right;">0.4284739</td>
+<td style="text-align: right;">0.6683061</td>
+<td style="text-align: right;">0.600</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.8072315</td>
+<td style="text-align: right;">0.8716520</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2018</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">28944.92</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.2903525</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0105055</td>
+<td style="text-align: right;">5.0e-06</td>
+<td style="text-align: right;">4.1621441</td>
+<td style="text-align: right;">0.0000315</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.9694442</td>
+<td style="text-align: right;">1.0236755</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2018</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">141720.70</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">6.0371816</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0186022</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">3.4929951</td>
+<td style="text-align: right;">0.0004776</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.6575525</td>
+<td style="text-align: right;">0.2870831</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2019</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">50646.03</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.1555580</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0121582</td>
+<td style="text-align: right;">4.3e-06</td>
+<td style="text-align: right;">-0.2101345</td>
+<td style="text-align: right;">0.8335627</td>
+<td style="text-align: right;">0.986</td>
+<td style="text-align: right;">0.493</td>
+<td style="text-align: right;">0.9208088</td>
+<td style="text-align: right;">0.9001146</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2019</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">103409.33</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.9541633</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0170232</td>
+<td style="text-align: right;">3.9e-06</td>
+<td style="text-align: right;">3.4433341</td>
+<td style="text-align: right;">0.0005746</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">1.1213893</td>
+<td style="text-align: right;">1.5380758</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2019</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">45032.22</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.5261786</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0117209</td>
+<td style="text-align: right;">4.1e-06</td>
+<td style="text-align: right;">0.3797533</td>
+<td style="text-align: right;">0.7041286</td>
+<td style="text-align: right;">0.608</td>
+<td style="text-align: right;">0.304</td>
+<td style="text-align: right;">0.9200753</td>
+<td style="text-align: right;">1.1048882</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2019</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">33079.13</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.6368025</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0105446</td>
+<td style="text-align: right;">4.6e-06</td>
+<td style="text-align: right;">4.6480004</td>
+<td style="text-align: right;">0.0000034</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">1.2790554</td>
+<td style="text-align: right;">2.1472523</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2019</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">155564.46</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">6.5794322</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0190638</td>
+<td style="text-align: right;">2.8e-06</td>
+<td style="text-align: right;">3.8641298</td>
+<td style="text-align: right;">0.0001115</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.5882974</td>
+<td style="text-align: right;">0.1596242</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2020</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">55881.31</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.1506746</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0120411</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">-0.2203634</td>
+<td style="text-align: right;">0.8255882</td>
+<td style="text-align: right;">0.938</td>
+<td style="text-align: right;">0.469</td>
+<td style="text-align: right;">0.7725691</td>
+<td style="text-align: right;">0.5931705</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2020</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">105244.85</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.6733226</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0161233</td>
+<td style="text-align: right;">3.2e-06</td>
+<td style="text-align: right;">2.8969530</td>
+<td style="text-align: right;">0.0037681</td>
+<td style="text-align: right;">0.032</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">0.8563710</td>
+<td style="text-align: right;">1.0413589</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2020</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">50975.21</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.7965193</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0115849</td>
+<td style="text-align: right;">2.7e-06</td>
+<td style="text-align: right;">0.7497865</td>
+<td style="text-align: right;">0.4533833</td>
+<td style="text-align: right;">0.432</td>
+<td style="text-align: right;">0.216</td>
+<td style="text-align: right;">0.5152576</td>
+<td style="text-align: right;">0.0685638</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2020</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">34746.77</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.4381456</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0104486</td>
+<td style="text-align: right;">3.3e-06</td>
+<td style="text-align: right;">4.5570300</td>
+<td style="text-align: right;">0.0000052</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.7478796</td>
+<td style="text-align: right;">0.5063491</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2020</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">134409.31</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.7669156</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0165989</td>
+<td style="text-align: right;">2.4e-06</td>
+<td style="text-align: right;">3.3972763</td>
+<td style="text-align: right;">0.0006806</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: right;">0.5831524</td>
+<td style="text-align: right;">0.1568492</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2021</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">61489.87</td>
+<td style="text-align: left;">4, 5, 6, 69, 75, 85</td>
+<td style="text-align: left;">1.738748e-05, 2.105831e-05, 0.000000e+00, 2.720494e-05, 1.168104e-05, 1.104544e-05</td>
+<td style="text-align: right;">0.1120663</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0120649</td>
+<td style="text-align: right;">2.8e-06</td>
+<td style="text-align: right;">-0.2889202</td>
+<td style="text-align: right;">0.7726424</td>
+<td style="text-align: right;">0.858</td>
+<td style="text-align: right;">0.429</td>
+<td style="text-align: right;">0.6598153</td>
+<td style="text-align: right;">0.3617258</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2021</td>
+<td style="text-align: left;">Liuyang</td>
+<td style="text-align: right;">112990.98</td>
+<td style="text-align: left;">7, 67, 71, 74, 84</td>
+<td style="text-align: left;">0.000000e+00, 1.638529e-05, 1.535741e-05, 1.126570e-05, 1.801499e-05</td>
+<td style="text-align: right;">4.6775223</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0159288</td>
+<td style="text-align: right;">3.0e-06</td>
+<td style="text-align: right;">3.0837267</td>
+<td style="text-align: right;">0.0020443</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">0.6895814</td>
+<td style="text-align: right;">0.4215539</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2021</td>
+<td style="text-align: left;">Hengdong</td>
+<td style="text-align: right;">56094.09</td>
+<td style="text-align: left;">10, 19, 20, 21, 73, 74, 86</td>
+<td style="text-align: left;">1.459087e-05, 0.000000e+00, 2.601943e-05, 4.545656e-05, 2.176139e-05, 1.760967e-05, 1.455604e-05</td>
+<td style="text-align: right;">0.8503319</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0116613</td>
+<td style="text-align: right;">2.5e-06</td>
+<td style="text-align: right;">0.7838542</td>
+<td style="text-align: right;">0.4331257</td>
+<td style="text-align: right;">0.446</td>
+<td style="text-align: right;">0.223</td>
+<td style="text-align: right;">0.3823485</td>
+<td style="text-align: right;">-0.2759526</td>
+<td style="text-align: left;">Not Significant</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2021</td>
+<td style="text-align: left;">Pingjiang</td>
+<td style="text-align: right;">38165.79</td>
+<td style="text-align: left;">7, 66, 67, 76, 84</td>
+<td style="text-align: left;">1.638529e-05, 1.824322e-05, 0.000000e+00, 1.208989e-05, 1.351578e-05</td>
+<td style="text-align: right;">3.3636225</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.0103708</td>
+<td style="text-align: right;">2.9e-06</td>
+<td style="text-align: right;">4.7717264</td>
+<td style="text-align: right;">0.0000018</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.6797045</td>
+<td style="text-align: right;">0.1782341</td>
+<td style="text-align: left;">Low GDP Cluster</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2021</td>
+<td style="text-align: left;">Changsha</td>
+<td style="text-align: right;">144308.98</td>
+<td style="text-align: left;">7, 9, 66, 67, 74, 84, 86</td>
+<td style="text-align: left;">1.801499e-05, 3.045389e-05, 1.958839e-05, 1.351578e-05, 1.336567e-05, 0.000000e+00, 1.406726e-05</td>
+<td style="text-align: right;">5.7486535</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.0164688</td>
+<td style="text-align: right;">2.2e-06</td>
+<td style="text-align: right;">3.5412756</td>
+<td style="text-align: right;">0.0003982</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">0.5330981</td>
+<td style="text-align: right;">0.1518153</td>
+<td style="text-align: left;">High GDP Cluster</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="interpretation-of-ehsa-classes" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation-of-ehsa-classes">4.6 Interpretation of EHSA classes</h2>
+<p>In Emerging Hotspot Analysis (EHAS), the study area for each location includes&nbsp;<strong>both the location itself AND its neighbors</strong>.</p>
+<section id="hot-spot" class="level3">
+<h3 class="anchored" data-anchor-id="hot-spot">4.6.1 Hot Spot</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/clipboard-573108312.png" class="img-fluid figure-img"></p>
+<figcaption><img src="images/clipboard-2693766264.png" class="img-fluid figure-img"></figcaption>
+</figure>
+</div>
+</section>
+<section id="cold-spot" class="level3">
+<h3 class="anchored" data-anchor-id="cold-spot">4.6.2 Cold Spot</h3>
+<p><img src="images/clipboard-3759198971.png" class="img-fluid"></p>
+<p><img src="images/clipboard-2832213786.png" class="img-fluid"></p>
+</section>
+</section>
+</section>
+<section id="reference" class="level1">
+<h1>5 Reference</h1>
+<ul>
+<li>Leary, H. (2023): <a href="https://rpubs.com/heatherleeleary/hotspot_getisOrd_tut">R Tutorial: Hotspot Analysis using Getis Ord Gi</a></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>© 2025 Johsuan Huang ʕ•ᴥ•ʔ | Site built with <a href="https://quarto.org">Quarto</a> | Hosted on <a href="https://www.netlify.com/">Netlify</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

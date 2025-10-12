@@ -185,8 +185,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">In-class 4</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../../In-class/In-class-Ex05/In-class_Ex05.html">
- <span class="dropdown-text">In-class 5</span></a>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex05/In-class_Ex05.a.html">
+ <span class="dropdown-text">In-class 5.a: LISA MAP</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class/In-class-Ex05/In-class_Ex05.b.html">
+ <span class="dropdown-text">In-class 5.b: EHSA</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../../In-class/In-class-Ex06/In-class-Ex06.html">
@@ -252,6 +256,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i">6 Computing Local Moran’s I</a></li>
   <li><a href="#lias-map" id="toc-lias-map" class="nav-link" data-scroll-target="#lias-map">7 LIAS Map</a></li>
+  <li><a href="#hot-spot-and-cold-spot-area-analysis-hcsa" id="toc-hot-spot-and-cold-spot-area-analysis-hcsa" class="nav-link" data-scroll-target="#hot-spot-and-cold-spot-area-analysis-hcsa">8 Hot Spot and Cold Spot Area Analysis (HCSA)</a>
+  <ul class="collapse">
+  <li><a href="#compute-local-gi-statisitics" id="toc-compute-local-gi-statisitics" class="nav-link" data-scroll-target="#compute-local-gi-statisitics">8.1 Compute local Gi* statisitics</a></li>
+  <li><a href="#visualize-local-hcsa" id="toc-visualize-local-hcsa" class="nav-link" data-scroll-target="#visualize-local-hcsa">8.2 Visualize local HCSA</a></li>
+  <li><a href="#visualize-hot-spot-and-cold-spot-areas" id="toc-visualize-hot-spot-and-cold-spot-areas" class="nav-link" data-scroll-target="#visualize-hot-spot-and-cold-spot-areas">8.3 Visualize hot spot and cold spot areas</a></li>
+  </ul></li>
+  <li><a href="#local-morans-i-gi-comparison" id="toc-local-morans-i-gi-comparison" class="nav-link" data-scroll-target="#local-morans-i-gi-comparison">9 Local Moran’s I &amp; Gi* Comparison</a></li>
   </ul>
 </nav>
     </div>
@@ -284,7 +295,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 27, 2025</p>
+      <p class="date-modified">October 12, 2025</p>
     </div>
   </div>
     
@@ -339,7 +350,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tmap, tidyverse,knitr,sfdep,ggplot2,kendall)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tmap, tidyverse,knitr,sfdep,ggplot2,Kendall)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="getting-the-data-into-r-environment" class="level2">
@@ -960,8 +971,8 @@ PROJCRS["WGS 84 / UTM zone 50N",
 <p>Moran’s I quantifies the degree to which a variable at one location is similar to values at nearby locations. It measures&nbsp;<strong>global correlation</strong>, sensitive to overall clustering:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 29%">
-<col style="width: 70%">
+<col style="width: 23%">
+<col style="width: 76%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -988,8 +999,8 @@ PROJCRS["WGS 84 / UTM zone 50N",
 <p>The arguments of moran.test() include:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 25%">
-<col style="width: 75%">
+<col style="width: 26%">
+<col style="width: 73%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1127,7 +1138,7 @@ $ geometry     &lt;POLYGON [m]&gt; POLYGON ((22320.48 3301894,..., POLYGON ((355
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> lisa <span class="sc">%&gt;%</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">LISA_cluster =</span> <span class="fu">ifelse</span>(</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>      p_ii_sim <span class="sc">&lt;</span> <span class="fl">0.05</span>, </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>      p_folded_sim <span class="sc">&lt;</span> <span class="fl">0.05</span>, </span>
 <span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.character</span>(mean), </span>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Insignificant"</span>),</span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">LISA_cluster =</span> <span class="fu">factor</span>(</span>
@@ -1157,7 +1168,7 @@ $ geometry     &lt;POLYGON [m]&gt; POLYGON ((22320.48 3301894,..., POLYGON ((355
 <span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>))</span>
 <span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
 <span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Local Moran's I Clusters (p_sim &lt; 0.05)"</span>,</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Local Moran's I Clusters (p_folded_sim &lt; 0.05)"</span>,</span>
 <span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
 <span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
 <span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
@@ -1181,6 +1192,239 @@ $ geometry     &lt;POLYGON [m]&gt; POLYGON ((22320.48 3301894,..., POLYGON ((355
 </div>
 </div>
 </div>
+</section>
+<section id="hot-spot-and-cold-spot-area-analysis-hcsa" class="level1">
+<h1>8 Hot Spot and Cold Spot Area Analysis (HCSA)</h1>
+<section id="compute-local-gi-statisitics" class="level2">
+<h2 class="anchored" data-anchor-id="compute-local-gi-statisitics">8.1 Compute local Gi* statisitics</h2>
+<p>building a spatial weight matrix</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>wm_idw <span class="ot">&lt;-</span> hunan_GDPPC <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">include_self</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_contiguity</span>(geometry)),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">wts =</span> <span class="fu">st_inverse_distance</span>(nb,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                              geometry,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                              <span class="at">scale =</span> <span class="dv">1</span>,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                              <span class="at">alpha =</span> <span class="dv">1</span>),</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>HCSA <span class="ot">&lt;-</span> wm_idw <span class="sc">%&gt;%</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">local_Gi =</span> <span class="fu">local_gstar_perm</span>(</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    GDPPC, nb, wts, <span class="at">nsim =</span> <span class="dv">99</span>),</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(local_Gi)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>HCSA</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 88 features and 18 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: -316283 ymin: 2735534 xmax: 230955.3 ymax: 3349137
+Projected CRS: WGS 84 / UTM zone 50N
+# A tibble: 88 × 19
+    gi_star cluster    e_gi   var_gi std_dev p_value p_sim p_folded_sim skewness
+      &lt;dbl&gt; &lt;fct&gt;     &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;
+ 1  0.263   Low     1.26e-6 1.88e-13  0.263  7.92e-1  0.58         0.29    1.67 
+ 2 -0.277   Low     1.04e-6 1.06e-13 -0.316  7.52e-1  1            0.5     0.969
+ 3  0.00336 High    1.50e-6 2.92e-13  0.0145 9.88e-1  0.7          0.35    1.32 
+ 4  0.523   High    1.42e-6 2.49e-13  0.599  5.49e-1  0.42         0.21    1.47 
+ 5  0.461   High    1.36e-6 2.13e-13  0.493  6.22e-1  0.52         0.26    1.13 
+ 6 -0.427   High    9.80e-7 8.64e-14 -0.331  7.41e-1  0.84         0.42    1.31 
+ 7  2.95    High    6.57e-7 3.61e-14  3.47   5.13e-4  0.02         0.01    1.04 
+ 8  2.02    High    1.52e-6 1.14e-13  2.17   3.00e-2  0.08         0.04    0.652
+ 9  4.41    High    1.28e-6 7.43e-14  5.41   6.44e-8  0.02         0.01    0.895
+10  1.21    Low     1.78e-6 1.59e-13  1.25   2.11e-1  0.24         0.12    0.563
+# ℹ 78 more rows
+# ℹ 10 more variables: kurtosis &lt;dbl&gt;, nb &lt;nb&gt;, wts &lt;list&gt;, NAME_2 &lt;chr&gt;,
+#   ID_3 &lt;int&gt;, NAME_3 &lt;chr&gt;, ENGTYPE_3 &lt;chr&gt;, County &lt;chr&gt;, GDPPC &lt;dbl&gt;,
+#   geometry &lt;POLYGON [m]&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="visualize-local-hcsa" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-local-hcsa">8.2 Visualize local HCSA</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>local_gi <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA) <span class="sc">+</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha=</span><span class="fl">0.8</span>)<span class="sc">+</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"gi_star"</span>) <span class="sc">+</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Gi* of GDPPC"</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>local_gi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.a_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>p_sim_gi <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA) <span class="sc">+</span> </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha=</span><span class="fl">0.8</span>)<span class="sc">+</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"p_folded_sim"</span>) <span class="sc">+</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"p_value of Gi*"</span>,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>p_sim_gi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.a_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(local_gi,p_sim_gi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.a_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="visualize-hot-spot-and-cold-spot-areas" class="level2">
+<h2 class="anchored" data-anchor-id="visualize-hot-spot-and-cold-spot-areas">8.3 Visualize hot spot and cold spot areas</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>HCSA_sig <span class="ot">&lt;-</span> HCSA <span class="sc">%&gt;%</span> <span class="fu">filter</span>(p_folded_sim <span class="sc">&lt;</span><span class="fl">0.05</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>HCSA_sig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 21 features and 18 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: -273154.1 ymin: 2889225 xmax: 230955.3 ymax: 3301534
+Projected CRS: WGS 84 / UTM zone 50N
+# A tibble: 21 × 19
+   gi_star cluster     e_gi   var_gi std_dev p_value p_sim p_folded_sim skewness
+ *   &lt;dbl&gt; &lt;fct&gt;      &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;
+ 1    2.95 High     6.57e-7 3.61e-14    3.47 5.13e-4  0.02         0.01    1.04 
+ 2    2.02 High     1.52e-6 1.14e-13    2.17 3.00e-2  0.08         0.04    0.652
+ 3    4.41 High     1.28e-6 7.43e-14    5.41 6.44e-8  0.02         0.01    0.895
+ 4   -1.18 Low      6.91e-7 5.57e-14   -1.19 2.35e-1  0.08         0.04    1.22 
+ 5   -1.83 Low      1.16e-6 6.04e-14   -1.81 7.09e-2  0.02         0.01    0.532
+ 6   -1.46 Low      8.20e-7 7.29e-14   -1.43 1.52e-1  0.08         0.04    0.648
+ 7   -1.64 Low      1.14e-6 1.37e-13   -1.43 1.51e-1  0.02         0.01    1.56 
+ 8   -2.02 Low      1.21e-6 7.29e-14   -2.20 2.76e-2  0.02         0.01    1.06 
+ 9   -1.50 High     1.32e-6 1.06e-13   -1.52 1.27e-1  0.08         0.04    0.548
+10   -1.86 Low      1.44e-6 1.19e-13   -1.77 7.72e-2  0.02         0.01    0.818
+# ℹ 11 more rows
+# ℹ 10 more variables: kurtosis &lt;dbl&gt;, nb &lt;nb&gt;, wts &lt;list&gt;, NAME_2 &lt;chr&gt;,
+#   ID_3 &lt;int&gt;, NAME_3 &lt;chr&gt;, ENGTYPE_3 &lt;chr&gt;, County &lt;chr&gt;, GDPPC &lt;dbl&gt;,
+#   geometry &lt;POLYGON [m]&gt;</code></pre>
+</div>
+</div>
+<p>Low clusters are cold spots with locations having high values and surrounded by other low values.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(HCSA) <span class="sc">+</span> </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>()<span class="sc">+</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(HCSA_sig)<span class="sc">+</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"cluster"</span>) <span class="sc">+</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_title</span>(<span class="st">"Hot Spot and Cold Spot"</span>,</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">position =</span> <span class="fu">tm_pos_out</span>(<span class="st">"center"</span>, <span class="st">"top"</span>, <span class="st">"center"</span>))<span class="sc">+</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">bg.color =</span> <span class="st">"#f6f6f6"</span>,</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">frame =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class-Ex05.a_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="local-morans-i-gi-comparison" class="level1">
+<h1>9 Local Moran’s I &amp; Gi* Comparison</h1>
+<p><strong>Local Moran’s I</strong>&nbsp;tells you if a location is&nbsp;similar to&nbsp;or&nbsp;different from&nbsp;its neighbors, while&nbsp;<strong>Gi</strong>* tells you if there’s a&nbsp;concentration&nbsp;of high or low values in an area.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 36%">
+<col style="width: 31%">
+<col style="width: 31%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Aspect</strong></th>
+<th><strong>Local Moran’s I (LISA)</strong></th>
+<th>Gi*</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>What it measures</strong></td>
+<td>Similarity between a location and its neighbors</td>
+<td>Intensity of clustering (concentration of high or low values)</td>
+</tr>
+<tr class="even">
+<td><strong>Output types</strong></td>
+<td>Four categories: High-High, Low-Low, High-Low, Low-High</td>
+<td>Two categories: Hot spots (positive z-scores), Cold spots (negative z-scores)</td>
+</tr>
+<tr class="odd">
+<td><strong>Detects clusters</strong></td>
+<td>Yes (HH and LL)</td>
+<td>Yes (HH and LL)</td>
+</tr>
+<tr class="even">
+<td><strong>Detects outliers</strong></td>
+<td>Yes (HL and LH)</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td><strong>Statistical output</strong></td>
+<td>Local Moran’s I statistic + p-value</td>
+<td>Z-score + p-value</td>
+</tr>
+<tr class="even">
+<td><strong>Interpretation</strong></td>
+<td>Identifies both conformity and deviation from neighbors</td>
+<td>Identifies areas with statistically significant concentration of values</td>
+</tr>
+<tr class="odd">
+<td><strong>Null hypothesis</strong></td>
+<td>No local spatial association</td>
+<td>Random spatial distribution</td>
+</tr>
+<tr class="even">
+<td><strong>Value range</strong></td>
+<td>Can be positive or negative</td>
+<td>Z-scores (typically -3 to +3)</td>
+</tr>
+<tr class="odd">
+<td><strong>Includes focal value</strong></td>
+<td><strong>No (compares focal location to neighbors only)</strong></td>
+<td><strong>Yes (includes the location itself in calculation)</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Best for</strong></td>
+<td>Finding spatial anomalies, gentrification patterns, unusual crime patterns</td>
+<td>Disease surveillance, identifying service deserts, retail site selection</td>
+</tr>
+<tr class="odd">
+<td><strong>Visualization</strong></td>
+<td>Typically shown as categorical maps (4 colors)</td>
+<td>Typically shown as continuous gradient or confidence intervals</td>
+</tr>
+<tr class="even">
+<td><strong>Sensitivity to outliers</strong></td>
+<td>More sensitive (by design)</td>
+<td>Less sensitive</td>
+</tr>
+</tbody>
+</table>
 
 
 </section>
