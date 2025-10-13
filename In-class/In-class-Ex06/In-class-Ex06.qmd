@@ -50,7 +50,7 @@ plot(BusStop)
 ## 2.3 Import CSV File
 
 ```{r}
-odbus <-  read_csv("data/LTADataMall/origin_destination_bus_202508.csv")
+odbus <- read_csv("data/LTADataMall/origin_destination_bus_202508.csv")
 ```
 
 ```{r}
@@ -98,6 +98,8 @@ tm_shape(mpsz19_sf)+
 Notice that the bus stops in JB have been removed!
 
 ## 2.4 Derive Analytical Hexagon
+
+One of the task is to der
 
 ```{r}
 hexagon <- st_make_grid(mpsz19_sf,
