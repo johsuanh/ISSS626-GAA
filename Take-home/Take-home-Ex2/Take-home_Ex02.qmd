@@ -76,7 +76,7 @@ In this exercise, 3 datasets will be used:
 We first use p_load of pacman to download and load the revelent packages:
 
 | Library | Desc |
-|------------------------------------|------------------------------------|
+|----|----|
 | [sf](https://r-spatial.github.io/sf/) | Handling geospatial data in R with support for simple features (points, lines, polygons) |
 | [tmap](https://r-tmap.github.io/tmap/) | Creating thematic maps and visualization for geospatial data |
 | [tidyverse](https://www.tidyverse.org) | A collection of packages for data manipulation and analysis, including readr (reading data), tidyr (tidying data), and dplyr (transforming data) |
@@ -90,7 +90,7 @@ We first use p_load of pacman to download and load the revelent packages:
 ```{r}
 pacman::p_load(sf, tmap, tidyverse, knitr,
                sfdep, ggplot2, Kendall, plotly, patchwork,
-               ggridges)
+               ggridges,fs,janitor)
 ```
 
 # 6 Import & Prepare Data
@@ -113,6 +113,30 @@ BusStop <- st_read(dsn = "data/LTADataMall",
                  layer = "BusStop") %>%
   st_transform(crs = 3414)
 
+```
+
+Let's check if they are any duplicated Bus stop number:
+
+```{r}
+duplicated_ids <- BusStop$BUS_STOP_N[duplicated(BusStop$BUS_STOP_N)]
+
+kable(BusStop%>%
+        filter(BUS_STOP_N %in% duplicated_ids)%>%
+        arrange(BUS_STOP_N))
+```
+
+It seems that the duplicated Bus stop numbers are refering to the same location. To avoid counting same location twice, the first one of the duplicated value will be removed:
+
+```{r}
+BusStop <- BusStop %>%
+  arrange(BUS_STOP_N, desc(row_number())) %>% # ensures last comes first within each group
+  distinct(BUS_STOP_N, .keep_all = TRUE)
+```
+
+Let's check if there are any duplicated again.
+
+```{r}
+BusStop$BUS_STOP_N[duplicated(BusStop$BUS_STOP_N)]
 ```
 
 Next, we plot the bus stop locations using **tmap** before proceeding with further analysis:
@@ -155,11 +179,26 @@ Now, we can confirm the bus stops located outside of Singapore are all removed.
 
 ## 6.2 Import and Prepare Aspatial Data
 
-The code below use `read_csv` to import the lastest Aug 2025 bus trip data:
+```{r}
+#| eval: false
+files <- fs::dir_ls("data/LTADataMall/odbus/") 
+
+# Read all files and clean the column names
+odbus <- files %>%
+  map_df(~ read_csv(.x, 
+                    locale = locale(encoding = "latin1"),
+                    col_types = cols(.default = "character")
+  ) %>% 
+    janitor::clean_names()
+  ) 
+# Save the output
+write.csv(odbus, "data/LTADataMall/odbus/odbus.csv", row.names = FALSE)
+```
+
+The code below use `read_csv` to import Jul-Sep 2025 bus trip data:
 
 ```{r}
-odbus <- read_csv("data/LTADataMall/origin_destination_bus_202509.csv")
-
+odbus <- read_csv("data/LTADataMall/odbus/odbus.csv")
 ```
 
 We first view the data and check its data structure:
@@ -172,15 +211,15 @@ kable(head(odbus))
 str(odbus)
 ```
 
-As shown in the summary above, this dataset contains 5,701,191 observations and 7 attributes. Although `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` are already in character format, we need to verify that **each** **bus stop code consists of five digits.**
+As shown in the summary above, this dataset contains 17,306,071 observations and 7 attributes. Although `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` are already in character format, we need to verify that **each** **bus stop code consists of five digits.**
 
 ### 6.2.1 Aspatial Data Preperation
 
 We first check if all bus stop codes are 5-digit using `nchar()` - number of char:
 
 ```{r}
-all(nchar(odbus$ORIGIN_PT_CODE))
-all(nchar(odbus$DESTINATION_PT_CODE))
+all(nchar(odbus$origin_pt_code))
+all(nchar(odbus$detination_pt_code))
 
 ```
 
@@ -189,20 +228,28 @@ The results indicate that all the numbers are 5 digits long, as they return the 
 The code below renames the attributes for easier reference and combine data later and converts "BUS_STOP_N" into factor for further analysis:
 
 ```{r}
+#| eval: false
 trips <- odbus %>%
-  select(-"YEAR_MONTH",-"PT_TYPE") %>%
-  rename("BUS_STOP_N" = ORIGIN_PT_CODE) %>%
-  rename("Day_Type" = DAY_TYPE) %>%
-  rename("Hour" = TIME_PER_HOUR) %>%
-  rename("Trips" = TOTAL_TRIPS)
-  #mutate("BUS_STOP_N" = as.factor("BUS_STOP_N"))
+  mutate(year_month = ym(year_month),
+         Month=month(year_month))%>%
+  rename("BUS_STOP_N" = origin_pt_code) %>%
+  rename("Day_Type" = day_type) %>%
+  rename("Hour" = time_per_hour) %>%
+  rename("Trips" = total_trips) %>%
+  select(-"year_month",-"pt_type",-"destination_pt_code")
 
 kable(head(trips))
+```
+
+```{r}
+#| eval: false
+write_rds(trips,"data/rds/trip.rds")
 ```
 
 Lastly, let's check the data summary
 
 ```{r}
+trips <- read_rds("data/rds/trip.rds")
 summary(trips)
 ```
 
@@ -210,7 +257,7 @@ summary(trips)
 
 ## 7.1 Trips Distribution
 
-Let's visualize the data to understand trips distribution through out Sep 2025:
+Let's visualize the data to understand trips distribution through Jul- Sep 2025:
 
 ::: panel-tabset
 ## Plot
@@ -219,7 +266,7 @@ Let's visualize the data to understand trips distribution through out Sep 2025:
 #| echo: false
 hist <- ggplot(trips, aes(x = Trips)) +
   geom_histogram(bins = 30, fill = "#93A4CC", color = "grey30") +
-  labs(title = "Histograms of Hour of Day and Trips",
+  labs(title = "Histograms of Trips",
        x = "", y = "Frequency") +
   theme_minimal()+
   theme(panel.background = element_rect(fill = "#f6f6f6"),
@@ -271,7 +318,7 @@ hist/box +
 ::: callout-note
 ## Observation
 
-The distribution of trips is noticeably left-skewed, suggesting that certain bus routes experience a high concentration of activity during specific hours.
+The distribution of trips is noticeably right-skewed, suggesting that certain bus routes experience a high concentration of activity during specific hours.
 :::
 
 ## 7.2 Average Trips Distribution by Day of Hour and Day Type
@@ -280,7 +327,7 @@ Next, let's check the distribution of trips by hour of day and day type. Before 
 
 ```{r}
 trips_summary <- trips %>%
-  group_by(Day_Type, Hour) %>%
+  group_by(Day_Type,Month ,Hour) %>%
   summarise(avg_trips = mean(Trips, na.rm = TRUE),.groups = "drop")
 
 ```
@@ -293,29 +340,37 @@ trips_summary <- trips %>%
 #| fig.width: 12
 #| fig.height: 6
 
-trips_summary$Day_Type <- factor(trips_summary$Day_Type, levels = c("WEEKENDS/HOLIDAY","WEEKDAY"))
+trips_summary$Day_Type <- factor(trips_summary$Day_Type, 
+                                 levels = c("WEEKENDS/HOLIDAY", "WEEKDAY"))
 
-ggplot(trips_summary, aes(x = Hour, y=Day_Type, fill = Day_Type, height = avg_trips, 
-                          group = Day_Type)) +
-  geom_ridgeline(scale = 0.1, 
-                 alpha = 0.7) +
+p <- ggplot(trips_summary, aes(x = Hour, y = Day_Type, fill = Day_Type, 
+                                height = avg_trips, group = Day_Type)) +
+  geom_ridgeline(scale = 0.1, alpha = 0.7) +
+  facet_wrap(~Month, nrow = 3) +  # Show all months at once
   scale_x_continuous(breaks = seq(0, 23, 1)) +
-  scale_fill_manual(values = c("#93A4CC", "#8EB859"))+
+  scale_fill_manual(values = c("#93A4CC", "#8EB859")) +
   labs(
-    title = "Average Trips by Hour of Day and Day Type",
+    title = "Average Trips by Month, Hour of Day and Day Type",
     x = "Hour of Day",
-    y = "Frequency"
+    y = ""
   ) +
-  geom_vline(xintercept = c(4,7, 18), color = "grey30", 
-             linetype = "dashed", linewidth = 0.6) +
-  theme_ridges()+
+  geom_vline(xintercept = c(4, 7, 18), color = "grey30", 
+             linetype = "dashed", linewidth = 0.3) +
+  theme_ridges() +
   theme(
     legend.position = "none",
-    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 8),
+    axis.text.y = element_text(size = 9),
+    axis.title.x = element_text(size = 10,hjust = 0),
+    plot.title = element_text(size = 12,hjust = 0.5),
+    strip.text = element_text(size = 10),  # Facet title size
     panel.background = element_rect(fill = "#f6f6f6"),
     plot.background = element_rect(fill = "#f6f6f6", color = NA),
-    panel.grid = element_blank(),
+    panel.grid = element_blank()
   )
+
+ggplotly(p, tooltip = c("x", "height"),
+         )
 
 ```
 
@@ -323,29 +378,36 @@ ggplot(trips_summary, aes(x = Hour, y=Day_Type, fill = Day_Type, height = avg_tr
 
 ```{r}
 #| eval: false
-trips_summary$Day_Type <- factor(trips_summary$Day_Type, levels = c("WEEKENDS/HOLIDAY","WEEKDAY"))
+trips_summary$Day_Type <- factor(trips_summary$Day_Type, 
+                                 levels = c("WEEKENDS/HOLIDAY", "WEEKDAY"))
 
-ggplot(trips_summary, aes(x = Hour, y=Day_Type, fill = Day_Type, height = avg_trips, 
-                          group = Day_Type)) +
-  geom_ridgeline(scale = 0.1, 
-                 alpha = 0.7) +
+p <- ggplot(trips_summary, aes(x = Hour, y = Day_Type, fill = Day_Type, 
+                                height = avg_trips, group = Day_Type)) +
+  geom_ridgeline(scale = 0.1, alpha = 0.7) +
+  facet_wrap(~Month, nrow = 3) +  # Show all months at once
   scale_x_continuous(breaks = seq(0, 23, 1)) +
-  scale_fill_manual(values = c("#93A4CC", "#8EB859"))+
+  scale_fill_manual(values = c("#93A4CC", "#8EB859")) +
   labs(
-    title = "Averafe Trips by Hour of Day and Day Type",
+    title = "Average Trips by Month, Hour of Day and Day Type",
     x = "Hour of Day",
-    y = "Frequency"
+    y = ""
   ) +
   geom_vline(xintercept = c(4, 7, 18), color = "grey30", 
-             linetype = "dashed", linewidth = 0.6) +
-  theme_ridges()+
+             linetype = "dashed", linewidth = 0.3) +
+  theme_ridges() +
   theme(
     legend.position = "none",
-    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 8),
+    axis.text.y = element_text(size = 9),
+    axis.title.x = element_text(size = 10,hjust = 0),
+    plot.title = element_text(size = 12,hjust = 0.5),
+    strip.text = element_text(size = 10),  # Facet title size
     panel.background = element_rect(fill = "#f6f6f6"),
     plot.background = element_rect(fill = "#f6f6f6", color = NA),
-    panel.grid = element_blank(),
+    panel.grid = element_blank()
   )
+
+ggplotly(p, tooltip = c("x", "height"))
 ```
 :::
 
@@ -414,7 +476,7 @@ BS_SG_joined <- BS_SG %>%
    left_join(trips, by = "BUS_STOP_N")
 
 BS_SG_sz <- BS_SG_joined %>%
-  st_drop_geometry() %>%  # cos we need to combine data to mpsz
+  st_drop_geometry() %>%  
   select(c("SUBZONE_C","Trips")) %>%
   group_by(SUBZONE_C) %>%
   summarise(total_trips = sum(Trips, na.rm = TRUE))
@@ -570,7 +632,7 @@ Following the task instructions, the `peak` variable was created using the `mu
 ```{r}
 trips <- trips %>%
   mutate(
-    peak = case_when(
+    Peak = case_when(
       Day_Type == "WEEKDAY" & Hour >= 4 & Hour < 5  ~ "Weekday 4 AM Peak",
       Day_Type == "WEEKDAY" & Hour >= 6 & Hour < 9  ~ "Weekday AM Peak",
       Day_Type == "WEEKDAY" & Hour >= 17 & Hour < 20 ~ "Weekday PM Peak",
@@ -584,7 +646,7 @@ Next, we sum up the total trips by HEX_ID and Peak hour period:
 
 ```{r}
 trips_summary_hex <- trips %>%
-  group_by(HEX_ID, peak) %>%
+  group_by(HEX_ID, Peak) %>%
   summarise(total_trips = sum(Trips, na.rm = TRUE), .groups = "drop") %>%  # drop grouping here
   left_join(hexagon, by = "HEX_ID")%>%
   st_sf()
@@ -619,7 +681,7 @@ Since the total trips during peak hours are still fairly left-skewed, we use "je
 
 WD_4AM <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekday 4 AM Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekday 4 AM Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -631,7 +693,7 @@ tm_shape(trips_summary_hex %>% filter (peak=="Weekday 4 AM Peak"))+
 
 WK <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekend/Holiday Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekend/Holiday Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -643,7 +705,7 @@ tm_shape(trips_summary_hex %>% filter (peak=="Weekend/Holiday Peak"))+
 
 WD_AM <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekday AM Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekday AM Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -655,7 +717,7 @@ tm_shape(trips_summary_hex %>% filter (peak=="Weekday AM Peak"))+
 
 WD_PM <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekday PM Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekday PM Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -677,7 +739,7 @@ tmap_arrange(WD_4AM,WD_AM, WD_PM,WK,ncol = 2,nrow=2)
 
 WD_4AM <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekday 4 AM Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekday 4 AM Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -689,7 +751,7 @@ tm_shape(trips_summary_hex %>% filter (peak=="Weekday 4 AM Peak"))+
 
 WK <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekend/Holiday Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekend/Holiday Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -701,7 +763,7 @@ tm_shape(trips_summary_hex %>% filter (peak=="Weekend/Holiday Peak"))+
 
 WD_AM <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekday AM Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekday AM Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -713,7 +775,7 @@ tm_shape(trips_summary_hex %>% filter (peak=="Weekday AM Peak"))+
 
 WD_PM <- tm_shape(mpsz19)+
   tm_polygons(fill_alpha = 0.5,lwd =0.5,col_alpha=0.5)+
-tm_shape(trips_summary_hex %>% filter (peak=="Weekday PM Peak"))+
+tm_shape(trips_summary_hex %>% filter (Peak=="Weekday PM Peak"))+
   tm_polygons(fill = "total_trips",
               fill.scale = tm_scale_intervals(style = "jenks",
                                               n=5))+
@@ -739,12 +801,12 @@ trips_summary_hex <- st_join(trips_summary_hex,mpsz19,
 ```{r}
 kable(
   trips_summary_hex %>%
-    filter(peak %in% c("Weekday AM Peak", "Weekday PM Peak", "Weekend/Holiday Peak")) %>%
-    group_by(peak) %>%
+    filter(Peak %in% c("Weekday AM Peak", "Weekday PM Peak", "Weekend/Holiday Peak")) %>%
+    group_by(Peak) %>%
     slice_max(order_by = total_trips.x, n = 5, with_ties = FALSE) %>%
     ungroup() %>%
-    select(HEX_ID, SUBZONE_N, peak, total_trips.x) %>%
-    arrange(peak, desc(total_trips.x))
+    select(HEX_ID, SUBZONE_N, Peak, total_trips.x) %>%
+    arrange(Peak, desc(total_trips.x))
 )
   
 ```
@@ -763,4 +825,792 @@ During both regular weekday and weekend peak hours, the busiest areas based on t
 
 To support the LMSA analysis, Hot Spot/Cold Spot analysis (HCSA) based on the Getis-Ord Gi\* statistic will be performed.
 
-## 9.1
+```{r}
+trips_hex_hcsa <- trips %>%
+  group_by(HEX_ID,Day_Type)%>%
+  summarise(total_trips = sum(Trips,na.rm = TRUE),.groups = "drop")
+
+trips_hex_hcsa <- hexagon%>%
+  inner_join(trips_hex_hcsa, by = "HEX_ID")
+```
+
+## 9.1 Dervice Adaptive Distance Weight Matrix
+
+Since some of the hexagons on the rightmost of Singapore are isolated, and no neighbors directly connected on the edges. The **adaptive distance weight matrix** - KNN method ensure every hexagon has neighbors.
+
+The code chunk below will be used to derive a KNN weights:
+
+nb = include_self(st_knn(geometry,k=6)),
+
+wt = st_weights(nb,style = "W"),
+
+.before = 1)
+
+```{r}
+wm_knn_wk <- trips_hex_hcsa %>%
+  filter(Day_Type=="WEEKENDS/HOLIDAY") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1)
+
+wm_knn_wd <- trips_hex_hcsa %>%
+  filter(Day_Type=="WEEKDAY") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1)
+```
+
+## 9.2 Compute Gi\*
+
+The code below uses `mutate()` to add a new column called `gistar`, which stores the results of `local_gstar_perm()`. This function computes the local Gi\* statistic, a spatial measure used to identify local clusters of high values (hot spots) and low values (cold spots).
+
+The hypothesis of `local_gstar_perm()`:
+
+-   **H0:** There is no spatial clustering of the variable of interest.
+-   **H1:** There is spatial clustering (hot spot or cold spot) at a location.
+-   **Significance**: 5% (since this is a two-sided test, the critical region is split between the two tails of the distribution, each side is 2.5%)
+
+```{r}
+set.seed(1234)
+
+trips_hcsa_wk <- wm_knn_wk %>%
+  mutate(
+    gistar = local_gstar_perm(
+      total_trips, nb, wt, nsim = 99,
+      alternative = "two.sided"),
+    .before = 1) %>%
+  unnest(gistar)
+
+trips_hcsa_wd <- wm_knn_wd %>%
+  mutate(
+    gistar = local_gstar_perm(
+      total_trips, nb, wt, nsim = 99,
+      alternative = "two.sided"),
+    .before = 1) %>%
+  unnest(gistar)
+```
+
+## 9.2 **Visualize local HCSA**
+
+Here we visualize cold/hot spots using a two-sided test, filtering locations with folded simulated p-values \< 0.025, where:
+
+-   **Gi\* \> 0 & `p_sim_folded` \<= 0.025 → Hot spot**
+-   **Gi\* \< 0 & `p_sim_folded`\<= 0.025 → Cold spot**
+
+```{r}
+#| fig.width: 12
+#| fig.height: 6
+
+wk <- tm_shape(mpsz19)+
+  tm_fill(fill_alpha = 0.5)+
+  tm_shape(hexagon) + 
+  tm_borders(col = "grey30", col_alpha=0.8)+
+tm_shape(trips_hcsa_wk %>% filter(p_folded_sim <= 0.025))+
+  tm_fill("cluster",
+          fill.scale = tm_scale_categorical(
+               values= c("#93A4CC","#cc78aa")
+              ))+
+  tm_title("Hot Spot and Cold Spot on Weenkends",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+
+wd <- 
+  tm_shape(mpsz19)+
+  tm_fill(fill_alpha = 0.5)+
+  tm_shape(hexagon) + 
+  tm_borders(col = "grey30", col_alpha=0.8)+
+tm_shape(trips_hcsa_wd %>% filter(p_folded_sim <= 0.025))+
+  tm_fill("cluster",
+          fill.scale = tm_scale_categorical(
+               values= c("#93A4CC","#cc78aa"))
+          )+
+  tm_title("Hot Spot and Cold Spot on Weekdays",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+
+tmap_arrange(wd,wk,ncol=2)
+```
+
+::: callout-note
+## Observation
+:::
+
+# 10 EHSA Analysis
+
+## 10.1 By Month
+
+### 10.1.1 Data Preparation for EHSA Analysis
+
+```{r}
+trips_morning_m <- trips %>%
+  filter(Peak == "Weekday AM Peak") %>%
+  group_by(HEX_ID, Month) %>%
+  summarise(Total_trips = sum(Trips, na.rm = TRUE), .groups = "drop")
+
+trips_afternoon_m <- trips %>%
+  filter(Peak == "Weekday PM Peak") %>%
+  group_by(HEX_ID, Month) %>%
+  summarise(Total_trips = sum(Trips, na.rm = TRUE), .groups = "drop")
+
+trips_weekend_m <- trips %>%
+  filter(Peak == "Weekend/Holiday Peak") %>%
+  group_by(HEX_ID, Month) %>%
+  summarise(Total_trips = sum(Trips, na.rm = TRUE), .groups = "drop")
+
+# full grid for space time
+full_grid <- expand.grid(
+  HEX_ID = hexagon$HEX_ID,
+  Month = 7:9
+)
+
+# combine 
+trips_morning_m <- full_grid %>%
+  left_join(trips_morning_m, by = c("HEX_ID", "Month")) %>%
+  mutate(Total_trips = ifelse(is.na(Total_trips), 0, Total_trips))
+
+trips_afternoon_m <- full_grid %>%
+  left_join(trips_afternoon_m, by = c("HEX_ID", "Month")) %>%
+  mutate(Total_trips = ifelse(is.na(Total_trips), 0, Total_trips))
+
+trips_weekend_m <- full_grid %>%
+  left_join(trips_weekend_m, by = c("HEX_ID", "Month")) %>%
+  mutate(Total_trips = ifelse(is.na(Total_trips), 0, Total_trips))
+```
+
+### 10.1.2 Create a Time Series Cube
+
+```{r}
+trips_morning_st_m <- spacetime(trips_morning_m,hexagon,
+                      .loc_col = "HEX_ID",
+                      .time_col = "Month")
+is_spacetime_cube(trips_morning_st_m)
+```
+
+```{r}
+trips_afternoon_st_m <- spacetime(trips_afternoon_m,hexagon,
+                      .loc_col = "HEX_ID",
+                      .time_col = "Month")
+is_spacetime_cube(trips_afternoon_st_m)
+```
+
+```{r}
+trips_weekend_st_m <- spacetime(trips_weekend_m,hexagon,
+                      .loc_col = "HEX_ID",
+                      .time_col = "Month")
+is_spacetime_cube(trips_weekend_st_m)
+```
+
+### 10.1.3 Derive Adaptive Distance Weight Matrix
+
+```{r}
+trips_morning_nb_m <- trips_morning_st_m %>%
+  activate("geometry") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+
+trips_afternoon_nb_m <- trips_afternoon_st_m %>%
+  activate("geometry") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+
+trips_weekend_nb_m <- trips_weekend_st_m %>%
+  activate("geometry") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+```
+
+### 10.1.4 Calculate Gi\*
+
+```{r}
+nb <- include_self(st_knn(st_geometry(hexagon), k = 6))
+wt <- st_weights(nb, style = "W")
+
+trips_morning_spatial <- hexagon %>%
+  left_join(trips_morning_m, by = "HEX_ID")
+
+trips_afternoon_spatial <- hexagon %>%
+  left_join(trips_afternoon_m, by = "HEX_ID")
+
+trips_weekend_spatial <- hexagon %>%
+  left_join(trips_weekend_m, by = "HEX_ID")
+```
+
+```{r}
+gi_stars_morning <- trips_afternoon_spatial %>%
+  group_by(Month) %>%
+  mutate(
+    gi_star = local_gstar_perm(
+      Total_trips,
+      nb = nb,
+      wt = wt,
+      nsim = 99,
+      alternative = "two.sided"
+    )
+  ) %>%
+  unnest(gi_star) %>%
+  ungroup()
+
+gi_stars_afternoon <- trips_afternoon_spatial %>%
+  group_by(Month) %>%
+  mutate(
+    gi_star = local_gstar_perm(
+      Total_trips,
+      nb = nb,
+      wt = wt,
+      nsim = 99,
+      alternative = "two.sided"
+    )
+  ) %>%
+  unnest(gi_star) %>%
+  ungroup()
+
+gi_stars_weekend <- trips_weekend_spatial %>%
+  group_by(Month) %>%
+  mutate(
+    gi_star = local_gstar_perm(
+      Total_trips,
+      nb = nb,
+      wt = wt,
+      nsim = 99,
+      alternative = "two.sided"
+    )
+  ) %>%
+  unnest(gi_star) %>%
+  ungroup()
+```
+
+### 10.1.5 **Mann-Kendall Test on Gi\***
+
+A **monotonic series** or function is one that only increases (or decreases) and never changes direction. So long as the function either stays flat or continues to increase, it is monotonic.
+
+-   H0: No monotonic trend
+-   H1: Monotonic trend is present
+
+```{r}
+mk_results_m <- gi_stars_morning %>%
+  group_by(HEX_ID) %>%
+  summarise(
+    mk_tau = MannKendall(gi_star)$tau,
+    mk_pvalue = MannKendall(gi_star)$sl,
+    trend_direction = case_when(
+      mk_pvalue > 0.05 ~ "No significant trend",
+      mk_tau > 0 ~ "Increasing trend",
+      mk_tau < 0 ~ "Decreasing trend"
+    ),
+    .groups = "drop"
+  )
+
+mk_results_a <- gi_stars_afternoon %>%
+  group_by(HEX_ID) %>%
+  summarise(
+    mk_tau = MannKendall(gi_star)$tau,
+    mk_pvalue = MannKendall(gi_star)$sl,
+    trend_direction = case_when(
+      mk_pvalue > 0.05 ~ "No significant trend",
+      mk_tau > 0 ~ "Increasing trend",
+      mk_tau < 0 ~ "Decreasing trend"
+    ),
+    .groups = "drop"
+  )
+
+mk_results_wk <- gi_stars_weekend%>%
+  group_by(HEX_ID) %>%
+  summarise(
+    mk_tau = MannKendall(gi_star)$tau,
+    mk_pvalue = MannKendall(gi_star)$sl,
+    trend_direction = case_when(
+      mk_pvalue > 0.05 ~ "No significant trend",
+      mk_tau > 0 ~ "Increasing trend",
+      mk_tau < 0 ~ "Decreasing trend"
+    ),
+    .groups = "drop"
+  )
+```
+
+```{r}
+mk_results_m %>%
+  group_by(trend_direction) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+mk_results_a %>%
+  group_by(trend_direction) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+mk_results_wk %>%
+  group_by(trend_direction) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+```
+
+### 10.1.6 Visualize MK test results
+
+Since
+
+```{r}
+tm_shape(mpsz19)+
+  tm_fill(fill_alpha = 0.5)+
+  tm_shape(hexagon) + 
+  tm_borders(col = "grey30", col_alpha=0.8)+
+tm_shape(mk_results_wk)+
+  tm_fill("trend_direction",
+          fill.scale = tm_scale_categorical(
+               values= c("#93A4CC","#cc78aa","#f6f6f6")
+              ))+
+  tm_title("Hot Spot and Cold Spot on Weenkends",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+```
+
+```{r}
+# Suppose mk_results_wd has HEX_ID, Year, gi_star
+hex_ids <- unique(gi_stars_weekend$HEX_ID)
+
+# Create traces for each HEX_ID
+fig <- plot_ly()
+for (id in hex_ids) {
+  df <- gi_stars_morning %>% filter(HEX_ID == id)
+  fig <- fig %>% add_trace(
+    data = df,
+    x = ~Month,
+    y = ~gi_star,
+    type = 'scatter',
+    mode = 'lines',
+    name = id,
+    visible = ifelse(id == hex_ids[1], TRUE, FALSE)
+  )
+}
+
+# Dropdown menu
+buttons <- lapply(seq_along(hex_ids), function(i) {
+  visible <- rep(FALSE, length(hex_ids))
+  visible[i] <- TRUE
+  list(
+    method = "update",
+    args = list(list(visible = visible),
+                list(title = paste("HEX_ID:", hex_ids[i]))),
+    label = hex_ids[i]
+  )
+})
+
+fig <- fig %>% layout(
+  updatemenus = list(list(
+    active = 0,
+    buttons = buttons,
+    x = 0.1,
+    y = 1.15
+  )),
+  title = paste("HEX_ID:", hex_ids[1]),
+  xaxis = list(title = "Month"),
+  yaxis = list(title = "Gi*")
+)
+
+fig
+```
+
+### 10.1.7 HCSA
+
+```{r}
+ehsa_morning <- emerging_hotspot_analysis(
+  x = trips_morning_nb, 
+  include_gi = TRUE,
+  .var = "Total_trips", 
+  k = 1,      # time lag = 1
+  nsim = 199, # 200 simulation
+  nb_col = "nb",    
+  wt_col = "wt",
+  threshold = 0.05
+)
+
+ehsa_afternoon <- emerging_hotspot_analysis(
+  x = trips_afternoon_nb, 
+  include_gi = TRUE,
+  .var = "Total_trips", 
+  k = 1,      # time lag = 1
+  nsim = 199, # 200 simulation
+  nb_col = "nb",    
+  wt_col = "wt",
+  threshold = 0.05
+)
+
+ehsa_weekend <- emerging_hotspot_analysis(
+  x = trips_afternoon_nb, 
+  include_gi = TRUE,
+  .var = "Total_trips", 
+  k = 1,      # time lag = 1
+  nsim = 199, # 200 simulation
+  nb_col = "nb",    
+  wt_col = "wt",
+  threshold = 0.05
+)
+```
+
+```{r}
+ehsa_morning <- hexagon %>%
+  left_join(ehsa_morning, by = join_by(HEX_ID == location))
+```
+
+```{r}
+ehsa_sig <- ehsa_morning  %>%
+  filter(p_value < 0.05)
+
+
+tm_shape(ehsa_morning) +
+  tm_polygons() +
+  tm_borders(fill_alpha = 0.5) +
+tm_shape(ehsa_sig) +
+  tm_fill("classification") + 
+  tm_borders(fill_alpha = 0.4)+
+  tm_title("Emerging Hotspot Analysis",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+```
+
+## 10.2 By Hour
+
+### 10.1.1 Data Preparation for EHSA Analysis
+
+```{r}
+trips_morning <- trips %>%
+  filter(Peak == "Weekday AM Peak") %>%
+  group_by(HEX_ID, Hour) %>%
+  summarise(Total_trips = sum(Trips, na.rm = TRUE), .groups = "drop")
+
+trips_afternoon <- trips %>%
+  filter(Peak == "Weekday PM Peak") %>%
+  group_by(HEX_ID, Hour) %>%
+  summarise(Total_trips = sum(Trips, na.rm = TRUE), .groups = "drop")
+
+trips_weekend <- trips %>%
+  filter(Peak == "Weekend/Holiday Peak") %>%
+  group_by(HEX_ID, Hour) %>%
+  summarise(Total_trips = sum(Trips, na.rm = TRUE), .groups = "drop")
+
+# full grid for space time
+full_grid_morning <- expand.grid(
+  HEX_ID = hexagon$HEX_ID,
+  Hour = 6:9
+)
+
+full_grid_afternoon <- expand.grid(
+  HEX_ID = hexagon$HEX_ID,
+  Hour = 17:20
+)
+
+full_grid_weekend <- expand.grid(
+  HEX_ID = hexagon$HEX_ID,
+  Hour = 11:20
+)
+
+# combine 
+trips_morning <- full_grid_morning %>%
+  left_join(trips_morning, by = c("HEX_ID", "Hour")) %>%
+  mutate(Total_trips = ifelse(is.na(Total_trips), 0, Total_trips))
+
+trips_afternoon <- full_grid_afternoon %>%
+  left_join(trips_afternoon, by = c("HEX_ID", "Hour")) %>%
+  mutate(Total_trips = ifelse(is.na(Total_trips), 0, Total_trips))
+
+trips_weekend <- full_grid_weekend %>%
+  left_join(trips_weekend, by = c("HEX_ID", "Hour")) %>%
+  mutate(Total_trips = ifelse(is.na(Total_trips), 0, Total_trips))
+```
+
+### 10.1.2 Create a Time Series Cube
+
+```{r}
+trips_morning_st <- spacetime(trips_morning,hexagon,
+                      .loc_col = "HEX_ID",
+                      .time_col = "Hour")
+is_spacetime_cube(trips_morning_st)
+```
+
+```{r}
+trips_afternoon_st <- spacetime(trips_afternoon,hexagon,
+                      .loc_col = "HEX_ID",
+                      .time_col = "Hour")
+is_spacetime_cube(trips_afternoon_st)
+```
+
+```{r}
+trips_weekend_st <- spacetime(trips_weekend,hexagon,
+                      .loc_col = "HEX_ID",
+                      .time_col = "Hour")
+is_spacetime_cube(trips_weekend_st)
+```
+
+### 10.1.3 Derive Adaptive Distance Weight Matrix
+
+```{r}
+trips_morning_nb_2 <- trips_morning_st %>%
+  activate("geometry") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+
+trips_afternoon_nb_2 <- trips_afternoon_st %>%
+  activate("geometry") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+
+trips_weekend_nb_2 <- trips_weekend_st %>%
+  activate("geometry") %>%
+  mutate(
+    nb = include_self(st_knn(geometry,k=6)),
+    wt = st_weights(nb,style = "W"),
+    .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+```
+
+### 10.1.4 Calculate Gi\*
+
+```{r}
+nb <- include_self(st_knn(st_geometry(hexagon), k = 6))
+wt <- st_weights(nb, style = "W")
+
+trips_morning_spatial <- hexagon %>%
+  left_join(trips_morning, by = "HEX_ID")
+
+trips_afternoon_spatial <- hexagon %>%
+  left_join(trips_afternoon, by = "HEX_ID")
+
+trips_weekend_spatial <- hexagon %>%
+  left_join(trips_weekend, by = "HEX_ID")
+```
+
+```{r}
+gi_stars_morning <- trips_afternoon_spatial %>%
+  group_by(Hour) %>%
+  mutate(
+    gi_star = local_gstar_perm(
+      Total_trips,
+      nb = nb,
+      wt = wt,
+      nsim = 99,
+      alternative = "two.sided"
+    )
+  ) %>%
+  unnest(gi_star) %>%
+  ungroup()
+
+gi_stars_afternoon <- trips_afternoon_spatial %>%
+  group_by(Hour) %>%
+  mutate(
+    gi_star = local_gstar_perm(
+      Total_trips,
+      nb = nb,
+      wt = wt,
+      nsim = 99,
+      alternative = "two.sided"
+    )
+  ) %>%
+  unnest(gi_star) %>%
+  ungroup()
+
+gi_stars_weekend <- trips_weekend_spatial %>%
+  group_by(Hour) %>%
+  mutate(
+    gi_star = local_gstar_perm(
+      Total_trips,
+      nb = nb,
+      wt = wt,
+      nsim = 99,
+      alternative = "two.sided"
+    )
+  ) %>%
+  unnest(gi_star) %>%
+  ungroup()
+```
+
+### 10.1.5 **Mann-Kendall Test on Gi\***
+
+A **monotonic series** or function is one that only increases (or decreases) and never changes direction. So long as the function either stays flat or continues to increase, it is monotonic.
+
+-   H0: No monotonic trend
+-   H1: Monotonic trend is present
+
+```{r}
+mk_results_m <- gi_stars_morning %>%
+  group_by(HEX_ID) %>%
+  summarise(
+    mk_tau = MannKendall(gi_star)$tau,
+    mk_pvalue = MannKendall(gi_star)$sl,
+    trend_direction = case_when(
+      mk_pvalue > 0.05 ~ "No significant trend",
+      mk_tau > 0 ~ "Increasing trend",
+      mk_tau < 0 ~ "Decreasing trend"
+    ),
+    .groups = "drop"
+  )
+
+mk_results_a <- gi_stars_afternoon %>%
+  group_by(HEX_ID) %>%
+  summarise(
+    mk_tau = MannKendall(gi_star)$tau,
+    mk_pvalue = MannKendall(gi_star)$sl,
+    trend_direction = case_when(
+      mk_pvalue > 0.05 ~ "No significant trend",
+      mk_tau > 0 ~ "Increasing trend",
+      mk_tau < 0 ~ "Decreasing trend"
+    ),
+    .groups = "drop"
+  )
+
+mk_results_wk <- gi_stars_weekend%>%
+  group_by(HEX_ID) %>%
+  summarise(
+    mk_tau = MannKendall(gi_star)$tau,
+    mk_pvalue = MannKendall(gi_star)$sl,
+    trend_direction = case_when(
+      mk_pvalue > 0.05 ~ "No significant trend",
+      mk_tau > 0 ~ "Increasing trend",
+      mk_tau < 0 ~ "Decreasing trend"
+    ),
+    .groups = "drop"
+  )
+```
+
+```{r}
+mk_results_m %>%
+  group_by(trend_direction) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+mk_results_a %>%
+  group_by(trend_direction) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+mk_results_wk %>%
+  group_by(trend_direction) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+```
+
+### 10.1.6 Visualize MK test results
+
+Since
+
+```{r}
+tm_shape(mpsz19)+
+  tm_fill(fill_alpha = 0.5)+
+  tm_shape(hexagon) + 
+  tm_borders(col = "grey30", col_alpha=0.8)+
+tm_shape(mk_results_wk)+
+  tm_fill("trend_direction",
+          fill.scale = tm_scale_categorical(
+               values= c("#93A4CC","#cc78aa","#f6f6f6")
+              ))+
+  tm_title("Hot Spot and Cold Spot on Weenkends",
+           position = tm_pos_out("center", "top", "center"))+
+  tm_layout(
+    bg.color = "#f6f6f6",
+    frame = FALSE)
+```
+
+```{r}
+# Suppose mk_results_wd has HEX_ID, Year, gi_star
+hex_ids <- unique(gi_stars_weekend$HEX_ID)
+
+# Create traces for each HEX_ID
+fig <- plot_ly()
+for (id in hex_ids) {
+  df <- gi_stars_morning %>% filter(HEX_ID == id)
+  fig <- fig %>% add_trace(
+    data = df,
+    x = ~Hour,
+    y = ~gi_star,
+    type = 'scatter',
+    mode = 'lines',
+    name = id,
+    visible = ifelse(id == hex_ids[1], TRUE, FALSE)
+  )
+}
+
+# Dropdown menu
+buttons <- lapply(seq_along(hex_ids), function(i) {
+  visible <- rep(FALSE, length(hex_ids))
+  visible[i] <- TRUE
+  list(
+    method = "update",
+    args = list(list(visible = visible),
+                list(title = paste("HEX_ID:", hex_ids[i]))),
+    label = hex_ids[i]
+  )
+})
+
+fig <- fig %>% layout(
+  updatemenus = list(list(
+    active = 0,
+    buttons = buttons,
+    x = 0.1,
+    y = 1.15
+  )),
+  title = paste("HEX_ID:", hex_ids[1]),
+  xaxis = list(title = "Hour"),
+  yaxis = list(title = "Gi*")
+)
+
+fig
+```
+
+### 10.1.7 HCSA
+
+```{r}
+
+ehsa_weekend <- emerging_hotspot_analysis(
+  x = trips_weekend_nb_2, 
+  include_gi = TRUE,
+  .var = "Total_trips", 
+  k = 1,      # time lag = 1
+  nsim = 199, # 200 simulation
+  nb_col = "nb",    
+  wt_col = "wt",
+  threshold = 0.05
+)
+```
+
+```{r}
+ggplot(data = ehsa_morning,
+       aes(x = classification)) +
+  geom_bar(fill = "#93A4CC", color = "grey30")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+```
+
+```{r}
+
+```
