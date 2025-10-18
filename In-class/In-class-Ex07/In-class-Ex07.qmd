@@ -1,0 +1,491 @@
+---
+title: "In-class 7: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method Techniques"
+author: Johsuan Huang
+date: 2025-10-15
+date-modified: "last-modified"
+description: ""
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+---
+
+# 1 Overview
+
+**Geographically weighted regression (GWR)** is a spatial statistical technique that takes non-stationary variables into consideration (e.g., climate; demographic factors; physical environment characteristics) and models the local relationships between these independent variables and an outcome of interest (also known as dependent variable). In this hands-on exercise, you will learn how to build [hedonic pricing](https://www.investopedia.com/terms/h/hedonicpricing.asp) models by using GWR methods. The dependent variable is the resale prices of condominium in 2015. The independent variables are divided into either structural and locational.
+
+# 2 The Data
+
+Two data sets will be used in this model building exercise, they are:
+
+-   URA Master Plan subzone boundary in shapefile format (i.e. *MP14_SUBZONE_WEB_PL*)
+-   condo_resale_2015 in csv format (i.e. *condo_resale_2015.csv*)
+
+# 3 Getting Started
+
+## 3.1 Install and load R packages
+
+Before we get started, it is important for us to install the necessary R packages into R and launch these R packages into R environment.
+
+The R packages needed for this exercise are as follows:
+
+-   R package for building OLS and performing diagnostics tests
+    -   [**olsrr**](https://olsrr.rsquaredacademy.com/)
+-   R package for calibrating geographical weighted family of models
+    -   [**GWmodel**](https://cran.r-project.org/web/packages/GWmodel/index.html)
+-   R package for multivariate data visualisation and analysis
+    -   [**corrplot**](https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html)
+-   Spatial data handling
+    -   **sf**
+-   Attribute data handling
+    -   **tidyverse**, especially **readr**, **ggplot2** and **dplyr**
+-   Choropleth mapping
+    -   **tmap**
+
+```{r}
+pacman::p_load(olsrr, corrplot, ggpubr, 
+               sf, sfdep, GWmodel, tmap, 
+               tidyverse, gtsummary,
+               performance, RColorBrewer,see)
+```
+
+# 4 Geospatial Data Wrangling
+
+## 4.1 Import shapefile
+
+The geospatial data used in this hands-on exercise is called MP14_SUBZONE_WEB_PL. It is in ESRI shapefile format. The shapefile consists of URA Master Plan 2014’s planning subzone boundaries. Polygon features are used to represent these geographic boundaries.
+
+The code chunk below is used to import *MP_SUBZONE_WEB_PL* shapefile by using `st_read()`of **sf** packages:
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", 
+               layer = "MP14_SUBZONE_WEB_PL") %>%
+  st_transform(3414)
+st_crs(mpsz)
+```
+
+After importing the shape file, let's check the extent of mpsz and plot the graph:
+
+```{r}
+st_bbox(mpsz)
+```
+
+The print above reports the extent of mpsz layer by its lower and upper limits.
+
+```{r}
+par(bg="#f6f6f6")
+plot(mpsz)
+```
+
+# 5 Aspatial Data Wrangling
+
+## 5.1 Import the aspatial data
+
+The *condo_resale_2015* is in csv file format. The codes chunk below uses `read_csv()` function of **readr** package to import *condo_resale_2015* into R as a tibble data frame called *condo_resale*.
+
+```{r}
+condo_resale <- read_csv("data/aspatial/Condo_resale_2015.csv")
+```
+
+There are a total of 23 fields and 1436 observation in the tibble data.frame.
+
+```{r}
+glimpse(condo_resale)
+```
+
+```{r}
+head(condo_resale$LONGITUDE)
+head(condo_resale$LATITUDE)
+```
+
+The print above reveals that the values of *LONGITITUDE* and *LATITUDE* fields are in decimal degree. Most probably wgs84 geographic coordinate system is used.
+
+Next, `summary()` of base R is used to display the summary statistics of *cond_resale* tibble data frame.
+
+```{r}
+summary(condo_resale)
+```
+
+## 5.2 Convert aspatial data frame into a sf object
+
+Currently, the *condo_resale* tibble data frame is aspatial. We will convert it to a **sf** object. The code chunk below converts condo_resale data frame into a simple feature data frame by using `st_as_sf()` of **sf** packages.
+
+Notice that `st_transform()` of **sf** package is used to convert the coordinates from wgs84 (i.e. crs:4326) to svy21 (i.e. crs=3414).
+
+```{r}
+condo_resale.sf <- st_as_sf(condo_resale,
+                            coords = c("LONGITUDE", "LATITUDE"),
+                            crs=4326) %>% #wgs84
+  st_transform(crs=3414) #svy21
+```
+
+Next, `head()` is used to list the content of *condo_resale.sf* object.
+
+```{r}
+head(condo_resale.sf)
+```
+
+# 6 Exploratory Data Analysis
+
+## 6.1 EDA using statistical graphics
+
+We can plot the distribution of *SELLING_PRICE* by using appropriate Exploratory Data Analysis (EDA) as shown in the code chunk below.
+
+```{r}
+ggplot(data=condo_resale.sf, 
+                     aes(x=SELLING_PRICE)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  labs(title = "Histogram of Condo Selling Price",
+       x = "", y = "Count") +
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+```
+
+The figure above reveals a right skewed distribution. This means that more condominium units were transacted at relative lower prices.
+
+Statistically, the skewed dsitribution can be normalised by using log transformation. The code chunk below is used to derive a new variable called *LOG_SELLING_PRICE* by using a log transformation on the variable *SELLING_PRICE*. It is performed using `mutate()` of **dplyr**package.
+
+```{r}
+condo_resale.sf <- condo_resale.sf %>%
+  mutate(`LOG_SELLING_PRICE` = log(SELLING_PRICE))
+```
+
+```{r}
+ggplot(data=condo_resale.sf, aes(x=LOG_SELLING_PRICE)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  labs(title = "Log of Condo Selling Price",
+       x = "", y = "Count") +
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+```
+
+Notice that the distribution is relatively less skewed after the transformation.
+
+## 6.2 Multiple Histogram Plots distribution of variables
+
+In this section, we will learn how to draw a small multiple histograms (also known as trellis plot) by using `ggarrange()` of [**ggpubr**](https://cran.r-project.org/web/packages/ggpubr/index.html) package.
+
+The code chunk below is used to create 12 histograms. Then, `ggarrange()` is used to organised these histogram into a 3 columns by 4 rows small multiple plot.
+
+```{r}
+#| fig.width: 12
+#| fig.height: 10
+
+AREA_SQM <- ggplot(data=condo_resale.sf, 
+                   aes(x= AREA_SQM)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+AGE <- ggplot(data=condo_resale.sf, 
+              aes(x= AGE)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_CBD <- ggplot(data=condo_resale.sf, 
+                   aes(x= PROX_CBD)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_CHILDCARE <- ggplot(data=condo_resale.sf, 
+                         aes(x= PROX_CHILDCARE)) + 
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_ELDERLYCARE <- ggplot(data=condo_resale.sf, 
+                           aes(x= PROX_ELDERLYCARE)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_URA_GROWTH_AREA <- ggplot(data=condo_resale.sf, 
+                               aes(x= PROX_URA_GROWTH_AREA)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_HAWKER_MARKET <- ggplot(data=condo_resale.sf, 
+                             aes(x= PROX_HAWKER_MARKET)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_KINDERGARTEN <- ggplot(data=condo_resale.sf, 
+                            aes(x= PROX_KINDERGARTEN)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_MRT <- ggplot(data=condo_resale.sf, 
+                   aes(x= PROX_MRT)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_PARK <- ggplot(data=condo_resale.sf, 
+                    aes(x= PROX_PARK)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_PRIMARY_SCH <- ggplot(data=condo_resale.sf, 
+                           aes(x= PROX_PRIMARY_SCH)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+PROX_TOP_PRIMARY_SCH <- ggplot(data=condo_resale.sf, 
+                               aes(x= PROX_TOP_PRIMARY_SCH)) +
+  geom_histogram(bins=20, 
+                 color="grey30", 
+                 fill="#93A4CC")+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank())
+
+ggarrange(AREA_SQM, AGE, PROX_CBD, PROX_CHILDCARE, 
+          PROX_ELDERLYCARE, PROX_URA_GROWTH_AREA,
+          PROX_HAWKER_MARKET, PROX_KINDERGARTEN, PROX_MRT,
+          PROX_PARK, PROX_PRIMARY_SCH, PROX_TOP_PRIMARY_SCH,  
+          ncol = 3, nrow = 4)
+```
+
+## 
+
+# 7 Build Hedonic Pricing Models using GWmodel
+
+In this section, we are going to learn how to modelling hedonic pricing using both the fixed and adaptive bandwidth schemes
+
+## 7.1 Build Fixed Bandwidth GWR Model
+
+### 7.1.1 Compute fixed bandwith using AIC
+
+In the code chunk below `bw.gwr()` of GWModel package is used to determine the **optimal fixed bandwidth** to use in the model. Notice that the argument ***adaptive*** is set to **FALSE** indicates that we are interested to compute the fixed bandwidth.
+
+There are two possible approaches can be uused to determine the stopping rule, they are: CV cross-validation approach and AIC corrected (AICc) approach. We define the stopping rule using ***approach*** argeement:
+
+```{r}
+bw.fixed <- bw.gwr(
+  formula = SELLING_PRICE ~ AREA_SQM + AGE  + 
+    PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE    +
+    PROX_URA_GROWTH_AREA + PROX_MRT + PROX_PARK + 
+    PROX_PRIMARY_SCH + PROX_SHOPPING_MALL   + 
+    PROX_BUS_STOP   + NO_Of_UNITS + FAMILY_FRIENDLY + 
+    FREEHOLD, 
+  data=condo_resale.sf, 
+  approach="AICc", 
+  kernel="gaussian", 
+  adaptive=FALSE, 
+  longlat=FALSE)
+```
+
+The result shows that the recommended bandwidth is 1391.309 metres.
+
+### 7.1.2 GWModel method - fixed bandwidth
+
+Now we can use the code chunk below to calibrate the gwr model using fixed bandwidth and gaussian kernel:
+
+```{r}
+gwr.fixed <- gwr.basic(
+  formula = SELLING_PRICE ~ AREA_SQM + AGE  + 
+    PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE    +
+    PROX_URA_GROWTH_AREA + PROX_MRT + PROX_PARK +
+    PROX_PRIMARY_SCH + PROX_SHOPPING_MALL   + 
+    PROX_BUS_STOP   + NO_Of_UNITS + FAMILY_FRIENDLY + 
+    FREEHOLD, 
+  data=condo_resale.sf, 
+  bw=bw.fixed,  # the fixed bandwidth we just created
+  kernel = 'gaussian', 
+  longlat = FALSE)
+```
+
+The output is saved in a list of class “gwrm”. The code below can be used to display the model output.
+
+```{r}
+class(gwr.fixed)
+```
+
+```{r}
+gwr.fixed
+```
+
+The report shows that the data has strong geospatial correlation, after applying GWR, the R-squared improved from 65% to 82％. In addition, the AICc method has slightly slower
+
+## 7.2 Build Adaptive Bandwidth GWR Model
+
+### 7.2.1 Compute the adaptive bandwidth
+
+Similar to the earlier section, we will first use `bw.gwr()` to determine the recommended data point to use.
+
+The code chunk used look very similar to the one used to compute the fixed bandwidth except the `adaptive` argument has changed to **TRUE**.
+
+```{r}
+bw.adaptive <- bw.gwr(
+  formula = SELLING_PRICE ~ AREA_SQM + AGE  + 
+    PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE    +
+    PROX_URA_GROWTH_AREA + PROX_MRT + PROX_PARK +
+    PROX_PRIMARY_SCH + PROX_SHOPPING_MALL   + 
+    PROX_BUS_STOP   + NO_Of_UNITS + 
+    FAMILY_FRIENDLY + FREEHOLD, 
+  data=condo_resale.sf, 
+  approach="AICc", 
+  kernel="gaussian", 
+  adaptive=TRUE, 
+  longlat=FALSE)
+```
+
+The result shows that the 27 is the recommended data points to be used.
+
+### 7.2.2 GWModel method - adaptive bandwith
+
+```{r}
+gwr.adaptive <- gwr.basic(
+  formula = SELLING_PRICE ~ AREA_SQM + AGE + 
+    PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE +
+    PROX_URA_GROWTH_AREA + PROX_MRT + PROX_PARK +
+    PROX_PRIMARY_SCH + PROX_SHOPPING_MALL + PROX_BUS_STOP +
+    NO_Of_UNITS + FAMILY_FRIENDLY + FREEHOLD,
+  data=condo_resale.sf, 
+  bw=bw.adaptive, 
+  kernel = 'gaussian', 
+  adaptive=TRUE, 
+  longlat = FALSE)
+```
+
+The code below is used to display the model output.
+
+```{r}
+gwr.adaptive
+```
+
+The report shows that the AICc of the adaptive distance gwr (AICc method) is 41978.63 which is smaller than the the CV method 41982.22 and the fixed distance method, suggesting we should use adaptive AICc method to calculate the bandwidth.
+
+# 8 Visualise GWR Output
+
+In addition to regression residuals, the output feature class table includes fields for observed and predicted y values, condition number (cond), Local R2, residuals, and explanatory variable coefficients and standard errors:
+
+-   Condition Number: this diagnostic evaluates local collinearity. In the presence of strong local collinearity, results become unstable. Results associated with condition numbers larger than 30, may be unreliable.
+
+-   Local R2: these values range between 0.0 and 1.0 and indicate how well the local regression model fits observed y values. Very low values indicate the local model is performing poorly. Mapping the Local R2 values to see where GWR predicts well and where it predicts poorly may provide clues about important variables that may be missing from the regression model.
+
+-   Predicted: these are the estimated (or fitted) y values 3. computed by GWR.
+
+-   Residuals: to obtain the residual values, the fitted y values are subtracted from the observed y values. Standardized residuals have a mean of zero and a standard deviation of 1. A cold-to-hot rendered map of standardized residuals can be produce by using these values.
+
+-   Coefficient Standard Error: these values measure the reliability of each coefficient estimate. Confidence in those estimates are higher when standard errors are small in relation to the actual coefficient values. Large standard errors may indicate problems with local collinearity.
+
+They are all stored in a SpatialPointsDataFrame or SpatialPolygonsDataFrame object integrated with fit.points, GWR coefficient estimates, y value, predicted values, coefficient standard errors and t-values in its “data” slot in an object called **SDF** of the output list.
+
+## 8.1 Convert SDF into *sf* data.frame
+
+```{r}
+condo_resale.sf.adaptive <-
+  st_as_sf(gwr.adaptive$SDF) %>%
+  st_transform(crs=3414)
+```
+
+Next, `glimpse()` is used to display the content of *condo_resale.sf.adaptive* sf data frame.
+
+```{r}
+glimpse(condo_resale.sf.adaptive)
+```
+
+```{r}
+summary(gwr.adaptive$SDF$yhat)
+```
+
+## 8.2 Visualise local R2
+
+```{r}
+bedok <- mpsz %>%
+  filter(PLN_AREA_N=="BEDOK")
+```
+
+```{r}
+tmap_mode("view")
+
+tm_shape(bedok)+
+  tm_polygons(fill = "green",
+    alpha = 0.6,
+    border.col = "grey30",
+    border.alpha = 0.5) +
+tm_text("SUBZONE_N")+
+tm_shape(condo_resale.sf.adaptive) +  
+  tm_dots(col = "Local_R2",
+          style = "quantile",
+          border.col = "gray60",
+          border.lwd = 0.1) +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_view(set.zoom.limits = c(13,15))
+
+
+```
+
+::: callout-note
+## Observation
+
+The local R-squared values for Bedok South, Bedok North, and Kembangan are higher than those of other subzones within the Bedok planning area, suggesting that the local models explain spatial variation more effectively in these subzones. This also implies that in areas such as Frankel and Bedok Reservoir, some important explanatory factors may be missing or less influential.
+:::
