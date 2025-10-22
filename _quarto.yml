@@ -58,6 +58,8 @@ website:
         menu:
           - text: "Take-home Ex01: Geospatial Analytics for Public Good"
             href: Take-home/Take-home-Ex1/Take-home_Ex01.html
+          - text: "Take-home Ex02: Spatio-Temporal Hot Spot Analysis of Singapore Bus Ridership"
+            href: Take-home/Take-home-Ex2/Take-home_Ex02.html
             
     right:
       - href: about.qmd

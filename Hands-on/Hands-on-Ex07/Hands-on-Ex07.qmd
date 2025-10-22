@@ -10,6 +10,7 @@ execute:
   eval: true
   warning: false
   freeze: true
+  catche: true
 ---
 
 # 1 Overview
@@ -315,7 +316,7 @@ Lastly, we want to reveal the geospatial distribution condominium resale prices 
 First, we will turn on the interactive mode of tmap by using the code chunk below.
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 ```
 
 Next, the code chunks below is used to create an interactive point symbol map:
@@ -599,7 +600,7 @@ rename(`MLR_RES` = `condo.mlr1.residuals`)
 Next, we will use **tmap** package to display the distribution of the residuals on an interactive map.
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 
 ```
 
@@ -829,7 +830,7 @@ tm_shape(condo_resale.sf.adaptive) +
 ### 8.3.3 Visualise **coefficient estimates**
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 
 AREA_SQM_SE <- tm_shape(mpsz)+
   tm_polygons(alpha = 0.1) +
