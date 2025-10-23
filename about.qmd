@@ -15,6 +15,9 @@ listing:
     - Hands-on/Hands-on-Ex05/Hands-on-Ex05.a.qmd
     - Hands-on/Hands-on-Ex05/Hands-on-Ex05.b.qmd
     - Hands-on/Hands-on-Ex06/Hands-on-Ex06.qmd
+    - Hands-on/Hands-on-Ex07/Hands-on-Ex07.qmd
+    - Take-home/Take-home-Ex2/Take-home_Ex02.qmd
+    - Hands-on/Hands-on-Ex08/Hands-on-Ex08.qmd
   type: grid
   sort: "date desc"
   fields: [image,title, date, description]
