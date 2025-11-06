@@ -1,0 +1,214 @@
+---
+title: "In-class 8: Take-home 3 kick-strat"
+author: Johsuan Huang
+date: 2025-10-23
+date-modified: "last-modified"
+description: ""
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+  catche: true
+---
+
+# 1 Import the packages
+
+-   jsonlite: JSON parser and generator
+-   progess: Configurable ***Progress*** bars, they may include percentage, elapsed time, and/or the estimated completion time
+
+```{r}
+pacman::p_load(httr,jsonlite,sf, spdep, progress, tmap, tidyverse,knitr, spdep,GWmodel, rsample, SpatialML,Metrics,kableExtra, randomForestExplainer,performance)
+```
+
+# 2 Geocode HDB resale data
+
+```{r}
+#| eval: false
+
+HDBresale <- read_csv("data/rawdata/ResaleflatpricesbasedonregistrationdatefromJan2017onwards.csv")%>%
+  filter(flat_type=="4 ROOM")%>%
+  filter(month >="2025-09" & month < "2025-10")
+```
+
+```{r}
+#| eval: false
+
+HDBresale$street_name <- gsub("ST\\.","SAINT",HDBresale$street_name) 
+```
+
+```{r}
+#| eval: false
+
+geocode <- function(block, streetname){
+  base_url <- "https://www.onemap.gov.sg/api/common/elastic/search"
+  address <- paste(block,streetname,sep =" ")
+  query <- list("searchVal" = address,
+                "returnGeom" = "Y",
+                "getAddrDetails" = "N",
+                "pageNum" ="1")
+  res <- GET(base_url, query =query)
+  restext <- content(res, as="text")
+  
+  output <- fromJSON(restext) %>%
+    as.data.frame %>%
+    select(results.LATITUDE, results.LONGITUDE)
+  
+  return(output)
+}
+```
+
+```{r}
+#| eval: false
+
+HDBresale$LATITUDE <- 0
+HDBresale$LONGTITUDE <- 0
+
+for (i in 1:nrow(HDBresale)){
+  temp_output <- geocode(HDBresale[i,4],HDBresale[i,5])
+  
+  HDBresale$LATITUDE[i] <- temp_output$results.LATITUDE
+  HDBresale$LONGTITUDE[i] <- temp_output$results.LONGITUDE
+}
+
+```
+
+```{r}
+#| eval: false
+
+write_rds(HDBresale,"data/HDBresale.rds")
+```
+
+```{r}
+HDBresale <- read_rds("data/HDBresale.rds")
+```
+
+# 3 Prepare Data
+
+```{r}
+
+HDBresale_sf <- st_as_sf(HDBresale, 
+                         coords = c("LONGTITUDE", "LATITUDE"),
+                         crs = 4326) 
+```
+
+```{r}
+
+HDBresale_sf <- HDBresale_sf %>%
+  st_transform(3414)
+```
+
+```{r}
+# only need to count the # of preschool
+preschool <- st_read("data/rawdata/PreSchoolsLocation.kml")%>%
+  st_transform(crs=3414)
+```
+
+```{r}
+within_350m <- st_is_within_distance(HDBresale_sf, preschool, dist=350)
+
+HDBresale_sf <- HDBresale_sf %>%
+  mutate(preschool_350m = map_int(within_350m, length))
+```
+
+# 4 Calibrate Predictive Model
+
+## 4.1 Import Raw Data
+
+```{r}
+mdata <- read_rds("data/rawdata/mdata.rds")
+```
+
+## 4.2 Data Sampling
+
+Since predictive model like random forest is computational intensive, only 10% data will be randomly selected for predictive modelling:
+
+```{r}
+set.seed(1234)
+HDB_sample <- mdata %>% sample_n(1500)
+```
+
+## 4.3 Check of overlapping point
+
+```{r}
+overlapping_points <- HDB_sample %>%
+  mutate(overlap = lengths(st_equals(.,.)) >1 ) 
+# The `.` represents the data being piped in
+```
+
+```{r}
+kable(head(overlapping_points%>%
+        filter(overlap == "TRUE")))
+```
+
+To avoid model crashes, we need to jitter overlapped points:
+
+```{r}
+HDB_sample <- HDB_sample %>%
+  st_jitter(amount = 1) #jitter 1 meter apart
+```
+
+Let's check if there are any overlapping points again:
+
+```{r}
+overlapping_points <- HDB_sample %>%
+  mutate(overlap = lengths(st_equals(.,.)) >1 )
+
+kable(head(overlapping_points%>%
+        filter(overlap == "TRUE")))
+```
+
+```{r}
+set.seed(1234)
+resale_split <- initial_split(HDB_sample,
+                              prop = 6.67/10,)
+train_data <- training(resale_split)
+test_data <- testing(resale_split)
+```
+
+It's not necessary to build mlr if we are going to build models using GWmodel.
+
+```{r}
+price_mlr <- lm(resale_price ~ floor_area_sqm +
+                  storey_order + remaining_lease_mths +
+                  PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +
+                  PROX_MRT + PROX_PARK + PROX_MALL + 
+                  PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
+                  WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
+                  WITHIN_1KM_PRISCH,
+                data=train_data)
+summary(price_mlr)
+```
+
+```{r}
+check_collinearity(price_mlr)
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+mlr.vif <- check_collinearity(price_mlr)
+par(bg="#f6f6f6")
+plot(mlr.vif) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## 4.4 Import GWR model from Hands-on Ex08
+
+```{r}
+gwr_adaptive <- read_rds("data/model/gwr_adaptive.rds")
+gwr_adaptive
+```
+
+The R-squared of global model (using full dataset) is 0.73 while the R-squared of localized geospatial model (using neighbors' dataset only) is 0.97, suggesting including geospatial info is important for predictive model.
+
+For explanatory model, we need to look at p-value, R-squared, AIC for comparison between global and local models.
+
+we can plot the significance of the variables using resource below:
+
+<https://www.jstatsoft.org/article/view/v063i17>
+
+```{r}
+gwr_adaptive
+```

@@ -38,6 +38,8 @@ website:
             href: Hands-on/Hands-on-Ex07/Hands-on-Ex07.html
           - text: "Hands-on 8: Geographically Weighted Predictive Models"
             href: Hands-on/Hands-on-Ex08/Hands-on-Ex08.html
+          - text: "Hands-on 9: Modelling Geographical Accessibility"
+            href: Hands-on/Hands-on-Ex09/Hands-on-Ex09.html
 
       - text: "In-class Exercises"
         menu:
@@ -55,6 +57,8 @@ website:
             href: In-class/In-class-Ex06/In-class-Ex06.html
           - text: "In-class 7"
             href: In-class/In-class-Ex07/In-class-Ex07.html
+          - text: "In-class 8"
+            href: In-class/In-class-Ex08/In-class-Ex08.html
       - text: "Take-home Exercises"
         menu:
           - text: "Take-home Ex01: Geospatial Analytics for Public Good"
