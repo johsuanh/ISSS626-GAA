@@ -59,6 +59,8 @@ website:
             href: In-class/In-class-Ex07/In-class-Ex07.html
           - text: "In-class 8"
             href: In-class/In-class-Ex08/In-class-Ex08.html
+          - text: "In-class 9"
+            href: In-class/In-class-Ex09/In-class-Ex09.html
       - text: "Take-home Exercises"
         menu:
           - text: "Take-home Ex01: Geospatial Analytics for Public Good"
