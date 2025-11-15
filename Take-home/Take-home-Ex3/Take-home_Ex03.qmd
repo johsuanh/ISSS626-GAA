@@ -1,0 +1,1464 @@
+---
+title: "Take-home Ex03: Modelling HDB Resale Prices with Geographically Weighted Methods"
+author: Johsuan Huang
+date: 2025-11-13
+date-modified: "last-modified"
+description: ""
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+  freeze: true
+  catche: true
+---
+
+# 1 Setting the Scene
+
+Housing is an essential component of household wealth worldwide. Purchasing a home has always represented a major investment for most individuals. The price of housing is influenced by a wide range of factors. Some are macro-level, such as the overall state of the economy or the inflation rate, while others are property-specific. These can be further categorized into structural and locational factors.
+
+Structural factors refer to the characteristics of the property itself, such as size, fittings, and tenure. Locational factors, on the other hand, relate to the neighbourhood context of the property, including proximity to childcare centres, public transport, and shopping facilities.
+
+Traditionally, housing resale price models have been estimated using the Ordinary Least Squares (OLS) method. However, this approach does not account for spatial autocorrelation and spatial heterogeneity, which are commonly present in geographic datasets such as housing transactions. When spatial autocorrelation exists, OLS estimation of housing resale price models may produce biased, inconsistent, or inefficient results (Anselin, 1998). To address these limitations, **Geographically Weighted Models (GWMs)** have been introduced to more accurately calibrate both explanatory and predictive models for housing resale prices.
+
+# 2 Objective
+
+The objective of this take-home exercise is to develop a spatially informed model to determine factors affecting or to predict HDB resale prices in Singapore, making use of appropriate geospatial analytics methods.
+
+The study will focus on four-room flat.
+
+Below is a list of recommended predictors to consider. However, students are free to include other appropriate independent variables.
+
+-   Structural factors
+
+    -   Area of the unit
+    -   Floor level
+    -   Remaining lease
+    -   Age of the unit
+
+-   Location factors
+
+    -   Proxomity to CBD
+
+    -   Proximity to eldercare
+
+    -   Proximity to foodcourt/hawker centres
+
+    -   Proximity to MRT
+
+    -   Proximity to park
+
+    -   Proximity to good primary school
+
+    -   Proximity to shopping mall
+
+    -   Proximity to supermarket
+
+    -   Numbers of kindergartens within 350m
+
+    -   Numbers of childcare centres within 350m
+
+    -   Numbers of bus stop within 350m
+
+    -   Numbers of primary school within 1km
+
+# 3 The Data
+
+The **HDB Resale Flat Prices** provided by [**Data.gov.sg**](https://isss626-ay2025-26aug.netlify.app/take-home_ex03) is used as the core data set.
+
+#### add the data used in the model
+
+# 4 Importing packages
+
+-   jsonlite: JSON parser and generator
+-   progess: Configurable ***Progress*** bars, they may include percentage, elapsed time, and/or the estimated completion time
+
+```{r}
+pacman::p_load(httr,jsonlite,sf, spdep, progress, tmap,
+               tidyverse,knitr, spdep,GWmodel, rsample,
+               SpatialML,Metrics,kableExtra, randomForestExplainer,
+               performance,lubridate,colorspace,ggdist, ggridges, ggthemes,
+               plotly,treemap,ggrepel,scales)
+```
+
+# 5 Data Import and Preperation
+
+## 5.1 MPSZ19 Geospatial Data
+
+```{r}
+mpsz19 <- read_rds("data/mpsz.rds")
+st_crs(mpsz19)
+```
+
+## 5.2 HDB Resale Data
+
+As we are building a predictive model for 4‑Room HDB resale prices, the code below filters for flats of type 4‑Room and resale records between July 2024 and September 2025
+
+```{r}
+HDBresale <- read_csv("data/rawdata/ResaleflatpricesbasedonregistrationdatefromJan2017onwards.csv")%>%
+  filter(flat_type=="4 ROOM")%>%
+  filter(month >="2025-01" & month < "2025-10")
+```
+
+Let's check the data structure:
+
+```{r}
+kable(str(HDBresale))
+```
+
+After filtering, there are total 8,679 observations for the study.
+
+The code below check wether data has missing values:
+
+```{r}
+any(is.na(HDBresale))
+```
+
+### 5.2.1 Geocode HDB resale data
+
+Since some addresses use “St.” to mean *Saint* instead of *Street*, we use `gsub()` to replace the prefix and avoid ambiguity:
+
+```{r}
+#| eval: false
+HDBresale$street_name <- gsub("ST\\.","SAINT",HDBresale$street_name) 
+```
+
+Next, since we need the exact longitude and latitude for further geospatial modeling, we use OneMap’s API to retrieve these coordinates for each observation:
+
+```{r}
+#| eval: false
+
+geocode <- function(block, streetname) {
+  base_url <- "https://www.onemap.gov.sg/api/common/elastic/search"
+  address <- paste(block, streetname)
+  
+  query <- list(
+    searchVal = address,
+    returnGeom = "Y",
+    getAddrDetails = "N",
+    pageNum = "1"
+  )
+  
+  res <- GET(base_url, query = query)
+  restext <- content(res, as = "text", encoding = "UTF-8")
+  json <- fromJSON(restext, simplifyVector = FALSE)
+  
+  # Handle missing results safely
+  if (is.null(json$results) || length(json$results) == 0) {
+    return(data.frame(LATITUDE = NA, LONGITUDE = NA))
+  }
+  
+  result <- json$results[[1]]
+  
+  # extract LATITUDE and LONGITUDE w/o warning messages
+  lat <- suppressWarnings(as.numeric(result$LATITUDE))
+  lon <- suppressWarnings(as.numeric(result$LONGITUDE))
+  
+  return(data.frame(LATITUDE = lat, LONGITUDE = lon))
+}
+```
+
+```{r}
+#| eval: false
+
+#HDBresale$LATITUDE <- 0
+#HDBresale$LONGTITUDE <- 0
+
+for (i in seq_len(nrow(HDBresale))) {
+  if (HDBresale$LATITUDE[i] == 0 ||
+      HDBresale$LONGTITUDE[i] == 0) {
+    
+    temp_output <- geocode(HDBresale[i, 4], HDBresale[i, 5])
+    
+    HDBresale$LATITUDE[i] <- temp_output$LATITUDE
+    HDBresale$LONGTITUDE[i] <- temp_output$LONGITUDE
+  }
+}
+```
+
+```{r}
+#| eval: false
+
+write_rds(HDBresale,"data/HDBresale.rds")
+```
+
+```{r}
+HDBresale <- read_rds("data/HDBresale.rds") 
+```
+
+```{r}
+#| echo: false
+
+HDBresale <- HDBresale%>%
+  filter(month >="2025-01" & month < "2025-10")
+```
+
+### 5.2.2 Prepare Data
+
+For the HDB resale data, we focus on the attributes `storey_range`, `floor_area_sqm`, unit age, and remaining lease. In this section, we prepare the data accordingly.
+
+#### 5.2.2.1 Storey Range
+
+Before getting started, let's visualize the storey range first:
+
+```{r}
+ggplot(HDBresale, aes(x = storey_range)) +
+  geom_bar(fill = "#93A4CC", color = "grey30") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3, color = "grey30") +
+  labs(title = "Distribution of HDB Storey Ranges",
+       x = "Storey Range",
+       y = "Count") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    panel.grid = element_blank(),     
+    axis.ticks = element_line(color = "grey30"),
+    axis.text.y = element_blank(),         
+    axis.ticks.y = element_blank(),        
+    axis.line.x = element_line(color = "grey30"),
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10))
+  )
+```
+
+We can observe the right-skewed distribution of storey Range for 4-room HDB, around 77.5% of units are located bewteen 1 to 12 floor.
+
+The distribution of `storey_range` for 4-room HDB units is right-skewed, with approximately 77.5% of units located between the 1st and 12th floors. To reduce potential overfitting in predictive models, we categorize floor levels into five groups: Very Low, Low, Mid, Mid-high and Very High based on common HDB classifications as discussed in [PropertyGuru’s Q&A community](https://www.propertyguru.com.sg/property-investment-questions/what-is-the-standard-of-low-floor-middle-floor-high-floor-and-penthouse-i-mean-to-which-floor-is-it-middle-floor-and-from-which-floor-is-it-high-floor-thank-you-497576) and [Singapore Public Housing Wiki](https://singaporepublichousing.fandom.com/wiki/HDB_Elevation_-_Ground/Low/Mid/High_Floor_Units), with slight adjustments to align with the distribution in our dataset:
+
+-   Very Low (1) = floors  1‑3
+-   Low (2) = floors  4‑6
+-   Mid (3) = floors  7-9
+-   Mid‑High (4) = floors  10-21
+-   High(5) = floors  22+
+
+The code below extracts the maximum floor level for each storey range and label it based on classification above:
+
+```{r}
+HDBresale$storey_max <- sapply(strsplit(HDBresale$storey_range, " TO "), function(x) max(as.numeric(x)))
+
+HDBresale$floor_level <- cut(
+  HDBresale$storey_max,
+  breaks = c(0, 3, 6, 9, 21, Inf),
+  labels = c(1, 2, 3, 4, 5), 
+  include.lowest = TRUE
+)
+
+table(HDBresale$floor_level)
+
+```
+
+Next, we plot the graph again:
+
+```{r}
+ggplot(HDBresale, aes(x = floor_level)) +
+  geom_bar(fill = "#93A4CC", color = "grey30") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3, color = "grey30") +
+  labs(title = "Distribution of HDB Floor Level",
+       x = "Floor Level",
+       y = "Count") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    panel.grid = element_blank(),           
+    axis.text.y = element_blank(),         
+    axis.ticks.y = element_blank(),
+    axis.ticks = element_line(color = "grey30"),
+    axis.line.x = element_line(color = "grey30"),
+    axis.text.x = element_text(hjust = 0.5, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10))
+  )
+```
+
+After combining the storey ranges, we can see that mid-high floors (10–21) have the highest count, with 5,406 units
+
+#### 5.2.2.2 Unit Age
+
+[**HDB’s Minimum Occupation Period (MOP)**](https://www.hdb.gov.sg/residential/selling-a-flat/eligibility) policy regulates how long a HDB buyer must live in the flat before allowed to sell or rent it out entirely. Here's the summary:
+
++-------------------------------------+----------------------------------------------+--------------------------------+
+| Mode of Purchase                    | MOP Duration                                 | Notes                          |
++=====================================+==============================================+================================+
+| BTO / SBF (Standard flats)          | 5 years                                      | Typical case                   |
++-------------------------------------+----------------------------------------------+--------------------------------+
+| Plus / Prime flats                  | 10 years                                     | For highly desirable locations |
++-------------------------------------+----------------------------------------------+--------------------------------+
+| DBSS flats                          | 5 years                                      | Built by private developers    |
++-------------------------------------+----------------------------------------------+--------------------------------+
+| SERS (before 7 Apr 2022)            | 7 years from the date of selection           | Transitional rule              |
+|                                     |                                              |                                |
+|                                     | 5 years from the date of collecting the keys |                                |
++-------------------------------------+----------------------------------------------+--------------------------------+
+| SERS (after 7 Apr 2022)             | 5 years                                      | Same as standard flats         |
++-------------------------------------+----------------------------------------------+--------------------------------+
+| Resale flat (Standard/Unclassified) | 5 years                                      |                                |
++-------------------------------------+----------------------------------------------+--------------------------------+
+| Resale flat (Plus / Prime)          | 10 years                                     |                                |
++-------------------------------------+----------------------------------------------+--------------------------------+
+
+Next, we calculate the age of each unit by subtracting the `lease_commence_date` from the year of the resale date and visualize the distribution:
+
+```{r}
+HDBresale <- HDBresale%>%
+  mutate(resale_date = as.Date(paste0(month, "-01")),
+         unit_age = year(resale_date)-lease_commence_date)
+
+summary(HDBresale$unit_age)
+```
+
+The summary indicates that the minimum unit age is 4 years. To verify whether any flats were sold before completing the 5-year Minimum Occupation Period (MOP), the code checks for cases with lease commencement dates from 2022 onward:
+
+```{r}
+kable(HDBresale %>% filter(unit_age<5 & lease_commence_date>=2022))
+```
+
+The result returns NA, indicating that there are no cases from 2022 onward with a unit age of less than 5 years.
+
+The code below plots the distribution of unit age with boundaries set between 0 and 60 years and a bin width of 5:
+
+```{r}
+
+ggplot(HDBresale, aes(x = unit_age)) +
+  geom_histogram(boundary = 0, binwidth = 5,fill = "#93A4CC", color = "grey30") +
+  geom_text(stat = 'bin', binwidth = 5, boundary = 0,
+            aes(label = ..count..), vjust = -0.7, size = 3, color = "grey30") +
+  labs(title = "Distribution of HDB Unit Age",
+       x = "Unit Age (years)",
+       y = "Count") +
+  scale_x_continuous(
+    limits = c(0, 60),               
+    breaks = seq(0, 60, by = 5)     
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    panel.grid = element_blank(),           
+    axis.text.y = element_blank(),         
+    axis.ticks.y = element_blank(),        
+    axis.line.x = element_line(color = "grey30"),
+    axis.ticks = element_line(color = "grey30"),
+    axis.text.x = element_text(hjust = 0.5, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10))
+  )
+
+
+```
+
+The distribution of unit age for resale HDBs is multimodal, with peaks at 5–10 years (1,907 units), 25–30 years (1,089 units), and 35–40 years (1,397 units).
+
+#### 5.2.2.3 Remaining Lease
+
+Currently the attribute `remaining_lease` is described in character. The function below converts it into the numeric value:
+
+```{r}
+parse_remaining_lease <- function(x) {
+  years <- str_extract(x, "(\\d+)\\s*years?") %>% str_extract("\\d+") %>% as.numeric()
+  months <- str_extract(x, "(\\d+)\\s*months?") %>% str_extract("\\d+") %>% as.numeric()
+  
+  if (is.na(years)) years <- 0
+  if (is.na(months)) months <- 0
+  
+  years + months/12
+}
+
+HDBresale <- HDBresale %>%
+  mutate(remaining_lease = round(sapply(remaining_lease, parse_remaining_lease), 1))
+```
+
+#### 5.2.2.4 Price Per sqm
+
+```{t}
+HDBresale <- HDBresale %>%
+  mutate(price_per_sqm = round(resale_price / floor_area_sqm, 1))
+
+```
+
+### 5.2.3 Convert Data into sf Format
+
+After geocoding, we convert the data into an `sf` dataframe using `st_as_sf()` and the coordinate information.
+
+```{r}
+HDBresale_sf <- st_as_sf(HDBresale, 
+                         coords = c("LONGTITUDE", "LATITUDE"),
+                         crs = 4326) 
+HDBresale_sf
+```
+
+Next, we transform the `sf` data from WGS84 coordinate system to SVY21 for modelling purpose:
+
+```{r}
+HDBresale_sf <- HDBresale_sf %>%
+  st_transform(3414)
+```
+
+After transformation, let's quickly plot the resale HDB distribution using tmap:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_sf)+
+  tm_dots(size = 0.05)+
+  tm_layout(bg.color = "#f6f6f6",outer.bg.color = "#f6f6f6",frame = FALSE)+
+  tm_legend(frame = FALSE,bg.color = "#f6f6f6")+
+  tm_title("HDB Resale Unit Locations",
+           position = tm_pos_out("center", "top", "center"))
+```
+
+## 5.3 Housing Price Factor Data
+
+Next, we import data that are highly likely to influence resale prices, and calculate the distance to or the number of nearby facilities from each unit, including: distance to the CBD, eldercare centres, food courts, MRT stations, parks, reputable primary schools, shopping malls, and supermarkets; the number of kindergartens and childcare centres within 350 m; the number of primary schools within 1 km; and the number of bus stops within 350 m:
+
+### 5.3.1 Proximity to CBD
+
+According to [URA](https://www.ura.gov.sg/Corporate/Guidelines/Urban-Design/Downtown-Core) and [Wikipedia](https://en.wikipedia.org/wiki/Downtown_Core), the Central Business District (CBD) is located within the Downtown Core planning area and comprises **eight subzones: Anson, Cecil, Clifford Pier, Maxwell, Phillip, Raffles Place, Tanjong Pagar and Marina Centre**. We will combine these eight subzones into a single union polygon and calculate the distance from each HDB unit to the CBD.
+
+```{r}
+CBD <- mpsz19 %>%
+  filter(SUBZONE_N %in% c("ANSON", "CECIL", "CLIFFORD PIER", "MAXWELL",
+                          "PHILLIP", "RAFFLES PLACE", "TANJONG PAGAR", "MARINA CENTRE"))%>%
+  st_union()
+```
+
+```{r}
+HDBresale_sf <- HDBresale_sf %>%
+  mutate(
+    dist_to_CBD = st_distance(., CBD) %>%
+                  as.numeric() %>%          
+                  round(1)                  
+  )
+```
+
+The CBD area is shown in green on the map:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", alpha = 0.2, border.col = "grey50") +  
+tm_shape(CBD) +
+  tm_polygons(col = "#8EB859", alpha = 0.6, border.col = "#8EB859") +          
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.05) +                              
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_legend(frame = FALSE, bg.color = "#f6f6f6") +
+tm_title("HDB Resale Unit Locations x CBD",
+         position = tm_pos_out("center", "top", "center"))
+
+```
+
+### 5.3.2 Proximity to MRT / Count of MRT within 600m
+
+```{r}
+Sys.setenv(OGR_GEOMETRY_ACCEPT_UNCLOSED_RING = "NO")
+
+MRT <- st_read(dsn = "data/rawdata/TrainStation_Aug2025",
+               layer = "RapidTransitSystemStation") %>%
+  st_buffer(0) %>% 
+  st_transform(3414)%>%
+  filter(!st_is_empty(geometry)) %>%
+  st_centroid() 
+```
+
+```{r}
+dist_matrix <- st_distance(HDBresale_sf, MRT)
+within_600m <- st_is_within_distance(HDBresale_sf, MRT, dist=600)
+
+HDBresale_sf <- HDBresale_sf %>%
+  mutate(
+    dist_to_MRT = apply(dist_matrix, 1, min) %>%
+      as.numeric() %>%
+      round(1),
+    MRT_600m = map_int(within_600m, length)
+  )
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,alpha=0.4) +  
+tm_shape(MRT) +
+  tm_dots(size = 0.5, fill="orange",shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Unit Locations x MRT Stations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.3 Top 50 Primary School
+
+The school information is downloaded from data.gov.sg and the rank information is based on P1 Registration Singapore
+
+```{r}
+#| eval: false
+
+primary_school_rank <- read_csv("data/rawdata/PrimarySchool_Rank.csv")
+primary_school <- read_csv("data/rawdata/Generalinformationofschools.csv") %>%
+  left_join(primary_school_rank, by = c("school_name" ="School"))%>%
+  select(c("school_name","postal_code","address",`Rank (2024)`))%>%
+  filter(`Rank (2024)`<= 50)%>%
+  arrange(`Rank (2024)`)
+
+```
+
+```{r}
+#| eval: false
+
+geocode <- function(address) {
+  base_url <- "https://www.onemap.gov.sg/api/common/elastic/search"
+  
+  query <- list(
+    searchVal = address,
+    returnGeom = "Y",
+    getAddrDetails = "N",
+    pageNum = "1"
+  )
+  
+  res <- GET(base_url, query = query)
+  restext <- content(res, as = "text", encoding = "UTF-8")
+  json <- fromJSON(restext, simplifyVector = FALSE)
+  
+  # Handle missing results safely
+  if (is.null(json$results) || length(json$results) == 0) {
+    return(data.frame(LATITUDE = NA, LONGITUDE = NA))
+  }
+  
+  result <- json$results[[1]]
+  
+  # extract LATITUDE and LONGITUDE w/o warning messages
+  lat <- suppressWarnings(as.numeric(result$LATITUDE))
+  lon <- suppressWarnings(as.numeric(result$LONGITUDE))
+  
+  return(data.frame(LATITUDE = lat, LONGITUDE = lon))
+}
+
+```
+
+```{r}
+#| eval: false
+
+primary_school$LATITUDE <- 0
+primary_school$LONGITUDE <- 0
+
+for (i in seq_len(nrow(primary_school))) {
+  if (primary_school$LATITUDE[i] == 0 ||
+      primary_school$LONGTITUDE[i] == 0) {
+    
+    temp_output <- geocode(primary_school[i, 3, drop = TRUE])
+    
+    primary_school$LATITUDE[i] <- temp_output$LATITUDE
+    primary_school$LONGITUDE[i] <- temp_output$LONGITUDE
+  }
+}
+```
+
+```{r}
+#| eval: false
+
+primary_school <- primary_school%>%
+    st_as_sf(coords = c("LONGITUDE", "LATITUDE"),crs = 4326)%>%
+    st_transform(3414) 
+
+write_rds(primary_school,"data/primary_school.rds")
+```
+
+```{r}
+primary_school <- read_rds("data/primary_school.rds")
+```
+
+### 5.3.6 Proximity to Other facilities
+
+Other facilities include parks, supermarkets, hawker centres, kindergartens, childcare centres, and clinics are also influential to the resale prices. To improve the efficiency, we will build formulas with a consistent pipeline to calculate the **nearest distance from each HDB resale unit to the facility**. For each facility:
+
+1.  Read the GeoJSON and transform to the CRS 3414 as `HDBresale_sf`.
+2.  Compute the **distance matrix** between HDB units and the facility points using `st_distance()`.
+3.  Extract the **minimum distance** for each HDB unit.
+4.  Round and store the result in a **new column** in `HDBresale_sf`.
+
+```{r}
+#| eval: false
+
+add_nearest_distance <- function(hdb_sf, facility_sf, new_col_name) {
+  
+  facility_sf <- st_transform(facility_sf, 3414)
+  
+  dist_matrix <- st_distance(hdb_sf, facility_sf)
+  nearest_dist <- apply(dist_matrix, 1, min) %>% 
+                  as.numeric() %>% 
+                  round(1)
+    hdb_sf <- hdb_sf %>%
+    mutate(!!new_col_name := nearest_dist) #tidy evaluation
+  
+  return(hdb_sf)
+}
+
+
+add_nearby_count <- function(hdb_sf, facility_sf,new_col_name,radius = 350) {
+  
+  facility_sf <- st_transform(facility_sf, 3414)
+  nearby_list <- st_is_within_distance(hdb_sf, facility_sf, dist = radius)
+  
+  nearby_count <- lengths(nearby_list)
+
+  hdb_sf <- hdb_sf %>%
+    mutate(!!new_col_name := nearby_count)
+  
+  return(hdb_sf)
+}
+
+```
+
+```{r}
+#| eval: false
+
+# Primary School
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, primary_school, "dist_top_primary_sch")
+
+# BusStop
+BusStop <- st_read(dsn = "data/rawdata/BusStop_Aug2025",
+               layer = "BusStop") %>%st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, BusStop, "dist_busStop")
+
+
+# Mall
+mall <- read_csv("data/rawdata/singapore_malls_pois.csv")%>%
+st_as_sf(coords = c("lon", "lat"),crs = 4326)%>%
+st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, mall, "dist_mall")
+
+# Hawker
+hawker <- st_read("data/rawdata/HawkerCentresGEOJSON.geojson") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, hawker, "dist_hawker")
+
+# Supermarket
+supermarket <- st_read("data/rawdata/SupermarketsGEOJSON.geojson") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, supermarket, "dist_supermarket")
+
+# Park
+park <- st_read("data/rawdata/Parks.geojson") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, park, "dist_park")
+
+# Kindergartens
+kindergartens <- st_read("data/rawdata/Kindergartens.geojson") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, kindergartens, "dist_kindergarten")
+
+# ChildCareServices
+childcare <- st_read("data/rawdata/ChildCareServices.geojson") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, childcare, "dist_childcare")
+
+# Preschool
+preschool <- st_read("data/rawdata/PreSchoolsLocation.kml") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, preschool, "dist_preschool")
+
+# Clinics
+clinics <- st_read("data/rawdata/CHASClinics.geojson") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, clinics, "dist_clinics")
+
+# Eldercare
+eldercare <- st_read(dsn = "data/rawdata/EldercareServicesSHP",
+               layer = "ELDERCARE") %>% st_transform(3414)
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, eldercare, "dist_elderlycare")
+
+
+```
+
+```{r}
+#| eval: false
+
+HDBresale_sf <- add_nearby_count(HDBresale_sf, park,"park_600m",600)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, preschool, "preschool_350m",350)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, BusStop, "busStop_350m",350)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, childcare, "childcare_350m",350)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, kindergartens, "kindergartens_350m",350)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, primary_school, "top_primary_sch_1km",1000)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, supermarket, "supermarket_500m",500)
+```
+
+```{r}
+#| eval: false
+write_rds(HDBresale_sf,"data/HDBresale_sf.rds") 
+```
+
+```{r}
+HDBresale_sf <- read_rds("data/HDBresale_sf.rds")
+```
+
+# 6 Exploratory Data Analysis
+
+## 6.1 Visualize the distribution for derived variables
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+df <- HDBresale_sf[, c(7, 10, 11, 13, 15,16,18:38)] %>% st_drop_geometry()
+df$floor_level <- as.numeric(df$floor_level)
+
+HDBresale_sf_num <- df %>% 
+  pivot_longer(cols = everything(), 
+               names_to = "variable", 
+               values_to = "value")
+
+ggplot(HDBresale_sf_num, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "#93A4CC", color = "grey30") +
+  facet_wrap(~ variable, scales = "free") +
+  labs(title = "Histograms of All Numeric Variables",
+       x = "", y = "Frequency") +
+  scale_x_continuous(labels = comma) +
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14, hjust = 0.5),
+        panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank()
+        )
+```
+
+::: callout-note
+## Observation
+
+most of variables are right-skewed
+:::
+
+## 6.2 Average Resale Price per sqm vs Total Resale Units by Subzone
+
+The code below calculate the resale units and average resale price in each subzone, if no resale records, then won't count. In addition, the second code filter the subzones with highest average resale price by jenks method with n=5, where is above SGD 1,028,435
+
+```{r}
+price_VS_units_sold <- st_join(mpsz19, HDBresale_sf) %>% 
+  group_by(PLN_AREA_N,SUBZONE_N) %>%       
+  summarise(
+    count = sum(!is.na(resale_price)),  
+    avg_price = mean(resale_price, na.rm = TRUE),
+    avg_price_sqm = mean(price_per_sqm, na.rm = TRUE),
+    avg_remaining_lease = mean(remaining_lease, na.rm = TRUE),
+  .groups = "drop"
+  )
+
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tmap_mode("view")
+tm_shape(price_VS_units_sold) +
+  tm_polygons(alpha=0.5,lwd=0.2) +
+  tm_bubbles(
+    size = "count",
+    col = "avg_price_sqm",
+    col.legend = tm_legend("Avg Price"),
+    palette = "-hcl.heat",
+    alpha = 1,
+    scale = 1.5,
+    border.col = "#f6f6f6",
+    title.size = tm_legend(title = "Resale Units")) +
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("Average HDB Resale Price vs Resale Units by Subzone",
+         position = tm_pos_out("center", "top", "center"))+
+  tm_view(set_zoom_limits = c(11,14))
+
+tmap_mode("plot")
+
+```
+
+::: callout-note
+## Observation
+
+The resale price per sqm gradually decreased from CBD to Rest of singapore. However, we also can observe the resale units also
+:::
+
+## 6.3 Top 10 Subzones by Average Resale Price & Factors
+
+Since we are interested in understanding which factors influence resale prices the most, we vary the fill aesthetic by different variables and use ggdist’s `stat_halfeye()` plot to visualize the distributions
+
+```{r}
+top10_subzones <- price_VS_units_sold %>%
+  arrange(desc(avg_price_sqm)) %>%   
+  slice_head(n = 10)              
+
+HDBresale_sf <- st_join(HDBresale_sf, mpsz19[, c("SUBZONE_N", "REGION_N")], left = TRUE)
+
+top10_resale <- HDBresale_sf %>%
+  filter(SUBZONE_N %in% top10_subzones$SUBZONE_N)
+```
+
+::: panel-tabset
+## Subzone
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+ggplot(top10_resale, aes(
+  x = price_per_sqm,                      
+  y = reorder(SUBZONE_N, price_per_sqm, FUN = median)
+)) +
+  stat_halfeye(adjust = 1,
+               fill="#93A4CC",
+               justification = -0.2,
+               .width = 0,
+               point_colour = NA)+
+  geom_boxplot(width = 0.2, fill = "white", outlier.size = 1) +
+  labs(
+    title = "Top 10 Subzones by Average Resale Price Per sqm",
+    x = "Resale Price Per sqm (SGD)",
+    y = "Subzone"
+  ) +
+  scale_x_continuous(labels = comma) +
+  theme_ridges() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    axis.line.x = element_line(color = "grey30"),
+    axis.ticks = element_line(color = "grey30"),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(hjust = 0.5, size = 8),
+    axis.text.x = element_text(hjust = 0.5, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10)),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 6),
+    legend.background = element_rect(fill = "#f6f6f6")
+  )
+```
+
+## Flat Model
+
+```{r}
+ggplot(top10_resale, aes(
+  x = price_per_sqm,                      
+  y = reorder(SUBZONE_N, price_per_sqm, FUN = median),
+  fill = flat_model,
+)) +
+  stat_halfeye(adjust = 2,
+               alpha = 0.8,
+               justification = -0.2,
+               .width = 0,
+               point_colour = NA)+
+  geom_boxplot(width = 0.1, fill = "white", outlier.size = 1) +
+  labs(
+    title = "Top 10 Subzones by Average Resale Price Per sqm & Flat Model",
+    x = "Resale Price Per sqm (SGD)",
+    y = "Subzone"
+  ) +
+  scale_x_continuous(labels = comma) +
+  theme_ridges() +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    axis.line.x = element_line(color = "grey30"),
+    axis.ticks = element_line(color = "grey30"),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(hjust = 0.5, size = 8),
+    axis.text.x = element_text(hjust = 0.5, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10)),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 8),
+    legend.background = element_rect(fill = "#f6f6f6")
+  )
+```
+
+## Floor Level
+
+```{r}
+ggplot(top10_resale, aes(
+  x = price_per_sqm,                      
+  y = reorder(SUBZONE_N, price_per_sqm, FUN = median),
+  fill = floor_level,
+)) +
+  stat_halfeye(adjust = 2,
+               alpha = 0.8,
+               justification = -0.2,
+               .width = 0,
+               point_colour = NA)+
+  geom_boxplot(width = 0.1, fill = "white", outlier.size = 1) +
+  scale_x_continuous(labels = comma) +
+  labs(
+    title = "Top 10 Subzones by Average Resale Price Per sqm & Floor Level",
+    x = "Resale Price Per sqm (SGD)",
+    y = "Subzone"
+  ) +
+  theme_ridges() +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    axis.line.x = element_line(color = "grey30"),
+    axis.ticks = element_line(color = "grey30"),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(hjust = 0.5, size = 8),
+    axis.text.x = element_text(hjust = 0.5, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10)),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 8),
+    legend.background = element_rect(fill = "#f6f6f6")
+  )
+```
+
+# Number of Top 50 Primary School within 1 KM
+
+```{r}
+top10_resale$top_primary_sch_1km <- as.factor(top10_resale$top_primary_sch_1km)
+
+ggplot(top10_resale, aes(
+  x = price_per_sqm,                      
+  y = reorder(SUBZONE_N, price_per_sqm, FUN = median),
+  fill = top_primary_sch_1km,
+)) +
+  stat_halfeye(adjust = 2,
+               alpha = 0.8,
+               justification = -0.2,
+               .width = 0,
+               point_colour = NA)+
+  geom_boxplot(width = 0.1, fill = "white", outlier.size = 1) +
+  scale_x_continuous(labels = comma) +
+  labs(
+    title = "Top 10 Subzones by Average Resale Price Per sqm \n & Number of Top Primary School within 1 KM ",
+    x = "Resale Price Per sqm (SGD)",
+    y = "Subzone"
+  ) +
+  theme_ridges() +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5,
+                              margin = ggplot2::margin(b = 15)),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    axis.line.x = element_line(color = "grey30"),
+    axis.ticks = element_line(color = "grey30"),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(hjust = 0.5, size = 8),
+    axis.text.x = element_text(hjust = 0.5, size = 8,
+                               margin = ggplot2::margin(t = 10)),
+    axis.title.x = element_text(size = 10,
+                               margin = ggplot2::margin(t = 10)),
+    
+    legend.position = "right",
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 8),
+    legend.background = element_rect(fill = "#f6f6f6")
+  )
+```
+:::
+
+## 6.4 Scatter Plot between Resale Prices and Independent Variables
+
+```{r}
+#| fig.width: 12
+#| fig.height: 12
+vars_to_compare <- setdiff(names(df), c("resale_price","price_per_sqm"))
+
+df_plot <- df %>%
+  mutate(across(all_of(vars_to_compare))) %>%
+  pivot_longer(
+    cols = all_of(vars_to_compare),
+    names_to = "variable",
+    values_to = "value"
+  )
+
+ggplot(df_plot, aes(x = value, y = price_per_sqm)) +
+  geom_point(alpha = 0.3, color="#93A4CC") +
+  geom_smooth(method = "lm", color = "black") +
+  facet_wrap(~ variable, scales = "free_x", ncol = 4) +
+  labs(
+    title = "Scatter Plots of Derived Variables vs Resale Price",
+    x = "Value",
+    y = "Resale Price (SGD)"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    strip.background = element_rect(fill = "#e1e1e1"),
+    axis.text.x = element_text(angle = 0, hjust = 1, size = 8),
+    panel.grid = element_blank()
+  )
+
+```
+
+### 6.4.1 Remaining Lease
+
+```{r}
+#| fig.width: 15
+#| fig.height: 12
+
+ggplot(HDBresale_sf %>% st_drop_geometry(), 
+       aes(x = remaining_lease, 
+           y = resale_price, 
+           color = REGION_N)) +
+  geom_point(alpha = 0.6, size = 2) +
+  geom_text_repel(
+    aes(label = SUBZONE_N),
+    size = 3,
+    box.padding = 0.3,
+    point.padding = 0.5,
+    max.overlaps = 8
+  ) +
+  scale_color_brewer(palette = "Set2") +
+  labs(
+    title = "Remaining Lease vs Resale Price",
+    x = "Remaining Lease (years)",
+    y = "HDB Resale Price (SGD)",
+    color = "Planning Region"
+  ) +
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14, hjust = 0.5),
+        panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank()
+        )
+
+```
+
+## 6.5 Treemap by Planning Region, Subzone and Flatmodel
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+flat_summary <- HDBresale_sf %>%
+  st_drop_geometry() %>%
+  group_by(flat_model) %>%
+  summarise(
+    median_price = median(resale_price, na.rm = TRUE),
+    units_sold = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(median_price) %>%
+  mutate(flat_model = factor(flat_model, levels = flat_model))  # order factor
+
+ggplot(HDBresale_sf %>% st_drop_geometry(), 
+       aes(x = factor(flat_model, levels = flat_summary$flat_model), 
+           y = resale_price)) +
+  geom_boxplot(alpha = 0.7, outlier.size = 1, fill="#93A4CC") +
+  # units sold
+  geom_point(data = flat_summary, 
+             aes(x = flat_model, y = median_price, size = units_sold),
+             color = "black", alpha = 0.6) +
+  scale_size_continuous(name = "Units Sold") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "HDB Resale Price by Flat Model (Ordered by Median Price)",
+    x = "Flat Model",
+    y = "Resale Price (SGD)",
+    fill = "Flat Model"
+  ) +
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 8),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    legend.background = element_rect(fill = "#f6f6f6")
+  )
+
+```
+
+```{r}
+treemap_data <- HDBresale_sf %>%
+  st_drop_geometry() %>%  # remove geometry for speed
+  group_by(REGION_N,SUBZONE_N,flat_model) %>%
+  summarise(
+    count = n(),
+    med_resale_price= median(resale_price, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+par(bg = "#f6f6f6") 
+
+treemap(treemap_data,
+        index=c("flat_model","REGION_N","SUBZONE_N"),
+        vSize="count",
+        vColor="med_resale_price",
+        sortID = "REGION_N",
+        type="value",
+        title="4-Room HDB Resale Transactions by Planning Region, Flat Model & Subzone: Jul 2024 – Jun 2025",
+        title.legend = "Median Resale Price"
+        )
+```
+
+::: callout-note
+## Observation
+
+From both box-plot and tree map, We can see Model A is the most common model across all the region. Based on the treemap, we can observe that although overall resale price is mainly affected by location, different model like Type S1 vs standard also has huge difference, hence, the model type should also considered as variable for the predictive model.
+:::
+
+The model will be split into 4 groups based on their box plot distribution:
+
+-   Low (1): Standard, Simplified, Improved, Model A2, New Genegration
+-   Mid (2): Model A, Premium Apartment, Adjoined Flat
+-   Mid-High (3): DBSS, Terrace
+-   High (4): Premium Apartment Loft, Type S1
+
+```{r}
+HDBresale_sf <- HDBresale_sf %>%
+  mutate(model_group = case_when(
+    flat_model %in% c("Standard", "Simplified", "Improved", "Model A2", "New Generation") ~ 1,
+    flat_model %in% c("Model A", "Premium Apartment", "Adjoined flat") ~ 2,
+    flat_model %in% c("DBSS", "Terrace") ~ 3,
+    flat_model %in% c("Premium Apartment Loft", "Type S1") ~ 4,
+    TRUE ~ NA 
+  ))
+```
+
+# 7 Calibrate Explanatory Model
+
+## 7.1 **Computing Correlation Matrix**
+
+```{r}
+mdata <- HDBresale_sf %>%
+  arrange(resale_date)%>%
+  select(price_per_sqm, everything(), 
+         -c(month,town,flat_type,block,street_name,storey_max,storey_range,flat_model,
+            lease_commence_date,SUBZONE_N,REGION_N,resale_price,resale_date))
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+par(bg="#f6f6f6")
+
+mdata_nogeo <- mdata %>% 
+  st_drop_geometry() %>%
+  mutate(across(where(is.factor), ~ as.numeric(.)))
+
+corrplot::corrplot(cor(mdata_nogeo[, 2:23]),
+         diag = FALSE, 
+         tl.pos = "td", 
+         tl.cex = 1, 
+         method = "number",
+         type = "upper")
+```
+
+From the correlation matrix above, we observe that three pairs of independent variables are highly correlated:
+
+-   **Remaining lease vs. unit_age (-1):** These variables capture the same concept and are interchangeable. Therefore, `unit_age` will be dropped.
+
+-   **dist_childcare vs. dist_preschool (0.99):** Since preschool has more data points, `dist_childcare` will be removed.
+
+-   **preschool_350m vs. childcare_350m (0.97):** For the same reason as above, `childcare_350m` will be dropped.
+
+    ```{r}
+    mdata <- mdata %>%
+      select(-c(unit_age,dist_childcare,childcare_350m))
+    ```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+par(bg="#f6f6f6")
+
+mdata_nogeo <- mdata %>% 
+  st_drop_geometry() %>%
+  mutate(across(where(is.factor), ~ as.numeric(.)))
+
+corrplot::corrplot(cor(mdata_nogeo[, 2:23]),
+         diag = FALSE, 
+         tl.pos = "td", 
+         tl.cex = 1, 
+         method = "number",
+         type = "upper")
+```
+
+```{r}
+mdata <- mdata %>%
+  mutate(
+    model_group = as.factor(model_group),
+    floor_level = as.factor(floor_level)   # your 5-level bin
+  )
+```
+
+## 7.3 **Building Hedonic Pricing Models using GWmodel**
+
+### 7.3.1 Compute fixed bandwith
+
+```{r}
+#| eval: false
+bw_fixed_CV <- bw.gwr(
+  formula = price_per_sqm ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_park +
+    dist_kindergarten + dist_preschool + dist_clinics + dist_elderlycare +
+    MRT_600m + park_600m + preschool_350m + busStop_350m + kindergartens_350m +
+    top_primary_sch_1km + supermarket_500m + model_group,
+  data = mdata,
+  approach = "CV",
+  kernel = "gaussian",
+  adaptive = FALSE,
+  longlat = FALSE
+)
+```
+
+The fixed bandwidth is 658.4362 using CV method
+
+```{r}
+#| eval: false
+write_rds(bw_fixed_CV,"data/bw_fixed_CV.rds")
+```
+
+```{r}
+#| eval: false
+
+#bw_fixed_CV<- read_rds("data/bw_fixed_CV.rds")
+gwr_fixed_CV <- gwr.basic(
+  formula = price_per_sqm ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_park +
+    dist_kindergarten + dist_preschool + dist_clinics + dist_elderlycare +
+    park_600m + preschool_350m + busStop_350m + kindergartens_350m +
+    top_primary_sch_1km + supermarket_500m + model_group, 
+  data=mdata, 
+  bw=bw_fixed_CV, 
+  kernel = 'gaussian', 
+  longlat = FALSE)
+```
+
+```{r}
+#| eval: false
+write_rds(gwr_fixed_CV,"data/gwr_fixed_CV.rds")
+```
+
+```{r}
+gwr_fixed_CV <- read_rds("data/gwr_fixed_CV.rds")
+gwr_fixed_CV
+```
+
+As we removed dist_busStop, dist_park, dist_preschool, dist_clinics, top_primary_sch_1km and then run again
+
+```{r}
+#| eval: false
+
+bw_fixed_CV <- bw.gwr(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + 
+    dist_mall + dist_hawker + dist_supermarket + 
+    dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + busStop_350m + kindergartens_350m +
+    supermarket_500m + model_group, 
+  data = mdata,
+  approach = "CV",
+  kernel = "gaussian",
+  adaptive = FALSE,
+  longlat = FALSE
+)
+write_rds(bw_fixed_CV,"data_bw_fixed_CV2.rds")
+```
+
+```{r}
+gwr_fixed_CV <- gwr.basic(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + 
+    dist_mall + dist_hawker + dist_supermarket + 
+    dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + busStop_350m + kindergartens_350m +
+    supermarket_500m + model_group, 
+  data=mdata, 
+  bw=bw_fixed_CV, 
+  kernel = 'gaussian', 
+  longlat = FALSE)
+write_rds(bw_fixed_CV,"bw_fixed_CV.rds")
+```
+
+```{r}
+gwr_fixed_CV
+```
+
+```{r}
+#| eval: false
+bw_fixed_AIC <- bw.gwr(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
+  data = mdata,
+  approach = "AIC",
+  kernel = "gaussian",
+  adaptive = FALSE,
+  longlat = FALSE
+)
+write_rds(bw_fixed_AIC,"bw_fixed_AIC2.rds")
+```
+
+```{r}
+write_rds(bw_fixed_AIC,"data/bw_fixed_AIC.rds")
+```
+
+The fixed bandwidth is 489 using CV method
+
+```{r}
+#| eval: false
+
+gwr_fixed_AIC <- gwr.basic(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
+  data=mdata, 
+  bw=bw_fixed_AIC, 
+  kernel = 'gaussian', 
+  longlat = FALSE)
+```
+
+```{r}
+#| eval: false
+#| echo: false
+write_rds(gwr_fixed_AIC,"data/gwr_fixed_AIC.rds")
+
+```
+
+```{r}
+gwr_fixed_AIC <- read_rds("data/gwr_fixed_AIC.rds")
+gwr_fixed_AIC
+```
+
+```{r}
+#| eval: false
+
+bw_adaptive_AIC <- bw.gwr(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
+  data=mdata, 
+  approach = "AIC",
+  kernel = "gaussian",
+  adaptive = TRUE,
+  longlat = FALSE
+)
+```
+
+```{r}
+#| eval: false
+
+gwr_adp_AIC <- gwr.basic(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
+  data=mdata, 
+  bw=bw_adaptive_AIC, 
+  adaptive=TRUE,
+  kernel = 'gaussian', 
+  longlat = FALSE)
+
+write_rds(gwr_adp_AIC,"data/gwr_adp_AIC.rds")
+```
+
+```{r}
+#| eval: false
+
+bw_adaptive_CV <- bw.gwr(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
+  data=mdata, 
+  approach = "CV",
+  kernel = "gaussian",
+  adaptive = TRUE,
+  longlat = FALSE
+)
+```
+
+```{r}
+#| eval: false
+
+gwr_adp_CV <- gwr.basic(
+  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
+    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
+    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
+  data=mdata, 
+  adaptive=TRUE,
+  bw=bw_adaptive_CV, 
+  kernel = 'gaussian', 
+  longlat = FALSE)
+write_rds(gwr_adp_CV,"data/gwr_adp_CV.rds")
+```
+
+```{r}
+gwr_adp_CV
+```
+
+```{r}
+gwr_adp_AIC
+```
+
+```{r}
+# Assuming your GWR model is called 'gwr_model'
+# Extract the SpatialPointsDataFrame with local coefficients
+gwr_spdf <- gwr.fixed$SDF
+
+# Convert to sf
+gwr_sf <- st_as_sf(gwr_spdf)
+
+# Plot coefficient map for dist_park
+ggplot(gwr_sf) +
+  geom_sf(aes(color = busStop_350m), size = 3) +
+  scale_color_viridis_c() +
+  theme_minimal() +
+  labs(title = "GWR Coefficients: Distance to Park")
+```
+
+The R-squared of global model (using full dataset) is 0.73 while the R-squared of localized geospatial model (using neighbors' dataset only) is 0.97, suggesting including geospatial info is important for predictive model.
+
+For explanatory model, we need to look at p-value, R-squared, AIC for comparison between global and local models.
+
+we can plot the significance of the variables using resource below:
+
+<https://www.jstatsoft.org/article/view/v063i17>
+
+```{r}
+gwr_adaptive
+```
