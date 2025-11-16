@@ -295,7 +295,7 @@ ggplot(HDBresale, aes(x = floor_level)) +
   )
 ```
 
-After combining the storey ranges, we can see that mid-high floors (10–21) have the highest count, with 5,406 units
+After combining the storey ranges, we can see that mid-high floors (10–21) have the highest count, with 3213 units
 
 #### 5.2.2.2 Unit Age
 
@@ -2350,7 +2350,7 @@ Comparing the two adaptive bandwidth selection methods, the AIC approach selects
 
 Because AIC focuses on balancing goodness-of-fit with model complexity, the small difference in AIC suggests that both bandwidths perform similarly. Given the nearly identical explanatory strength and the slightly more efficient (smaller) bandwidth, the AIC-selected bandwidth of 245 is chosen for further analysis.
 
-### 7.3.3 Back-standardize coefficients for the coefficients
+### 7.3.3 Back-transformation of the coefficients
 
 ```{r}
 
@@ -2377,10 +2377,6 @@ for (v in std_vars) {
     gwr_coefs[[paste0(v, "_elasticity")]] <- gwr_coefs[[v]] * sd_val
   }
 }
-
-# Step 5: Inspect results
-head(gwr_coefs)
-
 
 ```
 
@@ -2499,7 +2495,7 @@ tm_shape(HDBresale_gwr) +
 
 The plot above suggests that, with all independent variables at their mean values, the highest resale prices per square meter (around SGD 6,637–7,947) are located in the central and northern regions, where the model also has strong explanatory power (R-squared \> 95%).
 
-### 7.4.3 Coefficients with higher variance {style="font-size: 1.25em !important; line-height: 1.2; color: rgb(0, 0, 0); font-family: \"Lucida Grande\", sans-serif; font-style: normal; font-variant-ligatures: none; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; caret-color: rgb(0, 0, 0); white-space: break-spaces; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"}
+### 7.4.3 Coefficients with higher variance
 
 ::: panel-tabset
 ## Distance to CBD
