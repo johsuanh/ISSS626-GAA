@@ -100,9 +100,9 @@ The output print above shown that the three data sets are in **TWD97 / TM2 zone
 Let's check the data first:
 
 ```{r}
-kable(stores)
-kable(town)
-kable(village)
+kable(head(stores))
+kable(head(town))
+kable(head(village))
 ```
 
 Here we use interactive mode to get better understanding to our study area
