@@ -69,7 +69,8 @@ website:
             href: Take-home/Take-home-Ex1/Take-home_Ex01.html
           - text: "Take-home Ex02: Spatio-Temporal Hot Spot Analysis of Singapore Bus Ridership"
             href: Take-home/Take-home-Ex2/Take-home_Ex02.html
-            
+          - text: "Take-home Ex03: Modelling HDB Resale Prices with Geographically Weighted Methods"
+            href: Take-home/Take-home-Ex3/Take-home_Ex03.html            
     right:
       - href: about.qmd
         text: About

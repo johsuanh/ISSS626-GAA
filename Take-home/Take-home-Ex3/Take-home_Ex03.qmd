@@ -19,66 +19,78 @@ Housing is an essential component of household wealth worldwide. Purchasing a ho
 
 Structural factors refer to the characteristics of the property itself, such as size, fittings, and tenure. Locational factors, on the other hand, relate to the neighbourhood context of the property, including proximity to childcare centres, public transport, and shopping facilities.
 
-Traditionally, housing resale price models have been estimated using the Ordinary Least Squares (OLS) method. However, this approach does not account for spatial autocorrelation and spatial heterogeneity, which are commonly present in geographic datasets such as housing transactions. When spatial autocorrelation exists, OLS estimation of housing resale price models may produce biased, inconsistent, or inefficient results (Anselin, 1998). To address these limitations, **Geographically Weighted Models (GWMs)** have been introduced to more accurately calibrate both explanatory and predictive models for housing resale prices.
+Traditionally, housing resale price models have been estimated using the Ordinary Least Squares (OLS) method. However, this approach does not account for spatial autocorrelation and spatial heterogeneity, which are commonly present in geographic datasets such as housing transactions. When spatial autocorrelation exists, OLS estimation of housing resale price models may produce biased, inconsistent, or inefficient results (Anselin, 1998). To address these limitations, **Geographically Weighted Models (GWMs)** have been introduced to more accurately calibrate both explanatory and predictive models for housing resale prices.
 
 # 2 Objective
 
 The objective of this take-home exercise is to develop a spatially informed model to determine factors affecting or to predict HDB resale prices in Singapore, making use of appropriate geospatial analytics methods.
 
-The study will focus on four-room flat.
+In this study, we focus on **four-room flats** and will employ a Geographically Weighted Regression (GWR) model to build an **explanatory model** to identify and analyze the factors that have a statistically significant effect on house prices.
 
-Below is a list of recommended predictors to consider. However, students are free to include other appropriate independent variables.
+According to articles on [homy](https://homy.sg/property-buzz/understanding-singapore-hdb-resale-market#/) , [propertryguru](https://www.propertyguru.com.sg/property-guides/hdb-valuation-sales-12882) and [99.co](https://www.99.co/singapore/hdb-resale-price#:~:text=What%20are%20the%20factors%20affecting,offering%20access%20to%20multiple%20lines.), several factors influence HDB resale prices:
 
--   Structural factors
+-   **Location:** This refers to the flat’s proximity to key amenities, including **MRT stations, shopping malls, supermarkets**, and **food courts within walking distance (5–10 minutes)**. It also considers the flat’s **accessibility to the CBD** and **proximity to good primary schools** within 1–2 km. Additionally, flats located in **mature estates** such as Bishan, Tanjong Pagar, Ang Mo Kio, Toa Payoh, and Queenstown tend to be more desirable.
 
-    -   Area of the unit
-    -   Floor level
-    -   Remaining lease
-    -   Age of the unit
+-   **Property condition:** Flats that are well-maintained or have undergone extensive renovations typically command higher prices.
 
--   Location factors
+-   **Size and flat type:** **Larger flats** or **rare units**, such as HDB maisonettes or jumbo flats, often attract a premium due to strong demand.
 
-    -   Proxomity to CBD
-
-    -   Proximity to eldercare
-
-    -   Proximity to foodcourt/hawker centres
-
-    -   Proximity to MRT
-
-    -   Proximity to park
-
-    -   Proximity to good primary school
-
-    -   Proximity to shopping mall
-
-    -   Proximity to supermarket
-
-    -   Numbers of kindergartens within 350m
-
-    -   Numbers of childcare centres within 350m
-
-    -   Numbers of bus stop within 350m
-
-    -   Numbers of primary school within 1km
+-   **Remaining lease:** The lease length affects the **financial feasibility** of the purchase, as it determines whether the buyer’s **CPF usage** and **loan limits** need to be prorated. This is particularly important if the lease does not cover the youngest buyer until at least age 95. e.g., if the buyer is 30 years old, the remaining lease should be \>= 65 years)
 
 # 3 The Data
 
-The **HDB Resale Flat Prices** provided by [**Data.gov.sg**](https://isss626-ay2025-26aug.netlify.app/take-home_ex03) is used as the core data set.
+-   **Aspatial dataset**:
 
-#### add the data used in the model
+    -   **HDB Resale data:** a list of HDB resale transacted prices in Singapore from Jan 2017 onwards. It is in csv format which can be downloaded from Data.gov.sg.
+
+-   **Geospatial dataset**:
+
+    -   **Master Plan 2019 Subzone Boundary**: a polygon feature data providing information of URA 2019 Master Plan Planning Subzone boundary data. It is in KML format. This data set was also downloaded from Data.gov.sg
+
+-   **Locational factors with geographic coordinates**:
+
+    -   Downloaded from **Data.gov.sg**:
+
+        -   **Eldercare** data is a list of eldercare in Singapore. It is in shapefile format.
+
+        -   **Hawker Centre** data is a list of hawker centres in Singapore. It is in geojson format.
+
+        -   **Parks** data is a list of parks in Singapore. It is in geojson format.
+
+        -   **Supermarket** data is a list of supermarkets in Singapore. It is in geojson format.
+
+        -   **Childcare service** data is a list of childcare services in Singapore. It is in geojson format.
+
+        -   **Kindergartens** data is a list of kindergartens in Singapore. It is in geojson format.
+
+    -   Downloaded from **Datamall.lta.gov.sg**:
+
+        -   **Train** data is a list of MRT/LRT stations in Singapore with the station names and codes. It is in shapefile format.
+
+        -   **Bus stops** data is a list of bus stops in Singapore. It is in shapefile format.
+
+-   **Locational factors without geographic coordinates**:
+
+    -   Downloaded from **Data.gov.sg**:
+
+        -   **Primary school** data is extracted from the list on General information of schools from data.gov portal. It is in csv format.
+
+    -   Retrieved/Scraped from **other sources**
+
+        -   **Shopping malls** data is a list of Shopping malls in Singapore obtained from [Kaggle](https://www.kaggle.com/datasets/sunnysharma432/singapore-malls-pois?resource=download)
+
+        -   **Good primary schools** is a list of primary schools that are ordered in ranking in terms of popularity and this can be found at [P1 Registration Singapore](https://www.p1registration.sg/2025/05/25/top-100-primary-school-ranking-2025-singapore-based-on-2024-balloting/)
+
+        -   **Mature Estate data** is a list of mature estates and non-mature estates parsed from the [HDB Annex](https://www.hdb.gov.sg/cs/infoweb/-/media/doc/SCEG/20082023-Annexes/Annex-A1.pdf)
 
 # 4 Importing packages
 
--   jsonlite: JSON parser and generator
--   progess: Configurable ***Progress*** bars, they may include percentage, elapsed time, and/or the estimated completion time
-
 ```{r}
 pacman::p_load(httr,jsonlite,sf, spdep, progress, tmap,
-               tidyverse,knitr, spdep,GWmodel, rsample,
-               SpatialML,Metrics,kableExtra, randomForestExplainer,
+               tidyverse,knitr, spdep,GWmodel, 
+               Metrics,kableExtra, 
                performance,lubridate,colorspace,ggdist, ggridges, ggthemes,
-               plotly,treemap,ggrepel,scales)
+               plotly,treemap,ggrepel,scales,rvest)
 ```
 
 # 5 Data Import and Preperation
@@ -86,13 +98,13 @@ pacman::p_load(httr,jsonlite,sf, spdep, progress, tmap,
 ## 5.1 MPSZ19 Geospatial Data
 
 ```{r}
-mpsz19 <- read_rds("data/mpsz.rds")
+mpsz19 <- read_rds("data/rds/mpsz.rds")
 st_crs(mpsz19)
 ```
 
 ## 5.2 HDB Resale Data
 
-As we are building a predictive model for 4‑Room HDB resale prices, the code below filters for flats of type 4‑Room and resale records between July 2024 and September 2025
+As we are building a explantory model for 4‑Room HDB resale prices, the code below filters for flats of type 4‑Room and resale records between Jan 2025 and September 2025
 
 ```{r}
 HDBresale <- read_csv("data/rawdata/ResaleflatpricesbasedonregistrationdatefromJan2017onwards.csv")%>%
@@ -178,30 +190,31 @@ for (i in seq_len(nrow(HDBresale))) {
 
 ```{r}
 #| eval: false
+#| echo: false
 
-write_rds(HDBresale,"data/HDBresale.rds")
-```
-
-```{r}
-HDBresale <- read_rds("data/HDBresale.rds") 
+write_rds(HDBresale,"data/rds/HDBresale.rds")
 ```
 
 ```{r}
 #| echo: false
-
+HDBresale <- read_rds("data/rds/HDBresale.rds") 
 HDBresale <- HDBresale%>%
   filter(month >="2025-01" & month < "2025-10")
+
 ```
 
 ### 5.2.2 Prepare Data
 
-For the HDB resale data, we focus on the attributes `storey_range`, `floor_area_sqm`, unit age, and remaining lease. In this section, we prepare the data accordingly.
+For the HDB resale data, we focus on the attributes`storey_range`, `floor_area_sqm`, unit age, and remaining lease. In this section, we prepare the data accordingly.
 
 #### 5.2.2.1 Storey Range
 
 Before getting started, let's visualize the storey range first:
 
 ```{r}
+#| fig.width: 12
+#| fig.height: 8
+
 ggplot(HDBresale, aes(x = storey_range)) +
   geom_bar(fill = "#93A4CC", color = "grey30") +
   geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3, color = "grey30") +
@@ -228,7 +241,7 @@ ggplot(HDBresale, aes(x = storey_range)) +
 
 We can observe the right-skewed distribution of storey Range for 4-room HDB, around 77.5% of units are located bewteen 1 to 12 floor.
 
-The distribution of `storey_range` for 4-room HDB units is right-skewed, with approximately 77.5% of units located between the 1st and 12th floors. To reduce potential overfitting in predictive models, we categorize floor levels into five groups: Very Low, Low, Mid, Mid-high and Very High based on common HDB classifications as discussed in [PropertyGuru’s Q&A community](https://www.propertyguru.com.sg/property-investment-questions/what-is-the-standard-of-low-floor-middle-floor-high-floor-and-penthouse-i-mean-to-which-floor-is-it-middle-floor-and-from-which-floor-is-it-high-floor-thank-you-497576) and [Singapore Public Housing Wiki](https://singaporepublichousing.fandom.com/wiki/HDB_Elevation_-_Ground/Low/Mid/High_Floor_Units), with slight adjustments to align with the distribution in our dataset:
+The distribution of `storey_range` for 4-room HDB units is right-skewed, with approximately 77.5% of units located between the 1st and 12th floors. To simplify analysis, we categorize floor levels into five groups: Very Low, Low, Mid, Mid-high and Very High based on common HDB classifications as discussed in [PropertyGuru’s Q&A community](https://www.propertyguru.com.sg/property-investment-questions/what-is-the-standard-of-low-floor-middle-floor-high-floor-and-penthouse-i-mean-to-which-floor-is-it-middle-floor-and-from-which-floor-is-it-high-floor-thank-you-497576) and [Singapore Public Housing Wiki](https://singaporepublichousing.fandom.com/wiki/HDB_Elevation_-_Ground/Low/Mid/High_Floor_Units), with slight adjustments to align with the distribution in our dataset:
 
 -   Very Low (1) = floors  1‑3
 -   Low (2) = floors  4‑6
@@ -255,6 +268,9 @@ table(HDBresale$floor_level)
 Next, we plot the graph again:
 
 ```{r}
+#| fig.width: 12
+#| fig.height: 8
+
 ggplot(HDBresale, aes(x = floor_level)) +
   geom_bar(fill = "#93A4CC", color = "grey30") +
   geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3, color = "grey30") +
@@ -326,7 +342,8 @@ The result returns NA, indicating that there are no cases from 2022 onward with 
 The code below plots the distribution of unit age with boundaries set between 0 and 60 years and a bin width of 5:
 
 ```{r}
-
+#| fig.width: 12
+#| fig.height: 8
 ggplot(HDBresale, aes(x = unit_age)) +
   geom_histogram(boundary = 0, binwidth = 5,fill = "#93A4CC", color = "grey30") +
   geom_text(stat = 'bin', binwidth = 5, boundary = 0,
@@ -381,10 +398,133 @@ HDBresale <- HDBresale %>%
 
 #### 5.2.2.4 Price Per sqm
 
-```{t}
+Houses with larger floor areas generally have higher total prices. Calculating the price per square meter removes this scale effect, allowing us to better compare the factors that influence resale prices:
+
+```{r}
 HDBresale <- HDBresale %>%
   mutate(price_per_sqm = round(resale_price / floor_area_sqm, 1))
+```
 
+The code below plots two scatter plots: one showing floor area vs total price, and the other showing floor area vs price per square meter
+
+::: panel-tabset
+## Floor Area vs Total Price
+
+```{r}
+ggplot(HDBresale, aes(x = floor_area_sqm, y = resale_price)) +
+  geom_point(alpha = 0.4, size = 1.2, color = "#93A4CC") +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Scatter Plot of Resale Price vs Floor Area (sqm)",
+    x = "Floor Area (sqm)",
+    y = "Resale Price (SGD)"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    panel.background = element_rect(fill = "#f6f6f6"),
+    plot.background = element_rect(fill = "#f6f6f6")
+  )
+
+```
+
+## Floor Area vs Price per sqm
+
+```{r}
+ggplot(HDBresale, aes(x = floor_area_sqm, y = price_per_sqm)) +
+  geom_point(alpha = 0.4, size = 1.2, color = "#93A4CC") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.8) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Resale Price vs Floor Area by Flat Model",
+    x = "Floor Area (sqm)",
+    y = "Resale Price per sqm (SGD)") +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    panel.background = element_rect(fill = "#f6f6f6"),
+    plot.background = element_rect(fill = "#f6f6f6"),
+    strip.text = element_text(size = 10, face = "bold"))
+
+```
+:::
+
+::: callout-note
+## Observation
+
+From the plot above, we observe that as floor area increases, both price per sqm and total price tend to decrease. This suggests that larger units are likely to have a lower price per square meter and, in some cases, lower total prices. However, since the sample is predominantly Model A, these patterns may not hold for other flat types. In the following EDA section, we will break down the analysis by region and flat model to explore these differences further
+:::
+
+#### 5.2.2.5 Flat Model
+
+The code below plots the price per sqm by flat model:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+flat_summary <- HDBresale %>%
+  group_by(flat_model) %>%
+  summarise(
+    median_price = median(price_per_sqm, na.rm = TRUE),
+    mean_price   = mean(price_per_sqm, na.rm = TRUE), 
+    units_sold   = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(median_price) %>%
+  mutate(flat_model = factor(flat_model, levels = flat_model))  # order factor
+
+
+ggplot(HDBresale, 
+       aes(x = factor(flat_model, levels = flat_summary$flat_model), 
+           y = price_per_sqm)) +
+  geom_boxplot(alpha = 0.7, outlier.size = 1, fill="#93A4CC") +
+  # units sold
+  geom_point(data = flat_summary, 
+             aes(x = flat_model, y = mean_price, size = units_sold),
+             color = "black", alpha = 0.6) +
+  scale_size_continuous(name = "Units Sold") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "HDB Resale Price Per sqm by Flat Model (Ordered by Mean Price)",
+    subtitle = "Each circle’s position reflects the mean price per sqm, and its size corresponds to the number of units sold between JAN 2025 and OCT 2025 \n",
+    x = "Flat Model",
+    y = "Resale Price Per sqm (SGD)"
+  ) +
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    axis.text.x = element_text(angle = 15, hjust = 1),
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm"),
+    legend.text = element_text(size = 8),
+    panel.background = element_rect(fill = "#f6f6f6", color = NA),
+    plot.background = element_rect(fill = "#f6f6f6", color = NA),
+    legend.background = element_rect(fill = "#f6f6f6")
+  )
+```
+
+```{r}
+kable(table(HDBresale$flat_model))
+```
+
+From the box plot and the table above, we can see that flat model has a significant influence on house prices. Therefore, the models will be grouped into four categories based on their box plot distributions:
+
+-   Low (1): Standard, Simplified, Improved, Model A2, New Genegration, Adjoined Flat
+-   Mid (2): Model A, Premium Apartment
+-   Mid-High (3): DBSS, Terrace
+-   High (4): Premium Apartment Loft, Type S1
+
+```{r}
+HDBresale <- HDBresale %>%
+  mutate(model_group = case_when(
+    flat_model %in% c("New Generation","Model A2","Adjoined flat","Standard", "Simplified", "Improved") ~ 1,
+    flat_model %in% c("Model A", "Premium Apartment") ~ 2,
+    flat_model %in% c("DBSS", "Terrace") ~ 3,
+    flat_model %in% c("Premium Apartment Loft", "Type S1") ~ 4,
+    TRUE ~ NA 
+  ))
 ```
 
 ### 5.2.3 Convert Data into sf Format
@@ -420,28 +560,20 @@ tm_shape(HDBresale_sf)+
            position = tm_pos_out("center", "top", "center"))
 ```
 
-## 5.3 Housing Price Factor Data
+## 5.3 Other Housing Price Factors
 
-Next, we import data that are highly likely to influence resale prices, and calculate the distance to or the number of nearby facilities from each unit, including: distance to the CBD, eldercare centres, food courts, MRT stations, parks, reputable primary schools, shopping malls, and supermarkets; the number of kindergartens and childcare centres within 350 m; the number of primary schools within 1 km; and the number of bus stops within 350 m:
+Next, we import data that are highly likely to influence resale prices, and calculate the distance to or the number of nearby facilities from each unit.
 
-### 5.3.1 Proximity to CBD
+### 5.3.1 Central Business district
 
 According to [URA](https://www.ura.gov.sg/Corporate/Guidelines/Urban-Design/Downtown-Core) and [Wikipedia](https://en.wikipedia.org/wiki/Downtown_Core), the Central Business District (CBD) is located within the Downtown Core planning area and comprises **eight subzones: Anson, Cecil, Clifford Pier, Maxwell, Phillip, Raffles Place, Tanjong Pagar and Marina Centre**. We will combine these eight subzones into a single union polygon and calculate the distance from each HDB unit to the CBD.
 
 ```{r}
 CBD <- mpsz19 %>%
   filter(SUBZONE_N %in% c("ANSON", "CECIL", "CLIFFORD PIER", "MAXWELL",
-                          "PHILLIP", "RAFFLES PLACE", "TANJONG PAGAR", "MARINA CENTRE"))%>%
+                          "PHILLIP", "RAFFLES PLACE", "TANJONG PAGAR", 
+                          "MARINA CENTRE"))%>%
   st_union()
-```
-
-```{r}
-HDBresale_sf <- HDBresale_sf %>%
-  mutate(
-    dist_to_CBD = st_distance(., CBD) %>%
-                  as.numeric() %>%          
-                  round(1)                  
-  )
 ```
 
 The CBD area is shown in green on the map:
@@ -465,31 +597,39 @@ tm_title("HDB Resale Unit Locations x CBD",
 
 ```
 
-### 5.3.2 Proximity to MRT / Count of MRT within 600m
+### 5.3.2 Train Stations: MRT & LRT {#train-stations-mrt-lrt}
 
 ```{r}
 Sys.setenv(OGR_GEOMETRY_ACCEPT_UNCLOSED_RING = "NO")
 
-MRT <- st_read(dsn = "data/rawdata/TrainStation_Aug2025",
-               layer = "RapidTransitSystemStation") %>%
-  st_buffer(0) %>% 
-  st_transform(3414)%>%
-  filter(!st_is_empty(geometry)) %>%
-  st_centroid() 
+Train <- st_read(dsn = "data/rawdata/TrainStation_Aug2025",
+               layer = "RapidTransitSystemStation")%>% 
+  st_transform(3414)
+
+```
+
+Since the train data indicates an empty geometry error, we’ll use the code below to check the details.
+
+```{r}
+Train[st_is_empty(Train), ]
 ```
 
 ```{r}
-dist_matrix <- st_distance(HDBresale_sf, MRT)
-within_600m <- st_is_within_distance(HDBresale_sf, MRT, dist=600)
+par(bg="#f6f6f6")
 
-HDBresale_sf <- HDBresale_sf %>%
-  mutate(
-    dist_to_MRT = apply(dist_matrix, 1, min) %>%
-      as.numeric() %>%
-      round(1),
-    MRT_600m = map_int(within_600m, length)
-  )
+plot(Train$geometry)
 ```
+
+It shows that the station name is BOCC, which is ***Bus Operations Control Centre.*** Since this is not a train station, we will remove it. In addition, notice the train stations above are multipolygons. To calculate the distance between a train and HDBs, we use `st_point_on_surface()` to get points within the train multipolygons.
+
+```{r}
+Train <- Train%>%
+  filter(!st_is_empty(geometry)) %>%
+  st_point_on_surface() 
+Train
+```
+
+Now we see the geometry type is POINT instead of MULTIPOLYGON. Next, let's plot the map again:
 
 ```{r}
 #| fig.width: 12
@@ -497,31 +637,32 @@ HDBresale_sf <- HDBresale_sf %>%
 tm_shape(mpsz19) +
   tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
 tm_shape(HDBresale_sf) +
-  tm_dots(size = 0.1,alpha=0.4) +  
-tm_shape(MRT) +
-  tm_dots(size = 0.5, fill="orange",shape =18) +    
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(Train) +
+  tm_dots(size = 0.5, fill="#cc78aa",shape =18) +    
 tm_layout(bg.color = "#f6f6f6",
           outer.bg.color = "#f6f6f6",
           frame = FALSE) +
-tm_title("HDB Resale Unit Locations x MRT Stations",
+tm_title("HDB Resale Units x MRT & LRT Stations",
          position = tm_pos_out("center", "top", "center"))
 ```
 
 ### 5.3.3 Top 50 Primary School
 
-The school information is downloaded from data.gov.sg and the rank information is based on P1 Registration Singapore
-
 ```{r}
 #| eval: false
 
-primary_school_rank <- read_csv("data/rawdata/PrimarySchool_Rank.csv")
-primary_school <- read_csv("data/rawdata/Generalinformationofschools.csv") %>%
-  left_join(primary_school_rank, by = c("school_name" ="School"))%>%
-  select(c("school_name","postal_code","address",`Rank (2024)`))%>%
+school_rank <- read_csv("data/rawdata/PrimarySchool_Rank.csv")
+top50_primary_school <- read_csv("data/rawdata/Generalinformationofschools.csv") %>%
+  select(c("school_name","postal_code","address")) %>%
+  left_join(school_rank, by = c("school_name" ="School"))%>%
   filter(`Rank (2024)`<= 50)%>%
   arrange(`Rank (2024)`)
-
 ```
+
+#### 5.3.3.1 Geocoding school address
+
+The code below uses the address as the search value and extracts coordinates using the OneMap API:
 
 ```{r}
 #| eval: false
@@ -559,43 +700,640 @@ geocode <- function(address) {
 ```{r}
 #| eval: false
 
-primary_school$LATITUDE <- 0
-primary_school$LONGITUDE <- 0
+top50_primary_school$LATITUDE <- 0
+top50_primary_school$LONGITUDE <- 0
 
-for (i in seq_len(nrow(primary_school))) {
-  if (primary_school$LATITUDE[i] == 0 ||
-      primary_school$LONGTITUDE[i] == 0) {
+for (i in seq_len(nrow(top50_primary_school))) {
+  if (top50_primary_school$LATITUDE[i] == 0 ||
+      top50_primary_school$LONGTITUDE[i] == 0) {
     
-    temp_output <- geocode(primary_school[i, 3, drop = TRUE])
+    temp_output <- geocode(top50_primary_school[i, 3, drop = TRUE])
     
-    primary_school$LATITUDE[i] <- temp_output$LATITUDE
-    primary_school$LONGITUDE[i] <- temp_output$LONGITUDE
+    top50_primary_school$LATITUDE[i] <- temp_output$LATITUDE
+    top50_primary_school$LONGITUDE[i] <- temp_output$LONGITUDE
   }
 }
 ```
 
+After getting the coordinates, we transform the data into sf data format using WGS84 then tranfrom the data into SVY3414:
+
 ```{r}
 #| eval: false
 
-primary_school <- primary_school%>%
+top50_primary_school <- top50_primary_school%>%
     st_as_sf(coords = c("LONGITUDE", "LATITUDE"),crs = 4326)%>%
     st_transform(3414) 
 
-write_rds(primary_school,"data/primary_school.rds")
+write_rds(top50_primary_school,"data/rds/top50_primary_school.rds")
 ```
 
 ```{r}
-primary_school <- read_rds("data/primary_school.rds")
+#| echo: false
+top50_primary_school <- read_rds("data/rds/top50_primary_school.rds")
 ```
 
-### 5.3.6 Proximity to Other facilities
+Let's check the data:
 
-Other facilities include parks, supermarkets, hawker centres, kindergartens, childcare centres, and clinics are also influential to the resale prices. To improve the efficiency, we will build formulas with a consistent pipeline to calculate the **nearest distance from each HDB resale unit to the facility**. For each facility:
+```{r}
+kable(top50_primary_school)
+```
 
-1.  Read the GeoJSON and transform to the CRS 3414 as `HDBresale_sf`.
-2.  Compute the **distance matrix** between HDB units and the facility points using `st_distance()`.
-3.  Extract the **minimum distance** for each HDB unit.
-4.  Round and store the result in a **new column** in `HDBresale_sf`.
+::: callout-note
+## Observation
+
+The top 50 primary schools for [P1 registration](https://www.p1registration.sg/2025/05/25/top-100-primary-school-ranking-2025-singapore-based-on-2024-balloting/) in Singapore are ranked based on popularity (the ratio of applicants to vacancies). From the table above, we can see that most schools show SC \< 1, which means Singaporean children living within 1 km of the school still need to go through the ballot. This also indicates houses located within 1 km is highly valuable based on this ballot system.
+:::
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(top50_primary_school) +
+  tm_dots(size = 0.8, fill="#cc78aa",shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Top 50 Primary School Locations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.4 Shopping Mall
+
+```{r}
+mall <- read_csv("data/rawdata/singapore_malls_pois.csv")
+```
+
+The data provide the name, lat and lon of the malls:
+
+```{r}
+kable(head(mall))
+```
+
+The code below is used to check if there are any missing values in name, lat, lon atrributes
+
+```{r}
+mall[is.na(mall$lat) | is.na(mall$lon) | is.na(mall$name), ]
+```
+
+The result shows there are 10 observations without names, which we will removed later.
+
+Next, let's check if there are any duplicate records:
+
+```{r}
+any(duplicated(mall[, c("lat", "lon", "name")]))
+```
+
+```{r}
+mall[duplicated(mall[, c("lat", "lon", "name")]), ]
+```
+
+There are three malls with duplicated records based on name, lat and lon. The code below is used to remove 10 rows with missing names and 3 duplicated mall records.
+
+```{r}
+mall <- mall[!is.na(mall$name), ]
+mall <- mall[!duplicated(mall[, c("name", "lat", "lon")]), ]
+```
+
+Next, we convert the mall data in to sf format using WGS84, and then transform it into SVY21
+
+```{r}
+mall <- mall%>%
+  st_as_sf(coords = c("lon", "lat"),crs = 4326)%>%
+  st_transform(3414)
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(mall) +
+  tm_dots(size = 0.6, fill="#cc78aa",shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Top 50 Primary School Locations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.5 Mature & Non-mature Estates
+
+According to HDB, planning areas with HDB developments are categorized into **Mature** and **Non-Mature Estates**:
+
+-   **Mature estates** are areas where land for public housing development is limited, yet demand is high. BTO flats in these estates tend to be **more popular** and are sold at **higher prices**, reflecting their desirable location and strong demand.
+
+-   **Non-mature estates** are areas with **more land available** for public housing development. These estates are usually **less central** and have **fewer amenities**, making flats there generally **more affordable**.
+
+```{r}
+mature_estate <- read_csv("data/rawdata/Mature_Estate.csv")
+```
+
+If the planning areas are mature estates then 1 else is 0:
+
+```{r}
+kable(head(mature_estate))
+```
+
+First, we merge the data of `HDBresale_sf` with the `mpsz19` planning_area, region and subzone using `st_join()`
+
+```{r}
+HDBresale_sf <- st_join(HDBresale_sf, mpsz19[, c("SUBZONE_N","PLN_AREA_N" ,"REGION_N")], left = TRUE)
+```
+
+Next, we combine the mature estate data to `HDBresale_sf` using `left_join()`
+
+```{r}
+HDBresale_sf <- left_join(HDBresale_sf,mature_estate)
+```
+
+```{r}
+HDBresale_sf$mature_estate <- factor(HDBresale_sf$mature_estate)
+```
+
+Let's check if there are any missing values in the data:
+
+```{r}
+any(is.na(HDBresale_sf$mature_estate))
+```
+
+```{r}
+unique(HDBresale_sf$PLN_AREA_N[is.na(HDBresale_sf$mature_estate)])
+```
+
+There are five planning areas with HDB flats that were not categorized as mature or non-mature. However, according to HDB classification, these areas are located in central regions with higher prices and demand. Therefore, we classified them as mature estates:
+
+```{r}
+HDBresale_sf$mature_estate[is.na(HDBresale_sf$mature_estate)] <- 1
+```
+
+Let's check how many 4-room HDB resold within Jan-Oct 2025 are within mature estates:
+
+```{r}
+table(HDBresale_sf$mature_estate)
+```
+
+There are 3,301 records classified as mature estate
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.2,
+          col = "mature_estate",                  
+          palette = c("0" = "black", "1" = "#cc78aa"),
+          labels = c("Non-mature", "Mature"),
+          alpha = 0.4) +  
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("Mature Estates vs Non-mature Estates",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.6 BusStop
+
+Although the articles from 99.co, PropertyGuru, and Homey do not mention the importance of bus stops, transportation convenience remains a key factor.
+
+In Take-Home Exercise 2, we noticed that some bus stops are located in Johor Bahru. Therefore, the code below filters for bus stops within Singapore by performing a spatial join (`st_join()`) with `mpsz19`:
+
+```{r}
+BusStop <- st_read(dsn = "data/rawdata/BusStop_Aug2025",
+                   layer = "BusStop") %>% 
+  st_transform(3414) %>%
+  st_join(mpsz19, join = st_within, left = FALSE)
+```
+
+Also, since some bus stops are duplicated, the code below remove the duplicated bus stops:
+
+```{r}
+duplicated_ids <- BusStop$BUS_STOP_N[duplicated(BusStop$BUS_STOP_N)]
+
+kable(BusStop%>%
+        filter(BUS_STOP_N %in% duplicated_ids)%>%
+        arrange(BUS_STOP_N))
+
+BusStop <- BusStop %>%
+  arrange(BUS_STOP_N, desc(row_number())) %>% # ensures last comes first within each group
+  distinct(BUS_STOP_N, .keep_all = TRUE)
+```
+
+Let’s check if there are any duplicated again:
+
+```{r}
+BusStop$BUS_STOP_N[duplicated(BusStop$BUS_STOP_N)]
+```
+
+Next, we plot the map using tmap():
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(BusStop) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=0.4,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x BusStop Locations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.7 Supermarket
+
+```{r}
+supermarket <- st_read("data/rawdata/SupermarketsGEOJSON.geojson") %>%
+  st_transform(3414)
+```
+
+The supermarket data is stored in a KML format. Since we also need the to validate the data, the code below is used to extract stores' information:
+
+```{r}
+extract_info <- function(desc_html) {
+  html <- read_html(desc_html)
+  rows <- html %>% html_nodes("tr")
+  
+  # Extract headers and values separately
+  keys <- rows %>% html_nodes("th") %>% html_text(trim = TRUE)
+  values <- rows %>% html_nodes("td") %>% html_text(trim = TRUE)
+  
+  # Make sure lengths match
+  if(length(keys) != length(values)) {
+    # If mismatch, fill missing with NA
+    if(length(keys) > length(values)) {
+      values <- c(values, rep(NA, length(keys) - length(values)))
+    } else {
+      keys <- c(keys, paste0("Extra", seq_len(length(values) - length(keys))))
+    }
+  }
+  
+  setNames(as.list(values), keys)
+}
+
+attributes_list <- lapply(supermarket$Description, extract_info)
+attributes_df <- bind_rows(attributes_list)
+
+supermarket <- bind_cols(attributes_df, supermarket %>% select(geometry))
+
+kable(head(supermarket))
+```
+
+```{r}
+supermarket <- st_as_sf(supermarket)%>%
+  st_transform(3414)
+```
+
+Next, we check if there are any missing values and duplicated records.
+
+```{r}
+sum(is.na(supermarket$Attributes))
+sum(duplicated(supermarket))
+sum(is.na(st_coordinates(supermarket)))
+sum(duplicated(st_coordinates(supermarket)))
+```
+
+The results show there are records with the identical coordinates
+
+```{r}
+supermarket <- supermarket %>%
+  mutate(
+    coord_string = paste0(Attributes, "_",
+                          st_coordinates(geometry)[,1], "_",
+                          st_coordinates(geometry)[,2]))
+
+supermarket_duplicates <- supermarket[duplicated(supermarket$coord_string), ]
+kable(supermarket_duplicates)
+```
+
+Notice there are two observation are duplicated, we need to remove them avoiding from double counted:
+
+```{r}
+dup_rows <- duplicated(supermarket$coord_string)
+supermarket <- supermarket[!dup_rows, ]
+# remove coord_sting
+supermarket <- supermarket %>% select(-coord_string)
+```
+
+Next, let's plot the map:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(supermarket) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=1,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Supermarket Locations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.8 Hawker Centre
+
+```{r}
+hawker <- st_read("data/rawdata/HawkerCentresGEOJSON.geojson") %>%
+  st_transform(3414)
+```
+
+```{r}
+kable(head(hawker%>%select(NAME,STATUS)))
+```
+
+```{r}
+kable(table(hawker$STATUS))
+```
+
+```{r}
+under_construction <- hawker %>%
+  filter(STATUS == "Under Construction")%>%
+  select(NAME,DESCRIPTION,EST_ORIGINAL_COMPLETION_DATE)
+
+kable(under_construction)
+```
+
+From the data above, some hawker centres are still under construction. Since the old centres remain in use, we will include only the new centres and exclude the replacement ones. As for **Bukit Timah Interim Hawker Centre and Market**, which is an interim centre operating until December 2029 will also be retained in the analysis:
+
+```{r}
+hawker <- hawker %>%
+  filter(!(STATUS == "Under Construction" & DESCRIPTION == "New Replacement Centre"))
+```
+
+Next, we want to know if there are any missing coordinates and duplicated records:
+
+```{r}
+sum(is.na(hawker$NAME))
+sum(duplicated(hawker))
+sum(is.na(st_coordinates(hawker)))
+sum(duplicated(st_coordinates(hawker)))
+```
+
+There are no any missing coordinates and duplicated observations
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(hawker) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=1,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Hawker Locations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.9 Park
+
+```{r}
+park <- st_read("data/rawdata/Parks.geojson") %>%
+  st_transform(3414)
+```
+
+```{r}
+kable(head(park))
+```
+
+```{r}
+sum(is.na(park$NAME))
+sum(duplicated(park))
+sum(is.na(st_coordinates(park)))
+sum(duplicated(st_coordinates(park)))
+```
+
+The data shows there are 441 parks in Singapore.
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(park) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=1,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Park Locations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.10 Kindergartens
+
+```{r}
+kindergartens <- st_read("data/rawdata/Kindergartens.geojson") %>%
+  st_transform(3414)
+```
+
+The kindergartens data is stored in a KML format. We reuse the `extract_info` formula again here:
+
+```{r}
+attributes_list <- lapply(kindergartens$Description, extract_info)
+attributes_df <- bind_rows(attributes_list)
+
+kindergartens <- bind_cols(attributes_df, kindergartens %>% select(geometry))
+kindergartens <- st_as_sf(kindergartens)%>%
+  st_transform(3414)
+
+kable(head(kindergartens))
+```
+
+Next, we check if there are any missing values and duplicated records.
+
+```{r}
+sum(is.na(kindergartens$LANDYADDRESSPOINT))
+sum(duplicated(kindergartens))
+sum(is.na(st_coordinates(kindergartens)))
+sum(duplicated(st_coordinates(kindergartens)))
+```
+
+The results shows there are some duplicated records in kindergartens data.
+
+The code below dervive a new helper column `coord_string` by combining the kindergartens info and the coordinates and check if there are any duplicated records:
+
+```{r}
+kindergartens <- kindergartens %>%
+  mutate(
+    coord_string = paste0(LANDYADDRESSPOINT, "_",
+                          st_coordinates(geometry)[,1], "_",
+                          st_coordinates(geometry)[,2]))
+
+kindergartens_duplicates <- kindergartens[duplicated(kindergartens$coord_string), ]
+kindergartens_duplicates$coord_string
+```
+
+The result shows there are 50 duplicated records, which need to be removed:
+
+```{r}
+dup_rows <- duplicated(kindergartens$coord_string)
+kindergartens <- kindergartens[!dup_rows, ]
+```
+
+Let's check again if all the duplicated records got removed:
+
+```{r}
+kindergartens_duplicates <- kindergartens[duplicated(kindergartens$coord_string), ]
+kindergartens_duplicates$coord_string
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(kindergartens) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=1,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Kindergartens",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.11 Childcare Service
+
+```{r}
+childcare <- st_read("data/rawdata/ChildCareServices.geojson") %>%
+  st_transform(3414)
+```
+
+```{r}
+attributes_list <- lapply(childcare$Description, extract_info)
+attributes_df <- bind_rows(attributes_list)
+
+childcare <- bind_cols(attributes_df, childcare %>% select(geometry))
+childcare <- st_as_sf(childcare)%>%
+  st_transform(3414)
+
+kable(head(childcare))
+```
+
+Next, we check if there are any missing values and duplicated records.
+
+```{r}
+sum(is.na(childcare$LANDYADDRESSPOINT))
+sum(duplicated(childcare))
+sum(is.na(st_coordinates(childcare)))
+sum(duplicated(st_coordinates(childcare)))
+```
+
+The results shows there are some duplicated records in childcare service data.
+
+```{r}
+childcare <- childcare %>%
+  mutate(
+    coord_string = paste0(LANDYADDRESSPOINT, "_",
+                          st_coordinates(geometry)[,1], "_",
+                          st_coordinates(geometry)[,2]))
+
+duplicates <- childcare[duplicated(childcare$coord_string), ]
+duplicates$coord_string
+```
+
+The result shows there is only one duplicated records, which need to be removed:
+
+```{r}
+dup_rows <- duplicated(childcare$coord_string)
+childcare <- childcare[!dup_rows, ]
+```
+
+Let's check again if all the duplicated records got removed:
+
+```{r}
+duplicates <- childcare[duplicated(childcare$coord_string), ]
+duplicates$coord_string
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(childcare) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=0.5,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Child Care Services",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+### 5.3.12 Eldercare Service
+
+```{r}
+eldercare <- st_read(dsn = "data/rawdata/EldercareServicesSHP",
+               layer = "ELDERCARE") %>% st_transform(3414)
+```
+
+```{r}
+kable(head(eldercare%>%select(NAME,geometry)))
+```
+
+```{r}
+sum(is.na(eldercare$NAME))
+sum(duplicated(eldercare))
+sum(is.na(st_coordinates(eldercare)))
+sum(duplicated(st_coordinates(eldercare)))
+```
+
+```{r}
+eldercare <- eldercare %>%
+  mutate(
+    coord_string = paste0(NAME, "_",
+                          st_coordinates(geometry)[,1], "_",
+                          st_coordinates(geometry)[,2]))
+
+duplicates <- eldercare[duplicated(eldercare$coord_string), ]
+duplicates$coord_string
+```
+
+Although there are 13 duplicated coordinates, there are no duplicates where both the Name and coordinates are identical.
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19) +
+  tm_polygons(col = "lightgrey", fill_alpha = 0.2, border.col = "grey50") +  
+tm_shape(HDBresale_sf) +
+  tm_dots(size = 0.1,fill_alpha=0.4) +  
+tm_shape(eldercare) +
+  tm_dots(size = 0.6, fill="#cc78aa",fill_alpha=1,shape =18) +    
+tm_layout(bg.color = "#f6f6f6",
+          outer.bg.color = "#f6f6f6",
+          frame = FALSE) +
+tm_title("HDB Resale Units x Eldercare Services",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+## 5.4 Computing Proximity to Facilities
+
+Since we will be calculating the distance from each resale unit to multiple facilities, the code below computes a distance matrix and selects the shortest distance when multiple facilities are located near an HDB unit:
+
+1.  Transform and ensure the data to the CRS 3414 as `HDBresale_sf`
+2.  Compute the **distance matrix** between HDB units and the facility points using `st_distance()`.
+3.  Extract the **minimum distance** for each HDB unit.
+4.  Round and store the result in a **new column** in `HDBresale_sf`.
 
 ```{r}
 #| eval: false
@@ -614,8 +1352,83 @@ add_nearest_distance <- function(hdb_sf, facility_sf, new_col_name) {
   return(hdb_sf)
 }
 
+```
 
-add_nearby_count <- function(hdb_sf, facility_sf,new_col_name,radius = 350) {
+```{r}
+#| eval: false
+
+# CBD
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, CBD, 
+                                    "dist_CBD")
+# Train
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, Train, 
+                                     "dist_train")
+# Top 50 Primary School
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, top50_primary_school,
+                                     "dist_top_primary_sch")
+# BusStop
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, BusStop,
+                                     "dist_busStop")
+# Mall
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, mall,
+                                     "dist_mall")
+# Hawker
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, hawker,
+                                     "dist_hawker")
+# Supermarket
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, supermarket,
+                                     "dist_supermarket")
+# Park
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, park,
+                                     "dist_park")
+# Kindergartens
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, kindergartens,
+                                     "dist_kindergarten")
+# ChildCareServices
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, childcare,
+                                     "dist_childcare")
+# Eldercare
+HDBresale_sf <- add_nearest_distance(HDBresale_sf, eldercare,
+                                     "dist_eldercare")
+
+```
+
+## 5.5 Computing Nearby Count of Facilities
+
+Based on the article referenced in the Objective section, a walking distance of 5–10 minutes corresponds roughly to 400–800 meters when walking at a speed of 5 km/h. Therefore, the neraby count of facilities will use the standard to evaluate the distance:
+
+**Transportation**
+
+-   **Train Stations:** Based on section 5.3.2 *Train Stations: MRT & LRT*, we observe that although train stations are spread across the island, regions in the north and east are less accessible due to lower station density. Therefore, an 800-meter threshold will be used to count nearby train stations for each unit.
+
+-   **Bus Stops:** Compared to MRT and LRT stations, bus stops are denser and more evenly distributed across Singapore. Hence, a 300-meter threshold will be used.
+
+**Recreation & Shopping Facilities**
+
+-   **Parks:** For families with children, elderly residents, and pets, playgrounds and leisure spaces are important. A walking distance within 600 meters is considered desirable.
+
+-   **Malls:** According to section [5.3.4 Shopping Mall], there are approximately 235 malls in Singapore, which is relatively limited. Therefore, an 800-meter distance is considered desirable.
+
+-   **Supermarkets:** Based on section [5.3.7 Supermarket], supermarkets are more densely located than malls, with 524 outlets recorded. Since it would be inconvenient to carry groceries for long distances (based on personal expereience), a 400-meter threshold will be applied.
+
+-   **Hawker Centres:** There are only 127 hawker centres across the island. As a result, a walking distance of 600 meters will be used.
+
+**Schools & Care Services**
+
+-   **Eldercare Services:** Based on section [5.3.12 Eldercare Service], there are only 133 eldercare facilities in Singapore, which is lower in density compared to childcare and kindergartens. Therefore, an 600-meter threshold is considered desirable.
+
+-   **Childcare Services:** With over 2,000 childcare facilities across Singapore, the density is high, and a 400-meter threshold will be applied.
+
+-   **Kindergartens:** After removing duplicate observations, there are around 400 kindergartens. Hence, a walking distance of 600 meters will be used.
+
+-   **Top 50 Primary School:** Based on section [5.3.3 Top 50 Primary School], the 1-km threshold will be applied.
+
+The code below is a reusable formula that calculates the count of nearby facilities, using a default radius of 400 meters:
+
+```{r}
+#| eval: false
+
+add_nearby_count <- function(hdb_sf, facility_sf,new_col_name,radius = 400) {
   
   facility_sf <- st_transform(facility_sf, 3414)
   nearby_list <- st_is_within_distance(hdb_sf, facility_sf, dist = radius)
@@ -627,94 +1440,50 @@ add_nearby_count <- function(hdb_sf, facility_sf,new_col_name,radius = 350) {
   
   return(hdb_sf)
 }
-
 ```
 
 ```{r}
 #| eval: false
 
-# Primary School
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, primary_school, "dist_top_primary_sch")
+# Transportation
+HDBresale_sf <- add_nearby_count(HDBresale_sf, Train, "train_800m",800)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, BusStop, "busStop_300m",300)
 
-# BusStop
-BusStop <- st_read(dsn = "data/rawdata/BusStop_Aug2025",
-               layer = "BusStop") %>%st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, BusStop, "dist_busStop")
-
-
-# Mall
-mall <- read_csv("data/rawdata/singapore_malls_pois.csv")%>%
-st_as_sf(coords = c("lon", "lat"),crs = 4326)%>%
-st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, mall, "dist_mall")
-
-# Hawker
-hawker <- st_read("data/rawdata/HawkerCentresGEOJSON.geojson") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, hawker, "dist_hawker")
-
-# Supermarket
-supermarket <- st_read("data/rawdata/SupermarketsGEOJSON.geojson") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, supermarket, "dist_supermarket")
-
-# Park
-park <- st_read("data/rawdata/Parks.geojson") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, park, "dist_park")
-
-# Kindergartens
-kindergartens <- st_read("data/rawdata/Kindergartens.geojson") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, kindergartens, "dist_kindergarten")
-
-# ChildCareServices
-childcare <- st_read("data/rawdata/ChildCareServices.geojson") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, childcare, "dist_childcare")
-
-# Preschool
-preschool <- st_read("data/rawdata/PreSchoolsLocation.kml") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, preschool, "dist_preschool")
-
-# Clinics
-clinics <- st_read("data/rawdata/CHASClinics.geojson") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, clinics, "dist_clinics")
-
-# Eldercare
-eldercare <- st_read(dsn = "data/rawdata/EldercareServicesSHP",
-               layer = "ELDERCARE") %>% st_transform(3414)
-HDBresale_sf <- add_nearest_distance(HDBresale_sf, eldercare, "dist_elderlycare")
-
-
-```
-
-```{r}
-#| eval: false
-
+# Recreation & Shopping Facilities
 HDBresale_sf <- add_nearby_count(HDBresale_sf, park,"park_600m",600)
-HDBresale_sf <- add_nearby_count(HDBresale_sf, preschool, "preschool_350m",350)
-HDBresale_sf <- add_nearby_count(HDBresale_sf, BusStop, "busStop_350m",350)
-HDBresale_sf <- add_nearby_count(HDBresale_sf, childcare, "childcare_350m",350)
-HDBresale_sf <- add_nearby_count(HDBresale_sf, kindergartens, "kindergartens_350m",350)
-HDBresale_sf <- add_nearby_count(HDBresale_sf, primary_school, "top_primary_sch_1km",1000)
-HDBresale_sf <- add_nearby_count(HDBresale_sf, supermarket, "supermarket_500m",500)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, supermarket, "supermarket_400m",400)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, mall, "mall_800m",800)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, hawker, "hawker_600m",600)
+
+# Schools & Care Services
+HDBresale_sf <- add_nearby_count(HDBresale_sf, eldercare, "eldercare_600m",600)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, childcare, "childcare_400m",400)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, kindergartens, "kindergartens_600m",600)
+HDBresale_sf <- add_nearby_count(HDBresale_sf, top50_primary_school, "top_primary_sch_1km",1000)
+
+
 ```
 
 ```{r}
 #| eval: false
-write_rds(HDBresale_sf,"data/HDBresale_sf.rds") 
+write_rds(HDBresale_sf,"data/rds/HDBresale_sf.rds") 
 ```
 
 ```{r}
-HDBresale_sf <- read_rds("data/HDBresale_sf.rds")
+#| echo: false
+HDBresale_sf <- read_rds("data/rds/HDBresale_sf.rds")
 ```
 
-# 6 Exploratory Data Analysis
-
-## 6.1 Visualize the distribution for derived variables
+## 5.6 Visualize the distribution for derived variables
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
 
-df <- HDBresale_sf[, c(7, 10, 11, 13, 15,16,18:38)] %>% st_drop_geometry()
+df <- HDBresale_sf[, c(7, 10, 11, 13, 15,16,17,22:43)] %>% st_drop_geometry()
 df$floor_level <- as.numeric(df$floor_level)
+df$mature_estate <- as.numeric(df$mature_estate)
+
 
 HDBresale_sf_num <- df %>% 
   pivot_longer(cols = everything(), 
@@ -724,7 +1493,7 @@ HDBresale_sf_num <- df %>%
 ggplot(HDBresale_sf_num, aes(x = value)) +
   geom_histogram(bins = 30, fill = "#93A4CC", color = "grey30") +
   facet_wrap(~ variable, scales = "free") +
-  labs(title = "Histograms of All Numeric Variables",
+  labs(title = "Distributions for Original Attributes",
        x = "", y = "Frequency") +
   scale_x_continuous(labels = comma) +
   theme_minimal()+
@@ -738,30 +1507,186 @@ ggplot(HDBresale_sf_num, aes(x = value)) +
 ::: callout-note
 ## Observation
 
-most of variables are right-skewed
+-   **Continuous Variables**
+
+    As shown in the plot above, most distances to facilities and other continuous variables are slightly right-skewed, except for `busstop_300m`, `dist_CBD`, and `floor_area_sqm`. In addition, the continuous variables are measured on different scales, some in meters and others as counts. Therefore, skewed variables will be transformed, and all independent continuous variables will be standardized (subtracting the mean and dividing by the standard deviation) before model building.
+
+-   **Categorical Variables (Factors)**
+
+    The categorical variables include `floor_level`, `mature_estate`, and `model_group`. These variables will be **converted to factors** prior to model preparation.
 :::
 
-## 6.2 Average Resale Price per sqm vs Total Resale Units by Subzone
+## 5.7 Data Preparation for GWR model
 
-The code below calculate the resale units and average resale price in each subzone, if no resale records, then won't count. In addition, the second code filter the subzones with highest average resale price by jenks method with n=5, where is above SGD 1,028,435
+We first removed the variables that were not required for the analysis:
 
 ```{r}
-price_VS_units_sold <- st_join(mpsz19, HDBresale_sf) %>% 
-  group_by(PLN_AREA_N,SUBZONE_N) %>%       
-  summarise(
-    count = sum(!is.na(resale_price)),  
-    avg_price = mean(resale_price, na.rm = TRUE),
-    avg_price_sqm = mean(price_per_sqm, na.rm = TRUE),
-    avg_remaining_lease = mean(remaining_lease, na.rm = TRUE),
-  .groups = "drop"
-  )
+#| eval: false
 
+mdata <- HDBresale_sf %>%
+  arrange(resale_date)%>%
+  select(price_per_sqm, everything(), 
+         -c(month,town,flat_type,block,street_name,storey_max,storey_range,flat_model,
+            lease_commence_date,SUBZONE_N,REGION_N,PLN_AREA_N,resale_price,resale_date))
+
+```
+
+Next, we transform the categorical / binary data into factors:
+
+```{r}
+#| echo: false
+mdata<- read_rds("data/rds/mdata.rds")
+```
+
+```{r}
+mdata_transformed <- mdata %>%
+  mutate(
+    model_group = as.factor(model_group),
+    floor_level = as.factor(floor_level),
+    mature_estate = as.factor(as.numeric(mature_estate)))
+```
+
+Next, we transform the skewed dependent variable: price_per_sqm and other continous indepemdemat varaibles using log(1+x)
+
+```{r}
+# continous vars which need to be tranformed
+log_vars <- c("train_800m", "park_600m", "supermarket_400m",
+              "mall_800m", "hawker_600m", "eldercare_600m", 
+              "top_primary_sch_1km", "price_per_sqm", "floor_area_sqm", 
+              "kindergartens_600m", "dist_top_primary_sch", "dist_busStop")
+
+sqrt_vars <- c("busStop_300m", "childcare_400m", "dist_childcare", "dist_eldercare",
+               "dist_kindergarten", "dist_train", "dist_supermarket",
+               "dist_mall", "dist_hawker", "dist_park")
+
+# Apply transformations and rename
+mdata_transformed <- mdata_transformed %>%
+  # Log transformation
+  mutate(across(all_of(log_vars), ~ log(.x + 1))) %>%
+  rename_with(~ paste0(.x, "_log"), all_of(log_vars)) %>%
+  # Square-root transformation
+  mutate(across(all_of(sqrt_vars), ~ sqrt(.x))) %>%
+  rename_with(~ paste0(.x, "_sqrt"), all_of(sqrt_vars))
+
+write_rds(mdata_transformed,"data/rds/mdata_transformed.rds")
 ```
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
+
+df <- mdata_transformed%>% 
+  st_drop_geometry() %>%
+  select(-c(floor_level,model_group,mature_estate))
+
+df <- df %>% 
+  pivot_longer(cols = everything(), 
+               names_to = "variable", 
+               values_to = "value")
+
+ggplot(df, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "#93A4CC", color = "grey30") +
+  facet_wrap(~ variable, scales = "free") +
+  labs(title = "Distributions for Transformed Attributes",
+       x = "", y = "Frequency") +
+  scale_x_continuous(labels = comma) +
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14, hjust = 0.5),
+        panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank()
+        )
+
+```
+
+Notice the scale for the independent variables are different now. Hence, the code below will apply standardiztion for all indepent continous variables:
+
+```{r}
+log_vars <- setdiff(log_vars, "price_per_sqm")
+log_names  <- paste0(log_vars,"_log")
+sqrt_names <- paste0(sqrt_vars,"_sqrt")
+std_vars <- c("dist_CBD","remaining_lease","unit_age")
+
+mdata_std <- mdata_transformed %>%
+  mutate(
+    across(all_of(c(log_names, sqrt_names,std_vars)),
+           ~ (.x - mean(.x, na.rm = TRUE)) / sd(.x, na.rm = TRUE)))%>%
+  rename_with(~ paste0("std_",.x), all_of(c(log_names, sqrt_names,std_vars)))
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+df <- mdata_std%>% 
+  st_drop_geometry() %>%
+  select(-c(floor_level,model_group,mature_estate))
+
+df <- df %>% 
+  pivot_longer(cols = everything(), 
+               names_to = "variable", 
+               values_to = "value")
+
+ggplot(df, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "#93A4CC", color = "grey30") +
+  facet_wrap(~ variable, scales = "free") +
+  labs(title = "Distributions for Transformed + Standardized Attributes",
+       x = "", y = "Frequency") +
+  scale_x_continuous(labels = comma) +
+  theme_minimal()+
+  theme(plot.title = element_text(size = 14, hjust = 0.5),
+        panel.background = element_rect(fill = "#f6f6f6"),
+        plot.background = element_rect(fill = "#f6f6f6",color = NA),
+        panel.grid = element_blank()
+        )
+```
+
+# 6 Exploratory Data Analysis
+
+## 6.1 Units sold vs Price per sqm by subzone
+
+The code below calculate the resale units and average resale price in each subzone, if no resale records, then won't count.
+
+```{r}
+price_VS_units_sold <- st_join(
+  mpsz19,
+  HDBresale_sf %>% select(-c(PLN_AREA_N, SUBZONE_N))
+) %>%
+  group_by(PLN_AREA_N, SUBZONE_N) %>%
+  summarise(
+    count = sum(!is.na(resale_price)),
+    avg_price = mean(resale_price, na.rm = TRUE),
+    avg_price_sqm = mean(price_per_sqm, na.rm = TRUE),
+    avg_remaining_lease = mean(remaining_lease, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+mpsz19 <- mpsz19 %>%
+  left_join(mature_estate, by = "PLN_AREA_N")
+
+mpsz19$mature_estate <- factor(mpsz19$mature_estate, exclude = NA)
+
+
+```
+
+The code below creates an interactive map with three layers:
+
+1.  **Units sold vs average price per sqm:** shows HDB resale activity and pricing.
+2.  **CBD layer:** highlights the central business district.
+3.  **Mature estate layer:** indicates whether a planning area is a mature estate (`1`) or non-mature (`0`).
+
+Users can turn layers on or off to explore the map interactively. Additionally, clicking on a subzone displays detailed statistics, including the number of units sold, average remaining lease, average total resale price, and average price per sqm for that subzone:
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
 tmap_mode("view")
+
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="mature_estate",fill_alpha=0.9, lwd =0.2)+
+tm_shape(CBD) +
+  tm_polygons(col = "#8EB859", alpha = 0.9, border.col = "#8EB859") +  
+
 tm_shape(price_VS_units_sold) +
   tm_polygons(alpha=0.5,lwd=0.2) +
   tm_bubbles(
@@ -776,7 +1701,7 @@ tm_shape(price_VS_units_sold) +
 tm_layout(bg.color = "#f6f6f6",
           outer.bg.color = "#f6f6f6",
           frame = FALSE) +
-tm_title("Average HDB Resale Price vs Resale Units by Subzone",
+tm_title("Units sold vs Price per sqm by subzone",
          position = tm_pos_out("center", "top", "center"))+
   tm_view(set_zoom_limits = c(11,14))
 
@@ -787,10 +1712,10 @@ tmap_mode("plot")
 ::: callout-note
 ## Observation
 
-The resale price per sqm gradually decreased from CBD to Rest of singapore. However, we also can observe the resale units also
+From the plot above, we can observe that the price per sqm in Chinatown is the highest, which corresponds to HDBs located closest to the CBD. In addition, transactions in mature estates generally sold at higher prices compared to those in non-mature estates.
 :::
 
-## 6.3 Top 10 Subzones by Average Resale Price & Factors
+## 6.2 Top 10 Subzones by Average Resale Price & Factors
 
 Since we are interested in understanding which factors influence resale prices the most, we vary the fill aesthetic by different variables and use ggdist’s `stat_halfeye()` plot to visualize the distributions
 
@@ -799,7 +1724,6 @@ top10_subzones <- price_VS_units_sold %>%
   arrange(desc(avg_price_sqm)) %>%   
   slice_head(n = 10)              
 
-HDBresale_sf <- st_join(HDBresale_sf, mpsz19[, c("SUBZONE_N", "REGION_N")], left = TRUE)
 
 top10_resale <- HDBresale_sf %>%
   filter(SUBZONE_N %in% top10_subzones$SUBZONE_N)
@@ -836,8 +1760,8 @@ ggplot(top10_resale, aes(
     axis.line.x = element_line(color = "grey30"),
     axis.ticks = element_line(color = "grey30"),
     axis.title.y = element_text(size = 12),
-    axis.text.y = element_text(hjust = 0.5, size = 8),
-    axis.text.x = element_text(hjust = 0.5, size = 8,
+    axis.text.y = element_text(hjust = 0.5, size = 10),
+    axis.text.x = element_text(hjust = 0.5, size = 10,
                                margin = ggplot2::margin(t = 10)),
     axis.title.x = element_text(size = 10,
                                margin = ggplot2::margin(t = 10)),
@@ -853,6 +1777,8 @@ ggplot(top10_resale, aes(
 ## Flat Model
 
 ```{r}
+#| fig.width: 12
+#| fig.height: 8
 ggplot(top10_resale, aes(
   x = price_per_sqm,                      
   y = reorder(SUBZONE_N, price_per_sqm, FUN = median),
@@ -896,6 +1822,8 @@ ggplot(top10_resale, aes(
 ## Floor Level
 
 ```{r}
+#| fig.width: 12
+#| fig.height: 8
 ggplot(top10_resale, aes(
   x = price_per_sqm,                      
   y = reorder(SUBZONE_N, price_per_sqm, FUN = median),
@@ -936,9 +1864,11 @@ ggplot(top10_resale, aes(
   )
 ```
 
-# Number of Top 50 Primary School within 1 KM
+## Number of Top 50 Primary School within 1 KM
 
 ```{r}
+#| fig.width: 12
+#| fig.height: 8
 top10_resale$top_primary_sch_1km <- as.factor(top10_resale$top_primary_sch_1km)
 
 ggplot(top10_resale, aes(
@@ -982,122 +1912,74 @@ ggplot(top10_resale, aes(
 ```
 :::
 
-## 6.4 Scatter Plot between Resale Prices and Independent Variables
+## 6.3 Price per sqm vs Floor Area & Unit Age by Flat Model
 
-```{r}
-#| fig.width: 12
-#| fig.height: 12
-vars_to_compare <- setdiff(names(df), c("resale_price","price_per_sqm"))
-
-df_plot <- df %>%
-  mutate(across(all_of(vars_to_compare))) %>%
-  pivot_longer(
-    cols = all_of(vars_to_compare),
-    names_to = "variable",
-    values_to = "value"
-  )
-
-ggplot(df_plot, aes(x = value, y = price_per_sqm)) +
-  geom_point(alpha = 0.3, color="#93A4CC") +
-  geom_smooth(method = "lm", color = "black") +
-  facet_wrap(~ variable, scales = "free_x", ncol = 4) +
-  labs(
-    title = "Scatter Plots of Derived Variables vs Resale Price",
-    x = "Value",
-    y = "Resale Price (SGD)"
-  ) +
-  theme_minimal(base_size = 10) +
-  theme(
-    plot.title = element_text(size = 14, hjust = 0.5),
-    plot.background = element_rect(fill = "#f6f6f6", color = NA),
-    panel.background = element_rect(fill = "#f6f6f6", color = NA),
-    strip.background = element_rect(fill = "#e1e1e1"),
-    axis.text.x = element_text(angle = 0, hjust = 1, size = 8),
-    panel.grid = element_blank()
-  )
-
-```
-
-### 6.4.1 Remaining Lease
-
-```{r}
-#| fig.width: 15
-#| fig.height: 12
-
-ggplot(HDBresale_sf %>% st_drop_geometry(), 
-       aes(x = remaining_lease, 
-           y = resale_price, 
-           color = REGION_N)) +
-  geom_point(alpha = 0.6, size = 2) +
-  geom_text_repel(
-    aes(label = SUBZONE_N),
-    size = 3,
-    box.padding = 0.3,
-    point.padding = 0.5,
-    max.overlaps = 8
-  ) +
-  scale_color_brewer(palette = "Set2") +
-  labs(
-    title = "Remaining Lease vs Resale Price",
-    x = "Remaining Lease (years)",
-    y = "HDB Resale Price (SGD)",
-    color = "Planning Region"
-  ) +
-  theme_minimal()+
-  theme(plot.title = element_text(size = 14, hjust = 0.5),
-        panel.background = element_rect(fill = "#f6f6f6"),
-        plot.background = element_rect(fill = "#f6f6f6",color = NA),
-        panel.grid = element_blank()
-        )
-
-```
-
-## 6.5 Treemap by Planning Region, Subzone and Flatmodel
+The code below apply facet_wrap by flat model to see if flat model affect price per sqm:
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
 
-flat_summary <- HDBresale_sf %>%
-  st_drop_geometry() %>%
-  group_by(flat_model) %>%
-  summarise(
-    median_price = median(resale_price, na.rm = TRUE),
-    units_sold = n(),
-    .groups = "drop"
-  ) %>%
-  arrange(median_price) %>%
-  mutate(flat_model = factor(flat_model, levels = flat_model))  # order factor
-
-ggplot(HDBresale_sf %>% st_drop_geometry(), 
-       aes(x = factor(flat_model, levels = flat_summary$flat_model), 
-           y = resale_price)) +
-  geom_boxplot(alpha = 0.7, outlier.size = 1, fill="#93A4CC") +
-  # units sold
-  geom_point(data = flat_summary, 
-             aes(x = flat_model, y = median_price, size = units_sold),
-             color = "black", alpha = 0.6) +
-  scale_size_continuous(name = "Units Sold") +
+ggplot(HDBresale_sf, aes(x = floor_area_sqm, y = price_per_sqm)) +
+  geom_point(alpha = 0.4, size = 1.2, color = "#93A4CC") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.8) +
+  facet_wrap(~ flat_model) +  
   scale_y_continuous(labels = comma) +
   labs(
-    title = "HDB Resale Price by Flat Model (Ordered by Median Price)",
-    x = "Flat Model",
-    y = "Resale Price (SGD)",
-    fill = "Flat Model"
-  ) +
-  theme_classic()+
+    title = "Price per sqm vs Floor Area by Flat Model",
+    x = "Floor Area (sqm)",
+    y = "Resale Price per sqm (SGD)") +
+  theme_classic() +
   theme(
     plot.title = element_text(size = 12, hjust = 0.5),
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.title = element_text(size = 8),
-    legend.key.size = unit(0.3, "cm"),
-    legend.text = element_text(size = 8),
-    panel.background = element_rect(fill = "#f6f6f6", color = NA),
-    plot.background = element_rect(fill = "#f6f6f6", color = NA),
-    legend.background = element_rect(fill = "#f6f6f6")
-  )
+    panel.background = element_rect(fill = "#f6f6f6"),
+    plot.background = element_rect(fill = "#f6f6f6"),
+    strip.text = element_text(size = 10, face = "bold"))
+  
 
+kable(HDBresale_sf %>%
+  group_by(flat_model) %>%
+  summarise(
+    correlation = cor(floor_area_sqm, price_per_sqm),
+    n = n(),
+    mean_price_sqm = mean(price_per_sqm),
+    mean_floor_area = mean(floor_area_sqm)) %>%
+  arrange(correlation))
 ```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+ggplot(HDBresale_sf, aes(x = unit_age, y = price_per_sqm)) +
+  geom_point(alpha = 0.4, size = 1.2, color = "#93A4CC") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.8) +
+  facet_wrap(~ flat_model) +  
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Price per sqm vs Unit Age by Flat Model",
+    x = "Unit Age (years)",
+    y = "Resale Price per sqm (SGD)"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    panel.background = element_rect(fill = "#f6f6f6"),
+    plot.background = element_rect(fill = "#f6f6f6"),
+    strip.text = element_text(size = 10, face = "bold")
+  )
+```
+
+::: callout-note
+## Observation
+
+-   **Size matters differently by type**: For Model A, Improved flats and Premium apartments, buying larger units offers better per-sqm value
+-   **Age premium varies**: Some models (DBSS, New Generation, Simplified) retain value better over time
+-   **Premium flats depreciate fastest**: Clear age-related decline in value
+-   **Model A has highest variance**: Other factors beyond size and age drive pricing significantly
+:::
+
+## 6.4 Tree map by Region, Subzone and Model Type
 
 ```{r}
 treemap_data <- HDBresale_sf %>%
@@ -1108,6 +1990,7 @@ treemap_data <- HDBresale_sf %>%
     med_resale_price= median(resale_price, na.rm = TRUE),
     .groups = "drop"
   )
+
 ```
 
 ```{r}
@@ -1129,38 +2012,12 @@ treemap(treemap_data,
 ::: callout-note
 ## Observation
 
-From both box-plot and tree map, We can see Model A is the most common model across all the region. Based on the treemap, we can observe that although overall resale price is mainly affected by location, different model like Type S1 vs standard also has huge difference, hence, the model type should also considered as variable for the predictive model.
+The plot reveals that the North and East regions dominate transaction volumes, with Tampines, Yishun, and Woodlands leading as the most liquid markets, primarily driven by Model A flat transactions. The data shows a clear geographic price gradient within the Model A segment: flats in the Central Region command the highest premiums, while specific subzones like Clementi in the West and Cheng San and Chong Boon in the North Region also achieve notably higher resale prices compared to other subzones within their respective regions. This pattern suggests that even within the dominant Model A flat type, location premiums are highly localized, with certain mature estates and central areas significantly outpricing their regional counterparts despite similar flat specifications.
 :::
-
-The model will be split into 4 groups based on their box plot distribution:
-
--   Low (1): Standard, Simplified, Improved, Model A2, New Genegration
--   Mid (2): Model A, Premium Apartment, Adjoined Flat
--   Mid-High (3): DBSS, Terrace
--   High (4): Premium Apartment Loft, Type S1
-
-```{r}
-HDBresale_sf <- HDBresale_sf %>%
-  mutate(model_group = case_when(
-    flat_model %in% c("Standard", "Simplified", "Improved", "Model A2", "New Generation") ~ 1,
-    flat_model %in% c("Model A", "Premium Apartment", "Adjoined flat") ~ 2,
-    flat_model %in% c("DBSS", "Terrace") ~ 3,
-    flat_model %in% c("Premium Apartment Loft", "Type S1") ~ 4,
-    TRUE ~ NA 
-  ))
-```
 
 # 7 Calibrate Explanatory Model
 
-## 7.1 **Computing Correlation Matrix**
-
-```{r}
-mdata <- HDBresale_sf %>%
-  arrange(resale_date)%>%
-  select(price_per_sqm, everything(), 
-         -c(month,town,flat_type,block,street_name,storey_max,storey_range,flat_model,
-            lease_commence_date,SUBZONE_N,REGION_N,resale_price,resale_date))
-```
+## 7.1 Computing Correlation Matrix
 
 ```{r}
 #| fig.width: 12
@@ -1168,7 +2025,7 @@ mdata <- HDBresale_sf %>%
 
 par(bg="#f6f6f6")
 
-mdata_nogeo <- mdata %>% 
+mdata_nogeo <- mdata_std%>% 
   st_drop_geometry() %>%
   mutate(across(where(is.factor), ~ as.numeric(.)))
 
@@ -1184,14 +2041,21 @@ From the correlation matrix above, we observe that three pairs of independent va
 
 -   **Remaining lease vs. unit_age (-1):** These variables capture the same concept and are interchangeable. Therefore, `unit_age` will be dropped.
 
--   **dist_childcare vs. dist_preschool (0.99):** Since preschool has more data points, `dist_childcare` will be removed.
+```{r}
+mdata_std <- mdata_std %>%
+  select(-c(std_unit_age))
+```
 
--   **preschool_350m vs. childcare_350m (0.97):** For the same reason as above, `childcare_350m` will be dropped.
+```{r}
+#| echo: false
+#| eval: false
+write_rds(mdata_std,"data/rds/mdata_std.rds")
+```
 
-    ```{r}
-    mdata <- mdata %>%
-      select(-c(unit_age,dist_childcare,childcare_350m))
-    ```
+```{r}
+#| echo: false
+mdata_std <- read_rds("data/rds/mdata_std.rds")
+```
 
 ```{r}
 #| fig.width: 12
@@ -1199,7 +2063,7 @@ From the correlation matrix above, we observe that three pairs of independent va
 
 par(bg="#f6f6f6")
 
-mdata_nogeo <- mdata %>% 
+mdata_nogeo <- mdata_std %>% 
   st_drop_geometry() %>%
   mutate(across(where(is.factor), ~ as.numeric(.)))
 
@@ -1211,254 +2075,772 @@ corrplot::corrplot(cor(mdata_nogeo[, 2:23]),
          type = "upper")
 ```
 
+## 7.2 Building MLR Models
+
+After computing the correlation matrix, we will check for the presence of multicollinearity and assess normality and linearity. Since we have both the original and transformed data, we want to determine which dataset is more suitable for building regression models.
+
+Transformed data, while potentially improving model assumptions, can be less intuitive and harder to interpret compared to the original data. Therefore, if the test results show no significant differences between the two datasets, we will proceed with the original data for training the GWR model; otherwise, we will use the transformed data.
+
+### 7.2.1 MLR Models
+
+::: panel-tabset
+## Original Data
+
 ```{r}
-mdata <- mdata %>%
-  mutate(
-    model_group = as.factor(model_group),
-    floor_level = as.factor(floor_level)   # your 5-level bin
+HDBresale_mlr_orig <- lm(
+  formula = price_per_sqm ~ 
+    floor_area_sqm + remaining_lease + floor_level + model_group + mature_estate +
+    train_800m + busStop_300m +
+    park_600m + supermarket_400m + mall_800m +
+    hawker_600m + eldercare_600m + childcare_400m +
+    kindergartens_600m + top_primary_sch_1km +
+    dist_CBD + dist_train + dist_top_primary_sch + dist_busStop +
+    dist_mall + dist_hawker + dist_supermarket + dist_park +
+    dist_kindergarten + dist_childcare + dist_eldercare,
+  data = mdata
+)
+
+summary(HDBresale_mlr_orig)
+```
+
+## Transformed Data
+
+```{r}
+HDBresale_mlr <- lm(
+  formula = price_per_sqm_log ~ std_floor_area_sqm_log + std_remaining_lease +
+    floor_level + model_group + mature_estate +
+    std_train_800m_log + std_busStop_300m_sqrt +
+    std_park_600m_log + std_supermarket_400m_log + std_mall_800m_log +
+    std_hawker_600m_log + std_eldercare_600m_log + std_childcare_400m_sqrt +
+    std_kindergartens_600m_log + std_top_primary_sch_1km_log +
+    std_dist_CBD + std_dist_train_sqrt + std_dist_top_primary_sch_log +
+    std_dist_busStop_log + std_dist_mall_sqrt + std_dist_hawker_sqrt +
+    std_dist_supermarket_sqrt + std_dist_park_sqrt + std_dist_kindergarten_sqrt +
+    std_dist_childcare_sqrt + std_dist_eldercare_sqrt,
+  data = mdata_std)
+summary(HDBresale_mlr) 
+```
+:::
+
+**The MLR model with transformed data** shows slightly **better** performance, with an adjusted R-squared of 88% compared to 85.6%, indicating it has greater explanatory power for the variation in the response variable.
+
+Some variables are not statistically significant in the global model (MLR); however, this does not necessarily imply they will be unimportant in a local model. Therefore, all variables will be retained for the geographically weighted regression (GWR) model
+
+### 7.2.3 Multicollinearity test
+
+Next, we will examine whether any variables exhibit multicollinearity issues. **Multicollinearity** occurs when independent variables are not truly independent, meaning a change in one is associated with a change in another. This makes it hard for the model to isolate each variable’s influence on the outcome.
+
+In the code chunks below, the [`check_collinearity()`](https://easystats.github.io/performance/reference/check_collinearity.html) of **performance** package is used to test if there are sign of multicollinearity.
+
+::: panel-tabset
+## Original Data
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+mlr_orig.vif <- check_collinearity(HDBresale_mlr_orig)
+
+par(bg="#f6f6f6")
+plot(mlr_orig.vif)+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.background = element_rect(fill = "#f6f6f6"),  
+    plot.background = element_rect(fill = "#f6f6f6"))
+
+```
+
+## Transformed Data
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+mlr.vif <- check_collinearity(HDBresale_mlr)
+
+par(bg="#f6f6f6")
+plot(mlr.vif) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.background = element_rect(fill = "#f6f6f6"),  
+    plot.background = element_rect(fill = "#f6f6f6"))
+```
+:::
+
+From both VIF plots above, all variables have values below 5, indicating that multicollinearity is not a concern.
+
+### 7.2.4 Test for Non-Linearity
+
+In multiple linear regression, it is important for us to test the assumption that linearity and additivity of the relationship between dependent and independent variables.
+
+::: panel-tabset
+## Original Data
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+check_model(HDBresale_mlr_orig,check = "linearity")
+```
+
+## Transformed Data
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+check_model(HDBresale_mlr,check = "linearity")
+```
+:::
+
+The residual plots above suggest the **transformed data is better** in terms of linearity. It indicates that the transformation reduced heteroscedasticity and made the relationship between predictors and log(price_per_sqm) closer to linear.
+
+### 7.2.4 Test for Normality Assumption
+
+In the code chunk below, `check_normality()` of performance package is used to perform normality assumption test on both models:
+
+::: panel-tabset
+## Original Data
+
+```{r}
+check_normality(HDBresale_mlr_orig)
+```
+
+## Transformed Data
+
+```{r}
+check_normality(HDBresale_mlr)
+```
+:::
+
+The output above shows that the p-value for the normality test of the model using the original data is less than the significance level of 0.05. Therefore, we reject the normality assumption at the 95% confidence level. In contrast, the transformed data indicate that the residuals are approximately normally distributed.
+
+Based on these results, we conclude that the model trained on the transformed data provides more reliable results, as it satisfies both the normality and linearity assumptions
+
+## 7.3 Building Hedonic Pricing Models using GWmodel
+
+From the EDA section, we observed that some regions have fewer units sold than others. To ensure that the global model has enough neighbors for building reliable local regressions, we applied an **adaptive bandwidth approach** for the GWR model.
+
+The optimal bandwidth was determined using two methods: the cross-validation (CV) approach, which minimizes prediction error, and the corrected Akaike Information Criterion (AICc) approach, which balances model fit and complexity. We compared the results of both methods and selected the **bandwidth that produced the lower AICc**.
+
+After fitting the GWR model using the chosen bandwidth, we evaluated its performance using the **AICc**, **adjusted R²**, and residual diagnostics to ensure a good fit and that model assumptions were reasonably satisfied.
+
+### 7.3.1 Compute adaptive bandwidth using CV approach
+
+The code below computes the adaptive bandwidth using `bw.gwr()` with the CV approach and a Gaussian kernel, ensuring every data point has enough neighbors:
+
+```{r}
+#| eval: false
+bw_adp_CV <- bw.gwr(
+  formula = price_per_sqm_log ~ std_floor_area_sqm_log + std_remaining_lease +
+    floor_level + model_group + mature_estate +
+    std_train_800m_log + std_busStop_300m_sqrt +
+    std_park_600m_log + std_supermarket_400m_log + std_mall_800m_log +
+    std_hawker_600m_log + std_eldercare_600m_log + std_childcare_400m_sqrt +
+    std_kindergartens_600m_log + std_top_primary_sch_1km_log +
+    std_dist_CBD + std_dist_train_sqrt + std_dist_top_primary_sch_log +
+    std_dist_busStop_log + std_dist_mall_sqrt + std_dist_hawker_sqrt +
+    std_dist_supermarket_sqrt + std_dist_park_sqrt + std_dist_kindergarten_sqrt +
+    std_dist_childcare_sqrt + std_dist_eldercare_sqrt,
+  data = mdata_std,
+  approach = "CV",
+  kernel = "gaussian",
+  adaptive = TRUE,
+  longlat = FALSE
+)
+write_rds(bw_adp_CV,"data/rds/bw_adp_CV.rds")
+```
+
+```{r}
+bw_adp_CV <- read_rds("data/rds/bw_adp_CV.rds")
+bw_adp_CV
+```
+
+The adaptive bandwidth is 252 using CV method. Next, the code below is used to calibrate the gwr model using adaptive bandwidth and gaussian kernel:
+
+```{r}
+#| eval: false
+
+gwr_adaptive_CV <- gwr.basic(
+  formula = price_per_sqm_log ~ std_floor_area_sqm_log + std_remaining_lease +
+    floor_level + model_group + mature_estate +
+    std_train_800m_log + std_busStop_300m_sqrt +
+    std_park_600m_log + std_supermarket_400m_log + std_mall_800m_log +
+    std_hawker_600m_log + std_eldercare_600m_log + std_childcare_400m_sqrt +
+    std_kindergartens_600m_log + std_top_primary_sch_1km_log +
+    std_dist_CBD + std_dist_train_sqrt + std_dist_top_primary_sch_log +
+    std_dist_busStop_log + std_dist_mall_sqrt + std_dist_hawker_sqrt +
+    std_dist_supermarket_sqrt + std_dist_park_sqrt + std_dist_kindergarten_sqrt +
+    std_dist_childcare_sqrt + std_dist_eldercare_sqrt,
+  data = mdata_std,
+  bw=bw_adp_CV, 
+  adaptive = TRUE,
+  kernel = 'gaussian', 
+  longlat = FALSE)
+```
+
+```{r}
+#| eval: false
+write_rds(gwr_adaptive_CV,"data/rds/gwr_adaptive_CV.rds")
+```
+
+```{r}
+gwr_adaptive_CV <- read_rds("data/rds/gwr_adaptive_CV.rds")
+gwr_adaptive_CV
+```
+
+The report shows that the AICc of the gwr is -27660.59 which is significantly smaller than the global multiple linear regression model of -19191.48. A much smaller AICc value indicates that the model provides a better balance of goodness-of-fit and model complexity.
+
+In addition, the GWR model fits the data much better than the global MLR model (Adjusted R-squared 0.9554 vs. 0.8807), showing that the relationships between variables vary by location and are better captured when spatial differences are considered.
+
+### 7.3.2 Compute adaptive bandwidth using AIC approach
+
+The code below computes the adaptive bandwidth using `bw.gwr()` with the AIC approach and a Gaussian kernel:
+
+```{r}
+#| eval: false
+
+bw_adp_AIC <- bw.gwr(
+  formula = price_per_sqm_log ~ std_floor_area_sqm_log + std_remaining_lease +
+    floor_level + model_group + mature_estate +
+    std_train_800m_log + std_busStop_300m_sqrt +
+    std_park_600m_log + std_supermarket_400m_log + std_mall_800m_log +
+    std_hawker_600m_log + std_eldercare_600m_log + std_childcare_400m_sqrt +
+    std_kindergartens_600m_log + std_top_primary_sch_1km_log +
+    std_dist_CBD + std_dist_train_sqrt + std_dist_top_primary_sch_log +
+    std_dist_busStop_log + std_dist_mall_sqrt + std_dist_hawker_sqrt +
+    std_dist_supermarket_sqrt + std_dist_park_sqrt + std_dist_kindergarten_sqrt +
+    std_dist_childcare_sqrt + std_dist_eldercare_sqrt,
+  data = mdata_std,
+  approach = "AIC",
+  kernel = "gaussian",
+  adaptive = TRUE,
+  longlat = FALSE
+)
+write_rds(bw_adp_AIC,"data/rds/bw_adp_AIC.rds")
+```
+
+```{r}
+#| eval: false
+
+bw_adp_AIC<- read_rds("data/rds/bw_adp_AIC.rds")
+
+gwr_adaptive_AIC <- gwr.basic(
+  formula = price_per_sqm_log ~ std_floor_area_sqm_log + std_remaining_lease +
+    floor_level + model_group + mature_estate +
+    std_train_800m_log + std_busStop_300m_sqrt +
+    std_park_600m_log + std_supermarket_400m_log + std_mall_800m_log +
+    std_hawker_600m_log + std_eldercare_600m_log + std_childcare_400m_sqrt +
+    std_kindergartens_600m_log + std_top_primary_sch_1km_log +
+    std_dist_CBD + std_dist_train_sqrt + std_dist_top_primary_sch_log +
+    std_dist_busStop_log + std_dist_mall_sqrt + std_dist_hawker_sqrt +
+    std_dist_supermarket_sqrt + std_dist_park_sqrt + std_dist_kindergarten_sqrt +
+    std_dist_childcare_sqrt + std_dist_eldercare_sqrt,
+  data = mdata_std,
+  bw=bw_adp_AIC, 
+  adaptive = TRUE,
+  kernel = 'gaussian', 
+  longlat = FALSE)
+
+write_rds(gwr_adaptive_AIC,"data/rds/gwr_adaptive_AIC.rds")
+```
+
+```{r}
+gwr_adaptive_AIC <- read_rds("data/rds/gwr_adaptive_AIC.rds")
+gwr_adaptive_AIC
+```
+
+Comparing the two adaptive bandwidth selection methods, the AIC approach selects a bandwidth of 245, while cross-validation selects 252. Although the AIC-selected model produces a slightly higher (i.e., worse) AIC value (–27,642.21 vs. –27,660.59 from CV), both models achieve the same adjusted R-squared of 0.9554. This adjusted R-squared indicates that approximately 95.5% of the variation in resale prices is explained by the model, demonstrating very strong explanatory power.
+
+Because AIC focuses on balancing goodness-of-fit with model complexity, the small difference in AIC suggests that both bandwidths perform similarly. Given the nearly identical explanatory strength and the slightly more efficient (smaller) bandwidth, the AIC-selected bandwidth of 245 is chosen for further analysis.
+
+### 7.3.3 Back-standardize coefficients for the coefficients
+
+```{r}
+
+# Step 1: Identify standardized variables in GWR dataset
+std_vars <- grep("^std_", names(mdata_std), value = TRUE)
+
+
+# Step 2: Compute SD of the transformed variables (before standardization)
+# Remove 'std_' prefix to get corresponding transformed variable in mdata_transformed
+sd_vars <- sapply(std_vars, function(v) {
+  orig_var <- sub("^std_", "", v)
+  if (!orig_var %in% names(mdata_transformed)) stop(paste("Original variable", orig_var, "not found"))
+  sd(mdata_transformed[[orig_var]])  # SD of transformed variable (log or sqrt)
+})
+
+# Step 3: Extract GWR coefficients from sf object
+gwr_coefs <- as.data.frame(gwr_adaptive_AIC$SDF)
+
+# Step 4: Back-standardize coefficients
+for (v in std_vars) {
+  if (v %in% names(gwr_coefs)) {
+    sd_val <- sd_vars[v]  # SD from transformed dataset
+    # Create new column with back-standardized coefficient (elasticity-style)
+    gwr_coefs[[paste0(v, "_elasticity")]] <- gwr_coefs[[v]] * sd_val
+  }
+}
+
+# Step 5: Inspect results
+head(gwr_coefs)
+
+
+```
+
+```{r}
+HDBresale_gwr <- gwr_coefs %>%
+  st_as_sf() %>%          
+  st_transform(crs = 3414)
+```
+
+```{r}
+
+elasticity_vars <- HDBresale_gwr %>%
+  st_drop_geometry()%>%
+  select(
+    floor_level2, floor_level3, floor_level4, floor_level5,
+    model_group2, model_group3, model_group4,
+    mature_estate2,contains("_elasticity")
   )
+
+summary_stats <- elasticity_vars %>%
+  summarise(across(everything(), list(
+    min = ~min(.),
+    Q1  = ~quantile(., 0.25),
+    median = ~median(.),
+    Q3 = ~quantile(., 0.75),
+    max = ~max(.)
+  )))
+
+# Transpose the table so variables are rows, stats are columns
+summary_table <- summary_stats %>%
+  tidyr::pivot_longer(cols = everything(),
+                      names_to = c("variable", "stat"),
+                      names_pattern = "^(.*)_(min|Q1|median|Q3|max)$",
+                      values_to = "value") %>%
+  tidyr::pivot_wider(names_from = stat, values_from = value) %>%
+  mutate(across(min:max, ~round(as.numeric(.), 4)))
+
+kable(summary_table)
+
+
 ```
 
-## 7.3 **Building Hedonic Pricing Models using GWmodel**
+The table above has already been scaled back from standardization but still in log/sqrt transfomation. Below is the summary of local model results:
 
-### 7.3.1 Compute fixed bandwith
+**Floor Level:** Overall, higher floors tend to have higher resale prices per sqm. Low floors (L4–L6) show an increase of around 3.7% compared to the reference floor level (L1–L3), mid-high floors (L7–L9) show around 6.5% higher prices, and high floors (L10–L21) show a median increase of around 9%. Only very high floors above level 22 show a slight negative effect in some local estimates, likely due to sparse observations at those levels.
+
+**Flat Model Group:** Different flat types show varying price effects. Compared to the reference model group (Standard, Simplified, Improved, Model A2, New Genegration, Adjoined Flat), Model Group 2(Model A, Premium Apartment) shows around 0.5% higher price, Model Group 3 (DBSS, Terrace) shows around 15% higher, while Model Group 4 (Premium Apartment Loft, Type S1)has more variable effects (outliers) across locations.
+
+**Mature Estate:** Being located in a mature estate increases resale prices per sqm by around 13% compared to non-mature estates.
+
+**Remaining Lease:** Longer remaining lease has a strong positive effect, with a median elasticity of 1.64, indicating that flats with more remaining lease tend to sell at substantially higher prices.
+
+**Proximity to Amenities:** Most amenities show small effects. Distance to CBD has a strong negative effect, indicating that flats closer to the CBD sell at higher prices. Other facilities such as malls, parks, train stations, hawkers and childcare show varying local effects, generally small in magnitude.
+
+## 7.4 Visualize Results for Local Models
+
+### 7.4.1 R-squared
 
 ```{r}
-#| eval: false
-bw_fixed_CV <- bw.gwr(
-  formula = price_per_sqm ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_park +
-    dist_kindergarten + dist_preschool + dist_clinics + dist_elderlycare +
-    MRT_600m + park_600m + preschool_350m + busStop_350m + kindergartens_350m +
-    top_primary_sch_1km + supermarket_500m + model_group,
-  data = mdata,
-  approach = "CV",
-  kernel = "gaussian",
-  adaptive = FALSE,
-  longlat = FALSE
-)
+#| fig.width: 12
+#| fig.height: 8
+
+tmap_mode("plot")
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "Local_R2",
+          breaks = c(0.7, 0.8,0.85, 0.9,0.95,1),
+          shape =18,
+          palette = "-hcl.heat",
+          ) +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Local R-squared",
+         position = tm_pos_out("center", "top", "center"))
+
+
 ```
 
-The fixed bandwidth is 658.4362 using CV method
+The plot shows that the model explains a large portion of the variation in prices across Singapore. **Most of the central, eastern, and northern regions have R-squared values above 95%**, while parts of the east exceed 90%, and much of the northeastern region ranges between 80% and 85%. This indicates that the model’s explanatory power is generally very high, though it varies slightly across different areas.
+
+### 7.4.2 Intercept for price per sqm
+
+The local intercept represents the baseline resale price per square meter at each location for a flat with **average characteristics** (all independent variables at their mean values).\
+By exponentiating the log-scale intercept, we convert it back to the original **SGD per sqm**, allowing a direct interpretation of the baseline price across locations.
 
 ```{r}
-#| eval: false
-write_rds(bw_fixed_CV,"data/bw_fixed_CV.rds")
-```
-
-```{r}
-#| eval: false
-
-#bw_fixed_CV<- read_rds("data/bw_fixed_CV.rds")
-gwr_fixed_CV <- gwr.basic(
-  formula = price_per_sqm ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_park +
-    dist_kindergarten + dist_preschool + dist_clinics + dist_elderlycare +
-    park_600m + preschool_350m + busStop_350m + kindergartens_350m +
-    top_primary_sch_1km + supermarket_500m + model_group, 
-  data=mdata, 
-  bw=bw_fixed_CV, 
-  kernel = 'gaussian', 
-  longlat = FALSE)
-```
-
-```{r}
-#| eval: false
-write_rds(gwr_fixed_CV,"data/gwr_fixed_CV.rds")
-```
-
-```{r}
-gwr_fixed_CV <- read_rds("data/gwr_fixed_CV.rds")
-gwr_fixed_CV
-```
-
-As we removed dist_busStop, dist_park, dist_preschool, dist_clinics, top_primary_sch_1km and then run again
-
-```{r}
-#| eval: false
-
-bw_fixed_CV <- bw.gwr(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + 
-    dist_mall + dist_hawker + dist_supermarket + 
-    dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + busStop_350m + kindergartens_350m +
-    supermarket_500m + model_group, 
-  data = mdata,
-  approach = "CV",
-  kernel = "gaussian",
-  adaptive = FALSE,
-  longlat = FALSE
-)
-write_rds(bw_fixed_CV,"data_bw_fixed_CV2.rds")
-```
-
-```{r}
-gwr_fixed_CV <- gwr.basic(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + 
-    dist_mall + dist_hawker + dist_supermarket + 
-    dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + busStop_350m + kindergartens_350m +
-    supermarket_500m + model_group, 
-  data=mdata, 
-  bw=bw_fixed_CV, 
-  kernel = 'gaussian', 
-  longlat = FALSE)
-write_rds(bw_fixed_CV,"bw_fixed_CV.rds")
+HDBresale_gwr$Intercept <- exp(HDBresale_gwr$Intercept)
 ```
 
 ```{r}
-gwr_fixed_CV
+#| fig.width: 12
+#| fig.height: 8
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "Intercept",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Local Intercept (SGD per sqm)",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+The plot above suggests that, with all independent variables at their mean values, the highest resale prices per square meter (around SGD 6,637–7,947) are located in the central and northern regions, where the model also has strong explanatory power (R-squared \> 95%).
+
+### 7.4.3 Coefficients with higher variance {style="font-size: 1.25em !important; line-height: 1.2; color: rgb(0, 0, 0); font-family: \"Lucida Grande\", sans-serif; font-style: normal; font-variant-ligatures: none; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; caret-color: rgb(0, 0, 0); white-space: break-spaces; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"}
+
+::: panel-tabset
+## Distance to CBD
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_CBD_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Distance to CBD",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+Interestingly, the Upper West, North, and Upper North-East regions appear to be less affected by distance to the CBD, and in some cases even show increased values. This suggests that buyers in these areas are less influenced by proximity to the city center, possibly because they own cars or prefer to live farther from the urban core.
+
+## Remaining Lease
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_remaining_lease_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Remaining Lease",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+The Central region shows a much greater increase in price when the remaining lease is longer compared to other regions
+
+## Floor Level
+
+Low Level (4-6)
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "floor_level2",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Lower Floor Level (4-6)",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+Mid Level (7-9)
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "floor_level3",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Mid Floor Level (7-9)",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+Mid-High Level (10-21)
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "floor_level4",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Mid-High Floor Level (10-21)",
+         position = tm_pos_out("center", "top", "center"))
 ```
 
 ```{r}
-#| eval: false
-bw_fixed_AIC <- bw.gwr(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
-  data = mdata,
-  approach = "AIC",
-  kernel = "gaussian",
-  adaptive = FALSE,
-  longlat = FALSE
-)
-write_rds(bw_fixed_AIC,"bw_fixed_AIC2.rds")
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "floor_level5",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("High Floor Level (22+)",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+Higher floors generally command higher prices per sqm. In contrast, buyers in the North and East regions seem to favor lower-floor units.
+
+## Flat Model
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "model_group2",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Flat Model Group (Model A + Premium Apartment)",
+         position = tm_pos_out("center", "top", "center"))
 ```
 
 ```{r}
-write_rds(bw_fixed_AIC,"data/bw_fixed_AIC.rds")
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "model_group3",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Flat Model Group (DBSS, Terrace)",
+         position = tm_pos_out("center", "top", "center"))
 ```
 
-The fixed bandwidth is 489 using CV method
+Based on the plot above, different regions show varying preferences for house types, likely due to differences in supply across the areas. Model Group 2 (Model A and Premium Apartment) shows a higher increase of 2.4%-8.1% in price per sqm in the East region, while Model Group 3 (DBSS and Terrace) commands higher prices of 23.4%-57.2% in the Central, North, and West regions compared to the reference model group.
+:::
+
+### 7.4.4 Coefficients with lower variance
+
+::: panel-tabset
+## floor_area_sqm
 
 ```{r}
-#| eval: false
-
-gwr_fixed_AIC <- gwr.basic(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
-  data=mdata, 
-  bw=bw_fixed_AIC, 
-  kernel = 'gaussian', 
-  longlat = FALSE)
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_floor_area_sqm_log_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Floor Area (sqm)",
+         position = tm_pos_out("center", "top", "center"))
 ```
+
+From the model, we can see that, overall, larger floor areas are associated with lower prices per square meter. The effect is strongest in the east and west regions, where a 1 standard deviation increase in floor area corresponds to a 0.27%–0.35% decrease in price per sqm. In the central region, the impact is smaller, with a 1 SD increase in floor area associated with a 0.12%–0.18% decrease in price per sqm.
+
+## train_800m
 
 ```{r}
-#| eval: false
-#| echo: false
-write_rds(gwr_fixed_AIC,"data/gwr_fixed_AIC.rds")
-
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(Train) +
+  tm_dots(size = 0.3, fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_train_800m_log_elasticity",
+          style = "quantile",
+          alpha = 0.5,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of train stations within 800 meters",
+         position = tm_pos_out("center", "top", "center"))
 ```
+
+In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per square meter. In the western region, the number of nearby train stations has little effect on prices. Interestingly, in the northeastern region, a 1 standard deviation increase in train stations is associated with a 0.7%–2.4% decrease in price per square meter
+
+## park_600m
 
 ```{r}
-gwr_fixed_AIC <- read_rds("data/gwr_fixed_AIC.rds")
-gwr_fixed_AIC
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+  tm_shape(park) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_park_600m_log_elasticity",
+          style = "quantile",
+          shape =18,
+          alpha =0.6,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of parks within 600 meters",
+         position = tm_pos_out("center", "top", "center"))
 ```
+
+In the central and eastern regions, an increase in the number of nearby parks is associated with higher prices per square meter, indicating that parks add value. However, in some parts of the eastern and northern regions, a 1 standard deviation increase in park count is associated with a 0.1%–0.4% decrease in price per square meter
+
+## supermarket_400m
 
 ```{r}
-#| eval: false
-
-bw_adaptive_AIC <- bw.gwr(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
-  data=mdata, 
-  approach = "AIC",
-  kernel = "gaussian",
-  adaptive = TRUE,
-  longlat = FALSE
-)
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+  tm_shape(supermarket) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_supermarket_400m_log_elasticity",
+          style = "quantile",
+          alpha = 0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of supermarkets within 400 meters",
+         position = tm_pos_out("center", "top", "center"))
 ```
+
+Overall, a higher number of supermarkets within 400 meters is associated with increased prices per square meter in most regions. However, in the eastern and northern regions, more supermarkets are linked to a slight decrease in price per square meter
+
+## mall_800m
 
 ```{r}
-#| eval: false
-
-gwr_adp_AIC <- gwr.basic(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
-  data=mdata, 
-  bw=bw_adaptive_AIC, 
-  adaptive=TRUE,
-  kernel = 'gaussian', 
-  longlat = FALSE)
-
-write_rds(gwr_adp_AIC,"data/gwr_adp_AIC.rds")
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_mall_800m_log_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of malls within 800 meters",
+         position = tm_pos_out("center", "top", "center"))
 ```
+
+Interestingly, a higher number of malls in the northeastern and upper western regions is associated with **increased prices per square meter**. However, in the lower western and central regions, more malls appear to have **negative effects on prices**, suggesting that an excessive concentration of malls may reduce marginal value in these areas
+
+## hawker_600m
 
 ```{r}
-#| eval: false
-
-bw_adaptive_CV <- bw.gwr(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
-  data=mdata, 
-  approach = "CV",
-  kernel = "gaussian",
-  adaptive = TRUE,
-  longlat = FALSE
-)
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(hawker) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_hawker_600m_log_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of halker within 600 meters",
+         position = tm_pos_out("center", "top", "center"))
 ```
 
-```{r}
-#| eval: false
-
-gwr_adp_CV <- gwr.basic(
-  formula = resale_price ~ floor_area_sqm + remaining_lease + floor_level +
-    dist_to_CBD + dist_to_MRT + dist_top_primary_sch + dist_busStop +
-    dist_mall + dist_hawker + dist_supermarket + dist_kindergarten + dist_elderlycare +
-    park_600m + preschool_350m + kindergartens_350m + supermarket_500m + model_group,
-  data=mdata, 
-  adaptive=TRUE,
-  bw=bw_adaptive_CV, 
-  kernel = 'gaussian', 
-  longlat = FALSE)
-write_rds(gwr_adp_CV,"data/gwr_adp_CV.rds")
-```
-
-```{r}
-gwr_adp_CV
-```
-
-```{r}
-gwr_adp_AIC
-```
-
-```{r}
-# Assuming your GWR model is called 'gwr_model'
-# Extract the SpatialPointsDataFrame with local coefficients
-gwr_spdf <- gwr.fixed$SDF
-
-# Convert to sf
-gwr_sf <- st_as_sf(gwr_spdf)
-
-# Plot coefficient map for dist_park
-ggplot(gwr_sf) +
-  geom_sf(aes(color = busStop_350m), size = 3) +
-  scale_color_viridis_c() +
-  theme_minimal() +
-  labs(title = "GWR Coefficients: Distance to Park")
-```
-
-The R-squared of global model (using full dataset) is 0.73 while the R-squared of localized geospatial model (using neighbors' dataset only) is 0.97, suggesting including geospatial info is important for predictive model.
-
-For explanatory model, we need to look at p-value, R-squared, AIC for comparison between global and local models.
-
-we can plot the significance of the variables using resource below:
-
-<https://www.jstatsoft.org/article/view/v063i17>
-
-```{r}
-gwr_adaptive
-```
+Overall, a higher number of hawker centres within walking distance **has little impact on prices per square meter** in most regions
+:::
