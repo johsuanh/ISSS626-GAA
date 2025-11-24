@@ -2417,23 +2417,21 @@ gwr_adaptive_AIC <- read_rds("data/rds/gwr_adaptive_AIC.rds")
 gwr_adaptive_AIC
 ```
 
+### 7.3.3 Final Bandwidth Selection
+
 The table below compares adjusted R-squared and AICc values between the two methods:
 
-+--------------------+--------------------------+--------------------------+
-|                    | CV Method                | AIC Method               |
-+====================+==========================+==========================+
-| Adjusted R-Squared | 0.9588048                | 0.9588355                |
-+--------------------+--------------------------+--------------------------+
-| AICc               | -27660.59                | -27642.21                |
-+--------------------+--------------------------+--------------------------+
-| Bandwidth (meter)  | 245                      | 252                      |
-+--------------------+--------------------------+--------------------------+
+|                                    | CV Method | AIC Method |
+|------------------------------------|-----------|------------|
+| Adjusted R-Squared                 | 0.9588048 | 0.9588355  |
+| AICc                               | -27660.59 | -27642.21  |
+| Bandwidth (# of nearest neighbors) | 252       | 245        |
 
-AIC focuses on balancing goodness-of-fit with model complexity, with smaller AIC values indicating a better model.
+AICc focuses on balancing goodness-of-fit with model complexity, with smaller corrected AIC values indicating a better model.
 
-Both methods achieve similar explanatory power, with adjusted R-squared around 95.88%. However, for AICc, the CV method yields a smaller value compared to the AIC method. Therefore, the CV-selected bandwidth of 245 is chosen for further analysis.
+Both methods achieve similar explanatory power, with adjusted R-squared around 95.88%. However, for AICc, the CV method yields a smaller value compared to the AIC method. Therefore, the CV-selected bandwidth of 252 is chosen for further analysis.
 
-### 7.3.3 Back-transformation of the coefficients
+### 7.3.4 Back-transformation of the coefficients
 
 The code below back-transforms the coefficients by reversing the standardization, allowing for a more intuitive interpretation of the results. Two transformation methods were used: `log(1 + x)` and `sqrt`. Since the dependent variable, price per sqm, is also transformed using `log(1 + x)`, the interpretations are as follows:
 
@@ -2594,33 +2592,9 @@ tm_shape(HDBresale_gwr) +
 
 The plot above suggests that, with all independent variables at their mean values, the highest resale prices per square meter (around SGD 6,632–7,925) are located in the central and northern regions, where the model also has strong explanatory power (R-squared \> 95%).
 
-### 7.4.3 Coefficients with higher variance
+### 7.4.3 Untransformed Variables
 
 ::: panel-tabset
-## Distance to CBD
-
-```{r}
-#| fig.width: 12
-#| fig.height: 8
-tm_shape(mpsz19)+
-  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
-tm_shape(HDBresale_gwr) +  
-  tm_dots(col = "std_dist_CBD_elasticity",
-          style = "quantile",
-          shape =18,
-          palette = "-hcl.heat") +
-  tm_layout(bg.color = "#f6f6f6",
-            outer.bg.color = "#f6f6f6",
-            frame = FALSE,
-            legend.outside = TRUE,
-            legend.outside.position = "right",
-            legend.frame = FALSE)+
-  tm_title("Distance to CBD",
-         position = tm_pos_out("center", "top", "center"))
-```
-
-Interestingly, the Upper West, North, and Upper North-East regions appear to be less affected by distance to the CBD, and in some cases even show increased values. This suggests that buyers in these areas are less influenced by proximity to the city center, possibly because they own cars or prefer to live farther from the urban core.
-
 ## Remaining Lease
 
 ```{r}
@@ -2742,6 +2716,26 @@ Higher floors generally command higher prices per sqm. In contrast, buyers in th
 #| fig.height: 8
 tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_sf) +  
+  tm_dots(col = "model_group",
+          style = "cat", 
+          shape = 18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Flat Model Group Distribution",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(HDBresale_gwr) +  
   tm_dots(col = "model_group2",
           style = "quantile",
@@ -2778,11 +2772,31 @@ tm_shape(HDBresale_gwr) +
 ```
 
 Based on the plot above, different regions show varying preferences for house types, likely due to differences in supply across the areas. Model Group 2 (Model A and Premium Apartment) shows a higher increase of 2.4%-8.1% in price per sqm in the East region, while Model Group 3 (DBSS and Terrace) commands higher prices of 23.4%-57.2% in the Central, North, and West regions compared to the reference model group.
-:::
 
-### 7.4.4 Coefficients with lower variance
+## Mature Estate
 
-::: panel-tabset
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "mature_estate2",
+          style = "jenks",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Mature Estate",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+From the plot above, it is evident that interpreting this coefficient in a local GWR context is not meaningful. Although the mature/non-mature variable is useful in a global OLS model, it is not suitable for local GWR modelling because it does not vary within each estate category, non-mature areas contain no mature units, and vice versa. Consequently, the GWR coefficient changes abruptly across estate boundaries but offers no meaningful local variation within each region. Thus, while the variable captures global differences between estate types, it does not provide informative insights for local spatial modelling.
+
 ## floor_area_sqm
 
 ```{r}
@@ -2805,9 +2819,64 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-From the plot above, we can see that, overall, larger floor areas are associated with lower prices per square meter. The effect is strongest in the east and west regions, where a 1 standard deviation increase in floor area corresponds to a 0.27%–0.35% decrease in price per sqm. In the central region, the impact is smaller, with a 1% increase in floor area associated with a 0.12%–0.18% decrease in price per sqm.
+rom the plot above, we can see that, overall, larger floor areas are associated with lower prices per square meter. The effect is strongest in the east and west regions, where 1 % increase in floor area corresponds to a 0.27%–0.35% decrease in price per sqm. In the central region, the impact is smaller, with a 1% increase in floor area associated with a 0.12%–0.18% decrease in price per sqm.
+:::
 
-## train_800m
+### 7.4.4 Central Business District
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_CBD_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Distance to CBD",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+Interestingly, the upper portions of the West, North, North-East, and even Central regions appear to be less affected by distance to the CBD, with some locations even showing positive coefficients. This indicates that buyers in these areas may not prioritise proximity to the city centre.
+
+One possible explanation is that residents in these regions are more likely to own cars or prefer living farther from the urban core due to lifestyle preferences or housing characteristics
+
+### 7.4.4 Transportation
+
+::: panel-tabset
+## MRT & LRT Stations
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(Train) +
+  tm_dots(size = 0.3, fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_train_sqrt_elasticity",
+          style = "quantile",
+          alpha = 0.5,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Train Stations",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+The spatial pattern of the shortest distance to train stations resembles that of the distance to the CBD, suggesting that resale units may not rely heavily on proximity to train stations. This implies that other factors likely play a more substantial role in influencing resale housing prices
 
 ```{r}
 #| fig.width: 12
@@ -2832,13 +2901,82 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per square meter. In the western region, the number of nearby train stations has little effect on prices. Interestingly, for most resale units in the central and east region, a 1% unit increase in number of train stations is associated with a 0.9%–3.0% decrease in price per square meter.
+In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per sqm. In contrast, for resale units in the west, north, and north-east regions, the number of nearby train stations has minimal influence on prices.
 
-## park_600m
+For most resale units in the central and eastern areas, a 1% increase in the number of train stations within 800 meters corresponds to an estimated 0.2%–3.0% increase in price per sqm.
+
+## Bus Stop
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(BusStop) +
+  tm_dots(size = 0.3, fill="black",alpha = 0.4,shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_busStop_log_elasticity",
+          style = "quantile",
+          alpha = 0.9,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Bus Stop",
+         position = tm_pos_out("center", "top", "center"))
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(BusStop) +
+  tm_dots(size = 0.3, alpha = 0.4,fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_busStop_300m_sqrt_elasticity",
+          style = "quantile",
+          alpha =1,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of Bus Stops within 300 meters",
+         position = tm_pos_out("center", "top", "center"))
+```
+:::
+
+### 7.4.5 Recreation & Shopping Facilities
+
+::: panel-tabset
+## Parks
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+  tm_shape(park) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_park_sqrt_elasticity",
+          style = "quantile",
+          shape =18,
+          alpha =0.6,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Park",
+         position = tm_pos_out("center", "top", "center"))
+
 tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(park) +
@@ -2861,11 +2999,75 @@ tm_shape(HDBresale_gwr) +
 
 In the central and eastern regions, an increase in the number of nearby parks is associated with higher prices per square meter, indicating that parks add value. However, in some parts of the eastern and northern regions, a 1 % increase in park count is associated with a 0.1%–0.4% decrease in price per square meter
 
-## supermarket_400m
+## Malls
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+  tm_shape(mall) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=0.6,shape =18) +
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_mall_sqrt_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Mall",
+         position = tm_pos_out("center", "top", "center"))
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+  tm_shape(mall) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=0.6,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_mall_800m_log_elasticity",
+          style = "quantile",
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of malls within 800 meters",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+nterestingly, a higher number of malls in the northeastern and upper western regions is associated with **increased prices per square meter**. However, in the central western region and central regions, more malls appear to have **negative effects on prices**, suggesting that an excessive concentration of malls may reduce marginal value in these areas
+
+## Supermarkets
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+  tm_shape(supermarket) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_supermarket_sqrt_elasticity",
+          style = "quantile",
+          alpha = 0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Supermarket",
+         position = tm_pos_out("center", "top", "center"))
+
 tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(supermarket) +
@@ -2888,16 +3090,19 @@ tm_shape(HDBresale_gwr) +
 
 Overall, a higher number of supermarkets within 400 meters is associated with increased prices per square meter in most regions. However, in the eastern and northern regions, more supermarkets are linked to a slight decrease in price per square meter
 
-## mall_800m
+## Hawker Centres
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
 tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(hawker) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
 tm_shape(HDBresale_gwr) +  
-  tm_dots(col = "std_mall_800m_log_elasticity",
+  tm_dots(col = "std_dist_hawker_sqrt_elasticity",
           style = "quantile",
+          alpha =0.6,
           shape =18,
           palette = "-hcl.heat") +
   tm_layout(bg.color = "#f6f6f6",
@@ -2906,17 +3111,9 @@ tm_shape(HDBresale_gwr) +
             legend.outside = TRUE,
             legend.outside.position = "right",
             legend.frame = FALSE)+
-  tm_title("Number of malls within 800 meters",
+  tm_title("Shortest Distance to halker centre",
          position = tm_pos_out("center", "top", "center"))
-```
 
-Interestingly, a higher number of malls in the northeastern and upper western regions is associated with **increased prices per square meter**. However, in the central western region and central regions, more malls appear to have **negative effects on prices**, suggesting that an excessive concentration of malls may reduce marginal value in these areas
-
-## hawker_600m
-
-```{r}
-#| fig.width: 12
-#| fig.height: 8
 tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(hawker) +
@@ -2933,17 +3130,229 @@ tm_shape(HDBresale_gwr) +
             legend.outside = TRUE,
             legend.outside.position = "right",
             legend.frame = FALSE)+
-  tm_title("Number of halker within 600 meters",
+  tm_title("Number of halker centre within 600 meters",
+         position = tm_pos_out("center", "top", "center"))
+```
+:::
+
+### 7.4.6 Schools & Care Services
+
+::: panel-tabset
+## Eldercare Services
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(eldercare) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_eldercare_sqrt_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Eldercare services",
+         position = tm_pos_out("center", "top", "center"))
+
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(eldercare) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_eldercare_600m_log_elasticity",
+          style = "quantile",
+          alpha =0.7,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of Eldercare services within 600 meters",
          position = tm_pos_out("center", "top", "center"))
 ```
 
-Overall, a higher number of hawker centres within walking distance **has little impact on prices per square meter** in most regions
+## Childcare Services
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(childcare) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_childcare_sqrt_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Childcare services",
+         position = tm_pos_out("center", "top", "center"))
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(childcare) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_childcare_400m_sqrt_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of Childcare services within 400 meters",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+## Kindergartens
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(kindergartens) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_kindergarten_sqrt_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Kindergartens",
+         position = tm_pos_out("center", "top", "center"))
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(kindergartens) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_kindergartens_600m_log_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of Kindergartens within 600 meters",
+         position = tm_pos_out("center", "top", "center"))
+
+
+```
+
+## Top 50 Primary School
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(hawker) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_top_primary_sch_log_elasticity",
+          style = "jenks",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Top 50 Primary School",
+         position = tm_pos_out("center", "top", "center"))
+
+tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
+tm_shape(hawker) +
+  tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_top_primary_sch_1km_log_elasticity",
+          style = "quantile",
+          alpha =0.6,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of Top 50 Primary School within 1 km",
+         position = tm_pos_out("center", "top", "center"))
+```
+
+The plot above suggests west and northern-east regions house price value more with more top 50 primary schools within 1 km, while central and northern region having negative coefficient.
 :::
 
 # 8 Summary
 
 From the section [7.3 Building Hedonic Pricing Models using GWmodel], we know traditional regression methods such as Ordinary Least Squares (OLS) assume that relationships between variables are constant across space and that observations are independent of one another. However, geospatial datasets, such as housing transactions, typically exhibit **spatial autocorrelation** (nearby locations tend to have similar values) and **spatial heterogeneity**(relationships vary across space). These violations can lead to biased or misleading OLS estimates.
 
-To address these issues, geographically weighted models, such as GWR, are applied. It allows model coefficients to vary by location, enabling the model to more accurately capture local spatial patterns and better reflect the geographic dynamics of housing prices.
+To overcome these limitations, this analysis employs **Geographically Weighted Regression (GWR)**, which allows model coefficients to vary by location. This approach enables more accurate capture of local spatial patterns and better reflects the geographic dynamics influencing HDB resale prices in Singapore.
 
-Below is a summary of the key findings in this analysis:
+Below are the key findings for the analysis:
+
+1.  **GWR** **Model Performance:**
+
+    The GWR model significantly outperforms the traditional OLS approach, using an optimal bandwidth of 252 nearest neighbors determined through the cross-validation (CV) method. The adjusted R-squared improved dramatically from 0.88 in the global OLS model to 0.96 in the GWR model, indicating that accounting for spatial variation explains an additional 8% of price variance. Furthermore, the AICc dropped from -19,491 to -27,661 (lower values indicate better model fit), demonstrating that GWR provides a superior balance between model complexity and explanatory power. This substantial improvement confirms that housing price determinants are highly location-dependent and cannot be adequately captured by traditional global regression models.
+
+<!-- -->
+
+2.  **Flat Model Groups:**
+
+    The EDA revealed that flat models significantly impact prices, with Premium Apartment Loft and Type S1 commanding the highest values while Standard and Simplified and other models were the lowest. The GWR model shows that `model_group` coefficients vary massively by location, with the premium tier showing extreme spatial variation.
+
+    However, this finding must be interpreted cautiously due to severe geographic clustering: Group 4 units (Premium Apartment Loft and Type S1, n=40) exist exclusively in the Central Region, while Group 3 (DBSS/Terrace, n=123) also shows limited distribution compared to widely-available Group 2 units (Model A/Premium Apartment, n=6,753). This geographic concentration combined with small sample sizes likely contributes to the extreme coefficient variability observed in the GWR model, making it difficult to separate genuine location-specific preferences from data limitations.
+
+    In summary, we still observe that premium models do contribute to higher price per sqm comapred to the reference group (Group 1)
+
+3.  **Floor Area vs Price per sqm:**
+
+    The EDA demonstrated a consistent negative correlation between floor area and price per sqm across all flat models, and the GWR model confirms this pattern. The coeffiecient ranges between -0.14% and -0.34% suggesting a 1% increase in floor areas leads to 0.14%-0.34% decrease in price per sqm. This finding reveals that larger units consistently trade at lower per-square-meter prices regardless of location and model type.
+
+4.  **Mature Estate Premium:**
+
+    The EDA identified 3,301 units (38%) located in mature estates, with areas like Chinatown closest to the CBD commanding the highest prices. However, the GWR model reveals that the `mature_estate` variable exhibits extreme spatial variation even within the "mature estates", with coefficients ranging from highly negative values to 0.58 across different locations.
+
+    Since mature and non-mature estates are mutually exclusive by planning designation, the variable does not vary within each category. As a result, the GWR coefficient shifts abruptly across estate boundaries but provides no meaningful within-area variation. Thus, while the variable effectively captures global differences in prices between estate types in an OLS model, it does not offer informative insights for local spatial modelling.
+
+5.  **Proximity to Top 50 Primary Schools**
