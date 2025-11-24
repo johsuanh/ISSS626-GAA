@@ -18,6 +18,8 @@ listing:
     - Hands-on/Hands-on-Ex07/Hands-on-Ex07.qmd
     - Take-home/Take-home-Ex2/Take-home_Ex02.qmd
     - Hands-on/Hands-on-Ex08/Hands-on-Ex08.qmd
+    - Hands-on/Hands-on-Ex09/Hands-on-Ex09.qmd
+    - Take-home/Take-home-Ex3/Take-home_Ex03.qmd
   type: grid
   sort: "date desc"
   fields: [image,title, date, description]

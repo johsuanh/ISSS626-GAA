@@ -239,8 +239,6 @@ ggplot(HDBresale, aes(x = storey_range)) +
   )
 ```
 
-We can observe the right-skewed distribution of storey Range for 4-room HDB, around 77.5% of units are located bewteen 1 to 12 floor.
-
 The distribution of `storey_range` for 4-room HDB units is right-skewed, with approximately 77.5% of units located between the 1st and 12th floors. To simplify analysis, we categorize floor levels into five groups: Very Low, Low, Mid, Mid-high and Very High based on common HDB classifications as discussed in [PropertyGuru’s Q&A community](https://www.propertyguru.com.sg/property-investment-questions/what-is-the-standard-of-low-floor-middle-floor-high-floor-and-penthouse-i-mean-to-which-floor-is-it-middle-floor-and-from-which-floor-is-it-high-floor-thank-you-497576) and [Singapore Public Housing Wiki](https://singaporepublichousing.fandom.com/wiki/HDB_Elevation_-_Ground/Low/Mid/High_Floor_Units), with slight adjustments to align with the distribution in our dataset:
 
 -   Very Low (1) = floors  1‑3
@@ -715,7 +713,7 @@ for (i in seq_len(nrow(top50_primary_school))) {
 }
 ```
 
-After getting the coordinates, we transform the data into sf data format using WGS84 then tranfrom the data into SVY3414:
+After getting the coordinates, we transform the data into sf data format using WGS84 then tranfrom the data into SVY21:
 
 ```{r}
 #| eval: false
@@ -778,7 +776,7 @@ The code below is used to check if there are any missing values in name, lat, lo
 mall[is.na(mall$lat) | is.na(mall$lon) | is.na(mall$name), ]
 ```
 
-The result shows there are 10 observations without names, which we will removed later.
+The results show that there are 10 observations without names, which we will remove later.
 
 Next, let's check if there are any duplicate records:
 
@@ -833,7 +831,7 @@ According to HDB, planning areas with HDB developments are categorized into **Ma
 mature_estate <- read_csv("data/rawdata/Mature_Estate.csv")
 ```
 
-If the planning areas are mature estates then 1 else is 0:
+We assign a value of 1 to planning areas classified as mature estates, and 0 otherwise:
 
 ```{r}
 kable(head(mature_estate))
@@ -1914,7 +1912,11 @@ ggplot(top10_resale, aes(
 
 ## 6.3 Price per sqm vs Floor Area & Unit Age by Flat Model
 
-The code below apply facet_wrap by flat model to see if flat model affect price per sqm:
+### 6.3.1 Price per sqm vs Floor Area
+
+As discussed in Section [5.2.2.4 Price Per sqm], we want to take a closer look at whether all flat models exhibit the same trend of decreasing price per sqm as floor area increases.
+
+The code below uses `facet_wrap` by flat model to examine whether different flat models exhibit different relationships between floor area and price per sqm:
 
 ```{r}
 #| fig.width: 12
@@ -1935,17 +1937,58 @@ ggplot(HDBresale_sf, aes(x = floor_area_sqm, y = price_per_sqm)) +
     panel.background = element_rect(fill = "#f6f6f6"),
     plot.background = element_rect(fill = "#f6f6f6"),
     strip.text = element_text(size = 10, face = "bold"))
-  
 
+```
+
+The code below calculates and summarizes the correlation between floor area and price per sqm for each flat model. Since `cor.test()` from the R package requires at least 3 observations per group, the code also removes flat types that do not meet this requirement, including Adjoined Flat (n = 2) and Terrace (n = 1):
+
+```{r}
 kable(HDBresale_sf %>%
   group_by(flat_model) %>%
+  # remove adjoined flat and terrace due to insufficient samples n<3
+  filter(!flat_model %in% c("Adjoined flat","Terrace")) %>% 
   summarise(
-    correlation = cor(floor_area_sqm, price_per_sqm),
+    cor_test = list(cor.test(floor_area_sqm, price_per_sqm)),
+    correlation = round(cor_test[[1]]$estimate,4),
+    p_value = round(cor_test[[1]]$p.value,4),
     n = n(),
-    mean_price_sqm = mean(price_per_sqm),
-    mean_floor_area = mean(floor_area_sqm)) %>%
+    mean_price_sqm = round(mean(price_per_sqm),2),
+    mean_floor_area = round(mean(floor_area_sqm),2)) %>%
+    select(-cor_test)%>%
   arrange(correlation))
 ```
+
+From the table and plot above, all flat models show a negative correlation between price per sqm and floor area, regardless of statistical significance. Low p-values of flat models are likely due to very small sample sizes (n \< 10).
+
+Overall, the general trend of decreasing price per sqm with increasing floor area is consistent across flat models, though statistical evidence is weaker for groups with few observations.
+
+### 6.3.2 Price per sqm vs Unit Age
+
+Next, as discussed in section [5.2.2.2 Unit Age], we observe that the unit age distribution is multimodal, so we also would like to know whether price per sqm differs across unit ages and flat models?
+
+First, let’s create a scatter plot of price per sqm vs unit age:
+
+```{r}
+ggplot(HDBresale, aes(x = unit_age, y = price_per_sqm)) +
+  geom_point(alpha = 0.4, size = 1.2, color = "#93A4CC") +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Scatter Plot of Resale Price vs Unit Age",
+    x = "Unit Age (y/o)",
+    y = "Resale Price Per sqm(SGD)"
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    panel.background = element_rect(fill = "#f6f6f6"),
+    plot.background = element_rect(fill = "#f6f6f6")
+  )
+```
+
+The plot above also suggests a negative relationship between unit age and price per sqm, indicating that as flats get older, their value tends to decrease.
+
+Now, let's apply `facet_wrap` by flat model again to examine whether different flat models exhibit different relationships between unit age and price per sqm:
 
 ```{r}
 #| fig.width: 12
@@ -1970,13 +2013,34 @@ ggplot(HDBresale_sf, aes(x = unit_age, y = price_per_sqm)) +
   )
 ```
 
+From the plot above, we can see that some flat models are **relatively new (unit age \<20 years old) based on transaction data, such as DBSS, Type S1 and Premium Apartment Loft**, while others are **older (\> 40 years old), including Adjoined Flat, Standard and Terrace, Improved, and New Generation models.**
+
+In additon, we observe different correlation trends across flat models. Interestingly, **DBSS and Simplified models appear to show a positive relationship between unit age and price per sqm**, suggesting that even as these flats get older, their value continues to appreciate.
+
+To validate whether the relationship observed above is statistically significant, the code below calculates and summarizes the correlation between unit age and price per sqm for each flat model:
+
+```{r}
+kable(HDBresale_sf %>%
+  group_by(flat_model) %>%
+  # remove adjoined flat and terrace due to insufficient samples n<3
+  filter(!flat_model %in% c("Adjoined flat","Terrace")) %>% 
+  summarise(
+    cor_test = list(cor.test(unit_age, price_per_sqm)),
+    correlation = round(cor_test[[1]]$estimate,4),
+    p_value = round(cor_test[[1]]$p.value,4),
+    n = n(),
+    mean_price_sqm = round(mean(price_per_sqm),2),
+    mean_unit_age = round(mean(unit_age),2)) %>%
+    select(-cor_test)%>%
+  arrange(correlation))
+```
+
+Although the results show that DBSS and Simplified units have a positive relationship between unit age and price per sqm, this does not directly imply causation. A closer look reveals that DBSS units are relatively young in the resale market, so even older units (around 20 years old) may exhibit higher values due to superior location or other factors. Similarly, Simplified units have fewer transactions for younger units, which may influence the observed trend and contribute to the positive correlation.
+
 ::: callout-note
 ## Observation
 
--   **Size matters differently by type**: For Model A, Improved flats and Premium apartments, buying larger units offers better per-sqm value
--   **Age premium varies**: Some models (DBSS, New Generation, Simplified) retain value better over time
--   **Premium flats depreciate fastest**: Clear age-related decline in value
--   **Model A has highest variance**: Other factors beyond size and age drive pricing significantly
+Given that different flat models exhibit varying correlations between price per sqm and floor area or unit age, the overall trends suggest that larger floor areas and older units generally lead to lower price per sqm. Although some correlations appear positive in certain cases, this does not imply causation. Therefore, further explanatory modeling will be helpful to better understand and explain resale prices.
 :::
 
 ## 6.4 Tree map by Region, Subzone and Model Type
@@ -2012,7 +2076,9 @@ treemap(treemap_data,
 ::: callout-note
 ## Observation
 
-The plot reveals that the North and East regions dominate transaction volumes, with Tampines, Yishun, and Woodlands leading as the most liquid markets, primarily driven by Model A flat transactions. The data shows a clear geographic price gradient within the Model A segment: flats in the Central Region command the highest premiums, while specific subzones like Clementi in the West and Cheng San and Chong Boon in the North Region also achieve notably higher resale prices compared to other subzones within their respective regions. This pattern suggests that even within the dominant Model A flat type, location premiums are highly localized, with certain mature estates and central areas significantly outpricing their regional counterparts despite similar flat specifications.
+The plot reveals that the North and East regions dominate transaction volumes, with Tampines, Yishun, Woodlands and Sembawang leading as the most liquid markets, primarily driven by Model A flat transactions. The data shows a clear geographic price gradient within the Model A segment: flats in the Central Region command the highest premiums, while specific subzones like Clementi in the West and Cheng San and Chong Boon in the North Region also achieve notably higher resale prices compared to other subzones within their respective regions.
+
+This pattern suggests that even within the dominant Model A flat type, location premiums are highly localized, with certain mature estates and central areas significantly outpricing their regional counterparts despite similar flat specifications.
 :::
 
 # 7 Calibrate Explanatory Model
@@ -2317,6 +2383,11 @@ write_rds(bw_adp_AIC,"data/rds/bw_adp_AIC.rds")
 ```
 
 ```{r}
+bw_adp_AIC <- read_rds("data/rds/bw_adp_AIC.rds")
+bw_adp_AIC
+```
+
+```{r}
 #| eval: false
 
 bw_adp_AIC<- read_rds("data/rds/bw_adp_AIC.rds")
@@ -2346,11 +2417,35 @@ gwr_adaptive_AIC <- read_rds("data/rds/gwr_adaptive_AIC.rds")
 gwr_adaptive_AIC
 ```
 
-Comparing the two adaptive bandwidth selection methods, the AIC approach selects a bandwidth of 245, while cross-validation selects 252. Although the AIC-selected model produces a slightly higher (i.e., worse) AIC value (–27,642.21 vs. –27,660.59 from CV), both models achieve the same adjusted R-squared of 0.9554. This adjusted R-squared indicates that approximately 95.5% of the variation in resale prices is explained by the model, demonstrating very strong explanatory power.
+The table below compares adjusted R-squared and AICc values between the two methods:
 
-Because AIC focuses on balancing goodness-of-fit with model complexity, the small difference in AIC suggests that both bandwidths perform similarly. Given the nearly identical explanatory strength and the slightly more efficient (smaller) bandwidth, the AIC-selected bandwidth of 245 is chosen for further analysis.
++--------------------+--------------------------+--------------------------+
+|                    | CV Method                | AIC Method               |
++====================+==========================+==========================+
+| Adjusted R-Squared | 0.9588048                | 0.9588355                |
++--------------------+--------------------------+--------------------------+
+| AICc               | -27660.59                | -27642.21                |
++--------------------+--------------------------+--------------------------+
+| Bandwidth (meter)  | 245                      | 252                      |
++--------------------+--------------------------+--------------------------+
+
+AIC focuses on balancing goodness-of-fit with model complexity, with smaller AIC values indicating a better model.
+
+Both methods achieve similar explanatory power, with adjusted R-squared around 95.88%. However, for AICc, the CV method yields a smaller value compared to the AIC method. Therefore, the CV-selected bandwidth of 245 is chosen for further analysis.
 
 ### 7.3.3 Back-transformation of the coefficients
+
+The code below back-transforms the coefficients by reversing the standardization, allowing for a more intuitive interpretation of the results. Two transformation methods were used: `log(1 + x)` and `sqrt`. Since the dependent variable, price per sqm, is also transformed using `log(1 + x)`, the interpretations are as follows:
+
+-   **Log(x+1):** When both the dependent and independent variables are transformed using log(1 + x), the coefficient can be interpreted as an elasticity. That is, a **1%** i**ncrease** in x leads to an approximate β% change in y. For example, a coefficient of 0.0182 implies that a 1% increase in x corresponds to roughly a 1.82% increase in price per sqm.
+
+-   **sqrt:** The coefficient represents the change in y (in log(1 + y) scale) for a one-unit increase in sqrt(x). The formula is like below:
+
+    ![](images/formula.png){width="353" height="49"}
+
+    Since sqrt(x) grows slower as x increases, the effect is **non-linear** and the effect of a one-unit change in sqrt(x) on y is non-linear, and the marginal difference diminish for y as x becomes larger. For example: when x represent floor area = 95 and the coefficient of 0.0182, the effect on y = (sqrt(96)-sqrt(95))\*0.0182 ≈ 0.05 \* 0.0182 ≈ 0.9%
+
+-   **x (Untransformed Value)**: Attributes such as `floor_level`, `model_group`, and `dist_to_CBD` are untransformed. Therefore, a coefficient of 0.0182 implies that a **one-unit increase** in `floor_level` corresponds to approximately a 1.82% increase in price per sqm.
 
 ```{r}
 
@@ -2367,7 +2462,7 @@ sd_vars <- sapply(std_vars, function(v) {
 })
 
 # Step 3: Extract GWR coefficients from sf object
-gwr_coefs <- as.data.frame(gwr_adaptive_AIC$SDF)
+gwr_coefs <- as.data.frame(gwr_adaptive_CV$SDF)
 
 # Step 4: Back-standardize coefficients
 for (v in std_vars) {
@@ -2380,11 +2475,15 @@ for (v in std_vars) {
 
 ```
 
+The code below converts the GWR results into sf format and projects them to the SVY21 coordinate system:
+
 ```{r}
 HDBresale_gwr <- gwr_coefs %>%
   st_as_sf() %>%          
   st_transform(crs = 3414)
 ```
+
+Next, we reorganized the results into the same format as the global model and summarized the coefficients by percentiles, allowing us to easily reference the minimum, 25th, median, 75th, and maximum values:
 
 ```{r}
 
@@ -2421,7 +2520,7 @@ kable(summary_table)
 
 The table above has already been scaled back from standardization but still in log/sqrt transfomation. Below is the summary of local model results:
 
-**Floor Level:** Overall, higher floors tend to have higher resale prices per sqm. Low floors (L4–L6) show an increase of around 3.7% compared to the reference floor level (L1–L3), mid-high floors (L7–L9) show around 6.5% higher prices, and high floors (L10–L21) show a median increase of around 9%. Only very high floors above level 22 show a slight negative effect in some local estimates, likely due to sparse observations at those levels.
+**Floor Level:** Overall, higher floors tend to have higher resale prices per sqm. For median coeffiecnts, Low floors (L4–L6) show an increase of price per sqm around 3.7% compared to the reference floor level (L1–L3), mid-high floors (L7–L9) show around 6.5% higher prices compared to the very low floor group (L1-L3), and high floors (L10–L21) show a median increase of around 9%. Only very high floors above level 22 show a slight negative effect in some local estimates compared to L1-L3, likely due to sparse observations at those levels.
 
 **Flat Model Group:** Different flat types show varying price effects. Compared to the reference model group (Standard, Simplified, Improved, Model A2, New Genegration, Adjoined Flat), Model Group 2(Model A, Premium Apartment) shows around 0.5% higher price, Model Group 3 (DBSS, Terrace) shows around 15% higher, while Model Group 4 (Premium Apartment Loft, Type S1)has more variable effects (outliers) across locations.
 
@@ -2493,7 +2592,7 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-The plot above suggests that, with all independent variables at their mean values, the highest resale prices per square meter (around SGD 6,637–7,947) are located in the central and northern regions, where the model also has strong explanatory power (R-squared \> 95%).
+The plot above suggests that, with all independent variables at their mean values, the highest resale prices per square meter (around SGD 6,632–7,925) are located in the central and northern regions, where the model also has strong explanatory power (R-squared \> 95%).
 
 ### 7.4.3 Coefficients with higher variance
 
@@ -2706,7 +2805,7 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-From the model, we can see that, overall, larger floor areas are associated with lower prices per square meter. The effect is strongest in the east and west regions, where a 1 standard deviation increase in floor area corresponds to a 0.27%–0.35% decrease in price per sqm. In the central region, the impact is smaller, with a 1 SD increase in floor area associated with a 0.12%–0.18% decrease in price per sqm.
+From the plot above, we can see that, overall, larger floor areas are associated with lower prices per square meter. The effect is strongest in the east and west regions, where a 1 standard deviation increase in floor area corresponds to a 0.27%–0.35% decrease in price per sqm. In the central region, the impact is smaller, with a 1% increase in floor area associated with a 0.12%–0.18% decrease in price per sqm.
 
 ## train_800m
 
@@ -2733,7 +2832,7 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per square meter. In the western region, the number of nearby train stations has little effect on prices. Interestingly, in the northeastern region, a 1 standard deviation increase in train stations is associated with a 0.7%–2.4% decrease in price per square meter
+In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per square meter. In the western region, the number of nearby train stations has little effect on prices. Interestingly, for most resale units in the central and east region, a 1% unit increase in number of train stations is associated with a 0.9%–3.0% decrease in price per square meter.
 
 ## park_600m
 
@@ -2760,7 +2859,7 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-In the central and eastern regions, an increase in the number of nearby parks is associated with higher prices per square meter, indicating that parks add value. However, in some parts of the eastern and northern regions, a 1 standard deviation increase in park count is associated with a 0.1%–0.4% decrease in price per square meter
+In the central and eastern regions, an increase in the number of nearby parks is associated with higher prices per square meter, indicating that parks add value. However, in some parts of the eastern and northern regions, a 1 % increase in park count is associated with a 0.1%–0.4% decrease in price per square meter
 
 ## supermarket_400m
 
@@ -2811,7 +2910,7 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 ```
 
-Interestingly, a higher number of malls in the northeastern and upper western regions is associated with **increased prices per square meter**. However, in the lower western and central regions, more malls appear to have **negative effects on prices**, suggesting that an excessive concentration of malls may reduce marginal value in these areas
+Interestingly, a higher number of malls in the northeastern and upper western regions is associated with **increased prices per square meter**. However, in the central western region and central regions, more malls appear to have **negative effects on prices**, suggesting that an excessive concentration of malls may reduce marginal value in these areas
 
 ## hawker_600m
 
@@ -2840,3 +2939,11 @@ tm_shape(HDBresale_gwr) +
 
 Overall, a higher number of hawker centres within walking distance **has little impact on prices per square meter** in most regions
 :::
+
+# 8 Summary
+
+From the section [7.3 Building Hedonic Pricing Models using GWmodel], we know traditional regression methods such as Ordinary Least Squares (OLS) assume that relationships between variables are constant across space and that observations are independent of one another. However, geospatial datasets, such as housing transactions, typically exhibit **spatial autocorrelation** (nearby locations tend to have similar values) and **spatial heterogeneity**(relationships vary across space). These violations can lead to biased or misleading OLS estimates.
+
+To address these issues, geographically weighted models, such as GWR, are applied. It allows model coefficients to vary by location, enabling the model to more accurately capture local spatial patterns and better reflect the geographic dynamics of housing prices.
+
+Below is a summary of the key findings in this analysis:
