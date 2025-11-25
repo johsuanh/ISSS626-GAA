@@ -2822,7 +2822,7 @@ tm_shape(HDBresale_gwr) +
 rom the plot above, we can see that, overall, larger floor areas are associated with lower prices per square meter. The effect is strongest in the east and west regions, where 1 % increase in floor area corresponds to a 0.27%–0.35% decrease in price per sqm. In the central region, the impact is smaller, with a 1% increase in floor area associated with a 0.12%–0.18% decrease in price per sqm.
 :::
 
-### 7.4.4 Central Business District
+### 7.4.4 Proximity to CBD
 
 ```{r}
 #| fig.width: 12
@@ -2848,15 +2848,18 @@ Interestingly, the upper portions of the West, North, North-East, and even Centr
 
 One possible explanation is that residents in these regions are more likely to own cars or prefer living farther from the urban core due to lifestyle preferences or housing characteristics
 
-### 7.4.4 Transportation
+### 7.4.5 Transportation Access
+
+The code below compares the shortest distance to the two main public transportation systems - train stations and bus stops:
 
 ::: panel-tabset
-## MRT & LRT Stations
+## Shortest Distance to Train Stations & bus stops
 
 ```{r}
-#| fig.width: 12
-#| fig.height: 8
-tm_shape(mpsz19)+
+#| echo: false
+#| fig-height: 8
+#| fig-width: 12
+plt1<- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
     tm_shape(Train) +
   tm_dots(size = 0.3, fill="black",shape =18) + 
@@ -2874,43 +2877,8 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Shortest Distance to Train Stations",
          position = tm_pos_out("center", "top", "center"))
-```
 
-The spatial pattern of the shortest distance to train stations resembles that of the distance to the CBD, suggesting that resale units may not rely heavily on proximity to train stations. This implies that other factors likely play a more substantial role in influencing resale housing prices
-
-```{r}
-#| fig.width: 12
-#| fig.height: 8
-tm_shape(mpsz19)+
-  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
-    tm_shape(Train) +
-  tm_dots(size = 0.3, fill="black",shape =18) + 
-tm_shape(HDBresale_gwr) +  
-  tm_dots(col = "std_train_800m_log_elasticity",
-          style = "quantile",
-          alpha = 0.5,
-          shape =18,
-          palette = "-hcl.heat") +
-  tm_layout(bg.color = "#f6f6f6",
-            outer.bg.color = "#f6f6f6",
-            frame = FALSE,
-            legend.outside = TRUE,
-            legend.outside.position = "right",
-            legend.frame = FALSE)+
-  tm_title("Number of train stations within 800 meters",
-         position = tm_pos_out("center", "top", "center"))
-```
-
-In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per sqm. In contrast, for resale units in the west, north, and north-east regions, the number of nearby train stations has minimal influence on prices.
-
-For most resale units in the central and eastern areas, a 1% increase in the number of train stations within 800 meters corresponds to an estimated 0.2%–3.0% increase in price per sqm.
-
-## Bus Stop
-
-```{r}
-#| fig.width: 12
-#| fig.height: 8
-tm_shape(mpsz19)+
+plt2<- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
     tm_shape(BusStop) +
   tm_dots(size = 0.3, fill="black",alpha = 0.4,shape =18) + 
@@ -2929,7 +2897,86 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Bus Stop",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+tmap_arrange(plt1, plt2,ncol=2)
+```
+
+## Code
+
+```{r}
+#| eval: false
+
+plt1<- tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(Train) +
+  tm_dots(size = 0.3, fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_train_sqrt_elasticity",
+          style = "quantile",
+          alpha = 0.5,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Train Stations",
+         position = tm_pos_out("center", "top", "center"))
+
+plt2<- tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(BusStop) +
+  tm_dots(size = 0.3, fill="black",alpha = 0.4,shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_dist_busStop_log_elasticity",
+          style = "quantile",
+          alpha = 0.9,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Shortest Distance to Bus Stop",
+         position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+```
+:::
+
+Comparing the two plots above, we observe a complementary pattern in the coefficients. Areas that show a stronger relationship with the shortest distance to train stations tend to exhibit a weaker relationship with the shortest distance to bus stops, and vice versa. Moreover, the spatial pattern of the train-station coefficients closely resembles that of the distance-to-CBD variable.
+
+This may suggest that units whose buyers highly value proximity to train stations also place greater importance on being close to the CBD. In contrast, units where bus-stop accessibility is more influential (upper portions of the West, North, North-East, and Central regions)are likely occupied by households who **do not work near the CBD**, the **units with limited access to the train station** (refer to take-home 2) or who **rely on private cars** instead of the train network.
+
+::: panel-tabset
+## Nearby Train Station / Bus Stop Count
+
+```{r}
+#| fig.width: 12
+#| fig.height: 8
+#| echo: false
+plt1 <- tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(Train) +
+  tm_dots(size = 0.3, fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_train_800m_log_elasticity",
+          style = "quantile",
+          alpha = 0.5,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of train stations within 800 meters",
+         position = tm_pos_out("center", "top", "center"))
+plt2 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
     tm_shape(BusStop) +
   tm_dots(size = 0.3, alpha = 0.4,fill="black",shape =18) + 
@@ -2947,10 +2994,61 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of Bus Stops within 300 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+```
+
+## Code
+
+```{r}
+#| eval: false
+
+plt1 <- tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(Train) +
+  tm_dots(size = 0.3, fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_train_800m_log_elasticity",
+          style = "quantile",
+          alpha = 0.5,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of train stations within 800 meters",
+         position = tm_pos_out("center", "top", "center"))
+plt2 <- tm_shape(mpsz19)+
+  tm_polygons(fill="REGION_N",fill_alpha=0.3, lwd =0.2)+
+    tm_shape(BusStop) +
+  tm_dots(size = 0.3, alpha = 0.4,fill="black",shape =18) + 
+tm_shape(HDBresale_gwr) +  
+  tm_dots(col = "std_busStop_300m_sqrt_elasticity",
+          style = "quantile",
+          alpha =1,
+          shape =18,
+          palette = "-hcl.heat") +
+  tm_layout(bg.color = "#f6f6f6",
+            outer.bg.color = "#f6f6f6",
+            frame = FALSE,
+            legend.outside = TRUE,
+            legend.outside.position = "right",
+            legend.frame = FALSE)+
+  tm_title("Number of Bus Stops within 300 meters",
+         position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1,plt2,ncol=2)
 ```
 :::
 
-### 7.4.5 Recreation & Shopping Facilities
+In the central and eastern regions, a higher number of train stations within 800 meters is associated with higher prices per sqm. In contrast, for resale units in the west, north, and north-east regions, the number of nearby train stations has minimal influence on prices.
+
+For bus stops, we observe that the central portions of each region show a negative effect as the number of bus stops increases. This is likely because these areas already have a high density of bus stops, so additional stops provide little additional value to buyers.
+
+### 7.4.6 Recreation & Shopping Facilities
 
 ::: panel-tabset
 ## Parks
@@ -2958,7 +3056,7 @@ tm_shape(HDBresale_gwr) +
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
-tm_shape(mpsz19)+
+plt1 <-tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(park) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -2977,7 +3075,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Park",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(park) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -2995,9 +3093,12 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of parks within 600 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
 
-In the central and eastern regions, an increase in the number of nearby parks is associated with higher prices per square meter, indicating that parks add value. However, in some parts of the eastern and northern regions, a 1 % increase in park count is associated with a 0.1%–0.4% decrease in price per square meter
+The shortest distance to parks increases prices in the right North, upper West, and lower North-East regions, while the Central, upper North-East, and lower East regions show little or negative effects, suggesting other amenities may matter more. Conversely, the number of parks within 600 meters positively correlates with prices in the Central, upper North-East, and lower East regions, indicating park density can be more influential than proximity to these areas.
 
 ## Malls
 
@@ -3005,7 +3106,7 @@ In the central and eastern regions, an increase in the number of nearby parks is
 #| fig.width: 12
 #| fig.height: 8
 
-tm_shape(mpsz19)+
+plt1 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(mall) +
   tm_dots(size = 0.3, fill="black",fill_alpha=0.6,shape =18) +
@@ -3023,7 +3124,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Mall",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(mall) +
   tm_dots(size = 0.3, fill="black",fill_alpha=0.6,shape =18) +  
@@ -3040,16 +3141,19 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of malls within 800 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
 
-nterestingly, a higher number of malls in the northeastern and upper western regions is associated with **increased prices per square meter**. However, in the central western region and central regions, more malls appear to have **negative effects on prices**, suggesting that an excessive concentration of malls may reduce marginal value in these areas
+Distance to malls has the greatest impact on house prices in the left East and North-East regions. At the same time, a higher number of malls within the vicinity also contributes to higher prices in the North-East region, suggesting that both proximity and density of malls enhance property values in this area
 
 ## Supermarkets
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
-tm_shape(mpsz19)+
+plt1 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(supermarket) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3068,7 +3172,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Supermarket",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2<- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
   tm_shape(supermarket) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3086,16 +3190,19 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of supermarkets within 400 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
 
-Overall, a higher number of supermarkets within 400 meters is associated with increased prices per square meter in most regions. However, in the eastern and northern regions, more supermarkets are linked to a slight decrease in price per square meter
+The Central and North-East regions exhibit the strongest negative coefficients, indicating that buyers are most sensitive to distance from supermarkets. Additionally, a higher number of nearby supermarkets is associated with higher prices. Despite the abundance of dining and shopping options in these areas, numbers of and proximity to supermarkets continues to contribute a significant price premium for these two areas.
 
 ## Hawker Centres
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
-tm_shape(mpsz19)+
+plt1 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(hawker) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3114,7 +3221,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to halker centre",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2<- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(hawker) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3132,10 +3239,15 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of halker centre within 600 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
+
+Both proximity to and the number of nearby hawker centres have the greatest impact on house prices in the East and North-East regions, the closer and more the hawker centres, the higher the prices.
 :::
 
-### 7.4.6 Schools & Care Services
+### 7.4.7 Schools & Care Services
 
 ::: panel-tabset
 ## Eldercare Services
@@ -3144,7 +3256,7 @@ tm_shape(HDBresale_gwr) +
 #| fig.width: 12
 #| fig.height: 8
 
-tm_shape(mpsz19)+
+plt1<- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(eldercare) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3164,7 +3276,7 @@ tm_shape(HDBresale_gwr) +
          position = tm_pos_out("center", "top", "center"))
 
 
-tm_shape(mpsz19)+
+plt2 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(eldercare) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3182,14 +3294,19 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of Eldercare services within 600 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
+
+Distance to eldercare services shows higher importance for most regions, except for the upper West, and lower East regions. This may be due to lower demand for nearby eldercare facilities in these areas, differences in population age distribution, or the presence of alternative support services
 
 ## Childcare Services
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 8
-tm_shape(mpsz19)+
+plt1 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(childcare) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3208,7 +3325,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Childcare services",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(childcare) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3226,7 +3343,12 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of Childcare services within 400 meters",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
+
+Distance to childcare services is more important in the West, North-East, and East regions; however, the coefficients are smaller compared to those for eldercare services and recreational facilities, suggesting a relatively low impact on overall house prices
 
 ## Kindergartens
 
@@ -3234,7 +3356,7 @@ tm_shape(HDBresale_gwr) +
 #| fig.width: 12
 #| fig.height: 8
 
-tm_shape(mpsz19)+
+plt1 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(kindergartens) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3253,7 +3375,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Kindergartens",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2 <-tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(kindergartens) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3272,8 +3394,11 @@ tm_shape(HDBresale_gwr) +
   tm_title("Number of Kindergartens within 600 meters",
          position = tm_pos_out("center", "top", "center"))
 
+tmap_arrange(plt1, plt2,ncol=2)
 
 ```
+
+Proximity to and density of kindergartens have the highest positive impact on house prices in the North and Central regions. In contrast, in the West region, closer proximity and higher density of kindergartens are associated with lower house prices
 
 ## Top 50 Primary School
 
@@ -3281,7 +3406,7 @@ tm_shape(HDBresale_gwr) +
 #| fig.width: 12
 #| fig.height: 8
 
-tm_shape(mpsz19)+
+plt1 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(hawker) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3300,7 +3425,7 @@ tm_shape(HDBresale_gwr) +
   tm_title("Shortest Distance to Top 50 Primary School",
          position = tm_pos_out("center", "top", "center"))
 
-tm_shape(mpsz19)+
+plt2 <- tm_shape(mpsz19)+
   tm_polygons(fill="REGION_N",fill_alpha=0.5, lwd =0.2)+
 tm_shape(hawker) +
   tm_dots(size = 0.3, fill="black",fill_alpha=1,shape =18) +  
@@ -3318,9 +3443,12 @@ tm_shape(HDBresale_gwr) +
             legend.frame = FALSE)+
   tm_title("Number of Top 50 Primary School within 1 km",
          position = tm_pos_out("center", "top", "center"))
+
+tmap_arrange(plt1, plt2,ncol=2)
+
 ```
 
-The plot above suggests west and northern-east regions house price value more with more top 50 primary schools within 1 km, while central and northern region having negative coefficient.
+The plots above suggest that proximity to schools has a greater impact than the number of schools nearby. Distance to top primary schools is particularly important in the West and Central regions, while it has little or even negative effect in the North and lower North-East regions
 :::
 
 # 8 Summary
@@ -3333,26 +3461,58 @@ Below are the key findings for the analysis:
 
 1.  **GWR** **Model Performance:**
 
-    The GWR model significantly outperforms the traditional OLS approach, using an optimal bandwidth of 252 nearest neighbors determined through the cross-validation (CV) method. The adjusted R-squared improved dramatically from 0.88 in the global OLS model to 0.96 in the GWR model, indicating that accounting for spatial variation explains an additional 8% of price variance. Furthermore, the AICc dropped from -19,491 to -27,661 (lower values indicate better model fit), demonstrating that GWR provides a superior balance between model complexity and explanatory power. This substantial improvement confirms that housing price determinants are highly location-dependent and cannot be adequately captured by traditional global regression models.
+    The GWR model significantly outperforms the traditional OLS approach, using an optimal bandwidth of 252 nearest neighbors determined through the CV)method. The adjusted R-squared improved from 0.88 in the global OLS model to 0.96 in the GWR model, indicating that accounting for spatial variation explains an additional 8% of price variance.
 
-<!-- -->
+    Furthermore, the AICc dropped from -19,491 to -27,661 (lower values indicate better model fit), demonstrating that GWR provides a better balance between model complexity and explanatory power. This substantial improvement confirms that housing price determinants are highly location-dependent and cannot be adequately captured by traditional global regression models.
 
 2.  **Flat Model Groups:**
 
-    The EDA revealed that flat models significantly impact prices, with Premium Apartment Loft and Type S1 commanding the highest values while Standard and Simplified and other models were the lowest. The GWR model shows that `model_group` coefficients vary massively by location, with the premium tier showing extreme spatial variation.
-
-    However, this finding must be interpreted cautiously due to severe geographic clustering: Group 4 units (Premium Apartment Loft and Type S1, n=40) exist exclusively in the Central Region, while Group 3 (DBSS/Terrace, n=123) also shows limited distribution compared to widely-available Group 2 units (Model A/Premium Apartment, n=6,753). This geographic concentration combined with small sample sizes likely contributes to the extreme coefficient variability observed in the GWR model, making it difficult to separate genuine location-specific preferences from data limitations.
-
-    In summary, we still observe that premium models do contribute to higher price per sqm comapred to the reference group (Group 1)
+    Premium models (Premium Apartment Loft and Type S1) command the highest prices, while Standard and Simplified models are lowest. GWR coefficients vary significantly across locations, but extreme variation is partly due to geographic clustering and small sample sizes (e.g., Group 4 units exist only in the Central Region). Overall, premium models still contribute to higher price per sqm compared to the reference group.
 
 3.  **Floor Area vs Price per sqm:**
 
-    The EDA demonstrated a consistent negative correlation between floor area and price per sqm across all flat models, and the GWR model confirms this pattern. The coeffiecient ranges between -0.14% and -0.34% suggesting a 1% increase in floor areas leads to 0.14%-0.34% decrease in price per sqm. This finding reveals that larger units consistently trade at lower per-square-meter prices regardless of location and model type.
+    The EDA demonstrated a consistent negative correlation between floor area and price per sqm across all flat models, and the GWR model confirms this pattern. The coeffiecient ranges between -0.14% and -0.34% suggesting a 1% increase in floor areas leads to 0.14%-0.34% decrease in price per sqm. This finding reveals that larger units consistently trade at lowe price per sqm regardless of location and model type.
 
 4.  **Mature Estate Premium:**
 
-    The EDA identified 3,301 units (38%) located in mature estates, with areas like Chinatown closest to the CBD commanding the highest prices. However, the GWR model reveals that the `mature_estate` variable exhibits extreme spatial variation even within the "mature estates", with coefficients ranging from highly negative values to 0.58 across different locations.
+    While 3,301 units (38%) are in mature estates, and areas near Chinatown command the highest prices, GWR coefficients for mature estates vary widely (negative coefficient to 0.58) across locations. Because mature and non-mature estates are mutually exclusive, the variable provides little meaningful local variation, though it captures global differences in prices in OLS models.
 
-    Since mature and non-mature estates are mutually exclusive by planning designation, the variable does not vary within each category. As a result, the GWR coefficient shifts abruptly across estate boundaries but provides no meaningful within-area variation. Thus, while the variable effectively captures global differences in prices between estate types in an OLS model, it does not offer informative insights for local spatial modelling.
+5.  **Transportation Access and proximity to CBD**
 
-5.  **Proximity to Top 50 Primary Schools**
+    Transportation accessibility shows distinct regional patterns with complementary relationships between train and bus networks. The Central and East regions demonstrate the strongest sensitivity to train station proximity, with coefficients resembles to the distance-to-CBD pattern, suggesting these areas house residents who commute to the city center for work.
+
+    In contrast, the upper West, North, and upper North-East regions show minimal impact from train station distance but higher sensitivity to bus stop proximity, likely reflecting populations that rely on private vehicles, units with limited access to train acccess or work outside the CBD. The density of train stations within 800 meters significantly increases prices only in the Central and East regions, while additional stations provide minimal value in other areas.
+
+    For bus stops, an interesting over-saturation effect emerges in the central portions of all regions, where increasing bus stop density negatively impacts prices, likely because these well-served areas already have sufficient coverage and additional stops provide diminishing returns.
+
+6.  **Recreation & Shopping Facilities**
+
+    -   **Park** accessibility reveals divergent preferences: eastern North, upper West, and lower North-East regions value proximity, while Central, upper North-East, and lower East regions show minimal distance effects but positive density effects, preferring multiple park options nearby.
+
+    -   **Shopping mall** accessibility shows the strongest impact on property values, particularly in western East and North-East regions, with the North-East uniquely valuing both proximity and density.
+
+    -   **Supermarkets** show more moderate effects compared to malls, strongest in Central and North-East regions, though both proximity and density remain influential.
+
+    -   **Hawker centres** uniquely show consistent positive effects for both proximity and density in East and North-East regions, reflecting their daily-life importance.
+
+7.  **Schools & Care Services**
+
+    -   **Eldercare services** demonstrate the most substantial impact among all amenities examined, with the Central Region exhibiting exceptionally strong distance sensitivity (-0.783 to -0.219), approximately five times greater than supermarket effects. The East Region shows similarly strong importance, while the upper West and lower East display minimal impact, likely reflecting demographic differences. Note that NIMBY effect emerges in both Central and East regions, where residents value nearby eldercare but resist facility concentration, preferring dispersed rather than clustered placement.
+
+    -   **Childcare services** show moderate sensitivity, suggesting relatively lower influence on property values. **Kindergarten** accessibility presents contrasting regional patterns: the North and Central regions demonstrate strong positive effects from both proximity and density, while the West Region uniquely associates closer kindergartens with lower prices, potentially reflecting noise concerns or undesirable neighborhood signaling.
+
+    -   **Top 50 Primary school** proximity consistently outweighs density effects across all regions, with distance to top-tier primary schools particularly valued in the West and Central regions but showing negligible or negative impact in the North and lower North-East.
+
+# 9 Future Work
+
+-   Use transformed data for predictive models but rely on original data for building explanatory models if the R-squared values are similar, as transformations can complicate interpretation, especially when different transformation methods are applied, as in this exercise.
+
+<!-- -->
+
+-   Incorporate demographic data to better understand local characteristics, which can help explain why certain regions prefer specific facilities.
+
+-   Zoom in on specific regions or planning areas for more granular analysis, since the current analysis is broad and only reveals rough spatial patterns.
+
+# 10 Reference
+
+-   Kam, T.S. (2025). [Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method](https://r4gdsa.netlify.app/chap13.html)
